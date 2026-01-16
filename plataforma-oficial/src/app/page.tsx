@@ -1,3 +1,5 @@
+"use client";
+
 import { Send, Bot } from "lucide-react";
 
 export default function Home() {
