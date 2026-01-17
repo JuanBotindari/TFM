@@ -100,5 +100,70 @@ Para los nuevos integrantes, aquí explicamos qué hace cada pieza generada por 
 ---
 
 
+# 📚 Manual de Git y Colaboración
+
+Para que nuestro equipo trabaje en sincronía, es vital entender las herramientas que usamos para gestionar el código.
+
+## 1. Conceptos Básicos: ¿Qué es qué?
+
+* **Git:** Es el sistema que vive en tu computadora. Imaginalo como una "máquina del tiempo" que saca fotos (commits) de tus archivos para que puedas volver atrás si algo se rompe.
+* **GitHub:** Es la "nube" donde guardamos esas fotos. Es la red social donde compartimos el código del proyecto.
+* **Rama (Branch):** Es una línea de tiempo paralela. `main` es la realidad oficial; `tu-nombre` es tu laboratorio de pruebas.
+
+---
+
+## 2. Diccionario de Comandos (El qué y el para qué)
+
+| Comando | Acción Real | Metáfora de la vida real |
+| :--- | :--- | :--- |
+| **`git status`** | Te dice qué archivos cambiaste. | Mirar qué herramientas tienes sobre la mesa. |
+| **`git add .`** | Prepara los archivos para guardar. | Poner las herramientas dentro de una caja. |
+| **`git commit -m "..."`** | Guarda los cambios con un mensaje. | Cerrar la caja y ponerle una etiqueta con fecha. |
+| **`git push`** | Sube tus cajas (commits) a GitHub. | Enviar la caja por correo a la oficina central. |
+| **`git fetch`** | Mira si hay cajas nuevas en la oficina. | Llamar por teléfono para ver si hay novedades. |
+| **`git pull`** | Trae las cajas nuevas y las abre. | Recibir el correo y actualizar tu mesa de trabajo. |
+| **`git merge`** | Une dos líneas de tiempo. | Mezclar dos capítulos de un libro en uno solo. |
+| **`git checkout`** | Salta entre ramas o realidades. | Cambiar de canal de televisión. |
+
+---
+
+## 3. Diferencias Clave (No te confundas)
+
+* **Commit vs. Push:** El `commit` guarda el cambio solo en tu PC. El `push` lo sube a internet para que otros lo vean.
+* **Fetch vs. Pull:** El `fetch` solo "mira" si hay algo nuevo. El `pull` trae lo nuevo y lo mete a la fuerza en tu código.
+* **Merge vs. Checkout:** El `checkout` te mueve de lugar; el `merge` trae lo que hay en otro lugar hacia donde estás tú.
+
+---
+
+## 4. Guía Táctica: Actualizar tu rama (Sin permisos en Main)
+
+Si el administrador (o un compañero) subió cambios a la rama `main` y tú quieres tenerlos en tu propia rama de trabajo, sigue estos pasos:
+
+
+
+### Paso A: Sincronizar con la Nube
+Primero avisamos a nuestro Git local que mire qué hay de nuevo en el servidor:
+1. **En terminal:**
+   ```bash
+   git fetch origin
+
+### Paso B: Fusionar la verdad oficial a mi rama
+Estando parado en tu rama (ej: nacho o juan), ejecutas:
+
+2. **En terminal:**
+   ```bash
+   git merge origin/main
+
+Esto traerá todo lo nuevo de la plataforma oficial a tu código personal sin necesidad de tocar la rama main directamente.
+
+### Paso C: Resolver Conflictos (Si aparecen)
+Si tú y otra persona tocaron la misma línea de código, Git te preguntará: "¿Cuál de las dos versiones dejo?".
+
+VS Code marcará el archivo en rojo.
+
+Elige la opción "Accept Incoming Change" (lo de main) o "Accept Current Change" (lo tuyo).
+
+Guarda, haz un git add . y un git commit para finalizar la paz.
+
 ---
 © 2026 - TFM: Inteligencia Artificial Aplicada a la Gestión del Conocimiento.
