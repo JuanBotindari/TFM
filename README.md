@@ -29,7 +29,7 @@ El repositorio está organizado en módulos que separan la infraestructura, la l
 4.  **Eficiencia Operativa:** Reducción drástica en los tiempos de respuesta de soporte técnico y administrativo.
 
 
-## 🤖 TFM-Chat: Sistema de Inteligencia Centralizada
+## 🤖 TFM-WEB-Chat: Sistema de Inteligencia Centralizada
 
 Bienvenido al repositorio oficial de **TFM-Chat**. Este proyecto es un Asistente Inteligente diseñado para asistir a clientes, capacitar empleados y preservar el activo intelectual de la organización.
 
@@ -62,6 +62,22 @@ En la terminal que acabas de abrir dentro de VS Code, escribe estos comandos uno
    ```bash
    cd plataforma-oficial
 
+
+#### **Paso 5: Comandos de Consola para el Servidor**
+Para trabajar en el proyecto, necesitas saber cómo encender y apagar el "motor" del chat:
+1. **🟢 Para ENCENDER el servidor:**
+   ```bash
+   npm run dev
+
+Espera a que la terminal diga ✓ Ready. Ahora el proyecto está funcionando localmente.
+
+🌐 Para VER el proyecto: Abre tu navegador (Chrome, Edge, etc.) y escribe esta dirección:
+
+👉 http://localhost:3000
+
+🔴 Para APAGAR el servidor: Haz clic dentro de la terminal de VS Code y presiona las teclas Ctrl + C.
+
+Si te pregunta "¿Desea terminar el trabajo (S/N)?", escribe S y pulsa Enter.
 ---
 
 ### 📂 Diccionario de Estructura de Proyecto
