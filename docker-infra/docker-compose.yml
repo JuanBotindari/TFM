@@ -1,0 +1,17 @@
+services:
+  # Tu contenedor de Ubuntu para desarrollo y scripts
+  ubuntu-dev:
+    build: .
+    container_name: tfm_ubuntu
+    volumes:
+      - ../:/app  # Conecta tu código local con el contenedor
+    tty: true     # Mantiene la terminal activa
+
+  # El motor de IA (Ollama) - Etapa 1 de tu documento
+  ollama:
+    image: ollama/ollama
+    container_name: tfm_ollama
+    volumes:
+      - ./ollama_data:/root/.ollama
+    ports:
+      - "11434:11434"

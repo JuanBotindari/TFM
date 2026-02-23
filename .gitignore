@@ -1,1 +1,6 @@
 # flexi-rag-platform
+# Datos pesados de modelos de IA
+docker-infra/ollama_data/
+# Archivos de sistema
+.DS_Store
+*.log
