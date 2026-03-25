@@ -5,6 +5,48 @@ Diferencia entre ChatGPT y GPT:
 - ChatGPT es un producto donde el usuario puede interactuar con el modelo en un entorno amigable
 
 
+## Training Time vs Inference Time
+
+* **Training Time (Entrenamiento):** Es cuando el modelo está en la "escuela". Se le muestran billones de textos para que aprenda patrones, gramática y datos. Aquí es donde se crean sus "conocimientos". Una vez termina, el modelo se "congela".
+* **Inference Time (Inferencia):** Es el momento en que tú le haces una pregunta y él genera una respuesta. Es el modelo "en vivo", usando lo que ya aprendió para predecir la siguiente palabra.
+
+**¿Qué está pasando en tu ejemplo?**
+
+Lo que tu profe te está enseñando no es solo la diferencia entre modelos, sino el concepto de **Inference-Time Compute** (computación en tiempo de inferencia).
+
+Tradicionalmente, los modelos respondían lo primero que les venía a la "mente" (como un reflejo). Pero los modelos modernos (como la serie "o1" o ese "GPT-5" del ejemplo) pueden **pensar antes de hablar**.
+
+1. El modelo "Nano" con esfuerzo mínimo ($1/3$)
+
+Aquí el modelo está funcionando en modo "piloto automático". El problema de las dos monedas es una trampa clásica de probabilidad. Muchos textos en internet lo resuelven mal o de forma confusa. El modelo, al no "dedicarle tiempo" a pensar, simplemente escupe la respuesta estadística más común que vio en su entrenamiento, que en este caso es errónea.
+
+2. El modelo "Nano" con esfuerzo bajo ($2/3$)
+
+Aquí es donde ocurre la magia del **Inference Time**. Aunque el modelo es el mismo, le permites usar más "energía mental" (reasoning tokens). El modelo empieza a desglosar el problema:
+
+1. Espacio muestral: (Cara-Cara), (Cara-Cruz), (Cruz-Cara), (Cruz-Cruz).
+2. Condición: "Una es cara" (eliminamos Cruz-Cruz).
+3. Opciones restantes: (C-C), (C-X), (X-C).
+4. ¿En cuántas la otra es cruz?: En 2 de 3. Resultado: $2/3$.
+**Al darle más tiempo de inferencia, el modelo corrige su propio impulso inicial.**
+
+3. El modelo "Mini" vs "Nano"
+
+Aquí cambia la arquitectura (el "cerebro" es más grande). Un modelo más potente (Mini) suele tener mejores razonamientos por defecto incluso con el mínimo esfuerzo, porque durante su **Training Time** sus conexiones se volvieron más precisas que las del Nano.
+
+---
+
+### Resumen para tu examen:
+
+| Fase | Qué sucede | Analogía |
+| --- | --- | --- |
+| **Training Time** | El modelo aprende patrones de una base de datos gigante. | Estudiar todo el semestre para la carrera. |
+| **Inference Time** | El modelo procesa tu duda específica y genera una respuesta. | Resolver una pregunta específica en el examen final. |
+
+**El giro moderno:** Ahora sabemos que si dejamos que el modelo "piense" más durante la **inferencia** (usando más tokens de razonamiento), puede superar errores que cometió durante su **entrenamiento**.
+
+
+
 
 
 # Tokens
@@ -13,6 +55,34 @@ Revisar el concepto de los Token
 platform.openai.com/tokenizer
 
 Revisar cuales son los token que usa el modelo elegido
+
+- Token normal
+- Cache tokens
+- Token de Razonamiento. ¿Qué es un "Token de razonamiento"?
+
+Imagina que le pides a un amigo que resuelva un problema de matemáticas muy difícil.
+
+* **Sin razonamiento:** Tu amigo te suelta un número al azar en 1 segundo. Eso es un LLM estándar.
+* **Con razonamiento:** Tu amigo saca una hoja de papel, hace garabatos, tacha cosas, murmura para sí mismo y luego te da la respuesta.
+
+Esos "garabatos" y "murmullos" son los **tokens de razonamiento**. Son palabras y pensamientos internos que el modelo genera para sí mismo antes de escribir la respuesta final que tú ves. El modelo usa estos tokens para "pensar en voz alta" internamente, lo que le permite corregir errores de lógica sobre la marcha.
+
+3. ¿Es un token extra que se gasta?
+
+**Sí, absolutamente.** Y aquí está el truco:
+
+1. **Cuestan dinero/recursos:** Aunque tú no veas esos tokens en la respuesta final (a veces están ocultos tras un desplegable que dice "Pensando..."), el procesador (GPU) tuvo que trabajar para generarlos. Por lo tanto, consumen parte de tu cuota o de tu dinero.
+2. **Cuestan tiempo:** Por eso, cuando activas el razonamiento (o pones `reasoning_effort="low/high"`), el modelo tarda más en empezar a responder. Está "escribiendo" su borrador mental.
+3. **Límite de contexto:** Los modelos tienen un límite de cuántos tokens pueden procesar a la vez. Los tokens de razonamiento ocupan espacio en ese límite, igual que las palabras de tu pregunta.
+
+> **Dato clave:** En los modelos más nuevos, el éxito no viene de hacer el modelo "más grande" (entrenamiento), sino de dejar que el modelo "piense más" (inferencia). A esto se le llama **Scaling Laws for Inference**.
+
+
+Token cost:
+print(f"Input tokens: {response.usage.prompt_tokens}")
+print(f"Output tokens: {response.usage.completion_tokens}")
+print(f"Total tokens: {response.usage.total_tokens}")
+print(f"Total cost: {response._hidden_params["response_cost"]*100:.4f} cents")
 
 
 
