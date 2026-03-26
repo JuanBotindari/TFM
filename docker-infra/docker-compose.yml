@@ -5,7 +5,11 @@ services:
     container_name: tfm_ubuntu
     volumes:
       - ../:/app  # Conecta tu código local con el contenedor
-    tty: true     # Mantiene la terminal activa
+    stdin_open: true
+    tty: true
+    restart: unless-stopped
+    depends_on:
+      - ollama
 
   # El motor de IA (Ollama) - Etapa 1 de tu documento
   ollama:
@@ -15,3 +19,4 @@ services:
       - ./ollama_data:/root/.ollama
     ports:
       - "11434:11434"
+    restart: unless-stopped

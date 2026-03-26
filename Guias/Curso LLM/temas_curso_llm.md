@@ -1,0 +1,203 @@
+# Concepto basico
+
+Diferencia entre ChatGPT y GPT:
+- GPT es el modelo, simplemente un motor
+- ChatGPT es un producto donde el usuario puede interactuar con el modelo en un entorno amigable
+
+
+## Training Time vs Inference Time
+
+* **Training Time (Entrenamiento):** Es cuando el modelo está en la "escuela". Se le muestran billones de textos para que aprenda patrones, gramática y datos. Aquí es donde se crean sus "conocimientos". Una vez termina, el modelo se "congela".
+* **Inference Time (Inferencia):** Es el momento en que tú le haces una pregunta y él genera una respuesta. Es el modelo "en vivo", usando lo que ya aprendió para predecir la siguiente palabra.
+
+**¿Qué está pasando en tu ejemplo?**
+
+Lo que tu profe te está enseñando no es solo la diferencia entre modelos, sino el concepto de **Inference-Time Compute** (computación en tiempo de inferencia).
+
+Tradicionalmente, los modelos respondían lo primero que les venía a la "mente" (como un reflejo). Pero los modelos modernos (como la serie "o1" o ese "GPT-5" del ejemplo) pueden **pensar antes de hablar**.
+
+1. El modelo "Nano" con esfuerzo mínimo ($1/3$)
+
+Aquí el modelo está funcionando en modo "piloto automático". El problema de las dos monedas es una trampa clásica de probabilidad. Muchos textos en internet lo resuelven mal o de forma confusa. El modelo, al no "dedicarle tiempo" a pensar, simplemente escupe la respuesta estadística más común que vio en su entrenamiento, que en este caso es errónea.
+
+2. El modelo "Nano" con esfuerzo bajo ($2/3$)
+
+Aquí es donde ocurre la magia del **Inference Time**. Aunque el modelo es el mismo, le permites usar más "energía mental" (reasoning tokens). El modelo empieza a desglosar el problema:
+
+1. Espacio muestral: (Cara-Cara), (Cara-Cruz), (Cruz-Cara), (Cruz-Cruz).
+2. Condición: "Una es cara" (eliminamos Cruz-Cruz).
+3. Opciones restantes: (C-C), (C-X), (X-C).
+4. ¿En cuántas la otra es cruz?: En 2 de 3. Resultado: $2/3$.
+**Al darle más tiempo de inferencia, el modelo corrige su propio impulso inicial.**
+
+3. El modelo "Mini" vs "Nano"
+
+Aquí cambia la arquitectura (el "cerebro" es más grande). Un modelo más potente (Mini) suele tener mejores razonamientos por defecto incluso con el mínimo esfuerzo, porque durante su **Training Time** sus conexiones se volvieron más precisas que las del Nano.
+
+---
+
+### Resumen para tu examen:
+
+| Fase | Qué sucede | Analogía |
+| --- | --- | --- |
+| **Training Time** | El modelo aprende patrones de una base de datos gigante. | Estudiar todo el semestre para la carrera. |
+| **Inference Time** | El modelo procesa tu duda específica y genera una respuesta. | Resolver una pregunta específica en el examen final. |
+
+**El giro moderno:** Ahora sabemos que si dejamos que el modelo "piense" más durante la **inferencia** (usando más tokens de razonamiento), puede superar errores que cometió durante su **entrenamiento**.
+
+
+
+
+
+# Tokens
+Revisar el concepto de los Token
+
+platform.openai.com/tokenizer
+
+Revisar cuales son los token que usa el modelo elegido
+
+- Token normal
+- Cache tokens
+- Token de Razonamiento. ¿Qué es un "Token de razonamiento"?
+
+Imagina que le pides a un amigo que resuelva un problema de matemáticas muy difícil.
+
+* **Sin razonamiento:** Tu amigo te suelta un número al azar en 1 segundo. Eso es un LLM estándar.
+* **Con razonamiento:** Tu amigo saca una hoja de papel, hace garabatos, tacha cosas, murmura para sí mismo y luego te da la respuesta.
+
+Esos "garabatos" y "murmullos" son los **tokens de razonamiento**. Son palabras y pensamientos internos que el modelo genera para sí mismo antes de escribir la respuesta final que tú ves. El modelo usa estos tokens para "pensar en voz alta" internamente, lo que le permite corregir errores de lógica sobre la marcha.
+
+3. ¿Es un token extra que se gasta?
+
+**Sí, absolutamente.** Y aquí está el truco:
+
+1. **Cuestan dinero/recursos:** Aunque tú no veas esos tokens en la respuesta final (a veces están ocultos tras un desplegable que dice "Pensando..."), el procesador (GPU) tuvo que trabajar para generarlos. Por lo tanto, consumen parte de tu cuota o de tu dinero.
+2. **Cuestan tiempo:** Por eso, cuando activas el razonamiento (o pones `reasoning_effort="low/high"`), el modelo tarda más en empezar a responder. Está "escribiendo" su borrador mental.
+3. **Límite de contexto:** Los modelos tienen un límite de cuántos tokens pueden procesar a la vez. Los tokens de razonamiento ocupan espacio en ese límite, igual que las palabras de tu pregunta.
+
+> **Dato clave:** En los modelos más nuevos, el éxito no viene de hacer el modelo "más grande" (entrenamiento), sino de dejar que el modelo "piense más" (inferencia). A esto se le llama **Scaling Laws for Inference**.
+
+
+Token cost:
+print(f"Input tokens: {response.usage.prompt_tokens}")
+print(f"Output tokens: {response.usage.completion_tokens}")
+print(f"Total tokens: {response.usage.total_tokens}")
+print(f"Total cost: {response._hidden_params["response_cost"]*100:.4f} cents")
+
+
+
+
+
+
+# Context window:
+
+www.vellum.ai/llm-leaderboard
+
+
+
+# Documentacion:
+buscar info de este
+- con que tipo de formatos se entrena? JSONs, MD, 
+- Idioma? principalmente ingles
+- 
+
+
+
+# Prompt Engineering:
+- one-shot
+- multi-shot
+- Negative answers ( lo que no quiero)
+
+
+
+
+# LLM answerts:
+
+cada ejecucion es independiente(stateless)
+
+## Ejemplo basico
+ejemplo: 
+messages = [
+    {"role": "system", "content": "You are a helpful assistant"},
+    {"role": "user", "content": "Hi! I'm Ed!"}
+    ]
+
+messages = [
+    {"role": "system", "content": "You are a helpful assistant"},
+    {"role": "user", "content": "Hi! I'm Ed!"},
+    {"role": "assistant", "content": "Hi Ed! How can I assist you today?"}
+    ]
+
+
+messages = [
+    {"role": "system", "content": "You are a helpful assistant"},
+    {"role": "user", "content": "Hi! I'm Ed!"},
+    {"role": "assistant", "content": "Hi Ed! How can I assist you today?"},
+    {"role": "user", "content": "What's my name?"}
+    ]
+
+messages = [
+    {"role": "system", "content": "You are a helpful assistant"},
+    {"role": "user", "content": "Hi! I'm Ed!"},
+    {"role": "assistant", "content": "Hi Ed! How can I assist you today?"},
+    {"role": "user", "content": "What's my name?"},
+    {"role": "assistant", "content": "Your name is Ed"}
+    ]
+
+
+## Acceder a la respuesta
+
+Contenido de una respuesta siempre se muestra en json
+response = requests.post(
+    "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
+    headers={
+        "Authorization": f"Bearer {google_api_key}",
+        "Content-Type": "application/json"
+    },
+    json={
+        "model": "gemini-2.5-flash",
+        "messages": [{"role": "user", "content": "your message here"}]
+    }
+)
+
+response.json()
+
+
+Por ejemplo:
+{'choices': [{'finish_reason': 'stop',
+   'index': 0,
+   'message': {'content': 'Certainly! "Your message here" is a blank canvas.\n\nWhat kind of message would you like? For example, I can provide:\n\n*   A friendly greeting\n*   Information about a specific topic\n*   A creative story or poem\n*   A helpful tip or piece of advice\n*   An answer to a question you have\n*   A simple placeholder confirmation\n*   Or anything else you have in mind!\n\nJust let me know what you\'re looking for, and I\'ll generate a message for you.',
+    'role': 'assistant'}}],
+ 'created': 1773594739,
+ 'id': 'bui2aY_ULaqWkdUP9NDH4QU',
+ 'model': 'gemini-2.5-flash',
+ 'object': 'chat.completion',
+ 'usage': {'completion_tokens': 110, 'prompt_tokens': 4, 'total_tokens': 1005}}
+
+ Si quiero acceder a la respuesta puntual:
+ response.json()['choices'][0]['message']['content']
+
+## Streaming = True
+
+Que pasa si quiero que me vaya mostrando tal cual muestra un ChatGPT:
+
+1. chunk
+Cuando usamos stream=True, la API no nos devuelve toda la respuesta de golpe, sino que nos manda el texto en pequeños "pedacitos" o "paquetes" a medida que el modelo los va generando. Cada uno de estos pedacitos es un chunk.
+
+2. chunk.choices[0]
+Al igual que en una respuesta normal (sin streaming), la API podría devolver múltiples "opciones" o versiones de la respuesta (si se lo pidieras configurando n=2, por ejemplo). Como nosotros solo pedimos una respuesta por defecto, siempre buscamos la primera opción, que es choices[0].
+
+3. delta
+Esta es la gran diferencia con una llamada sin streaming.
+
+En una llamada normal, usas message (es decir, el mensaje completo).
+En streaming, usas delta, que significa "diferencia" o "cambio". El delta contiene solo las nuevas letras o palabras que se acaban de generar en ese pedacito específico, no todo el texto acumulado.
+4. content
+Es el texto real que viene dentro de ese pedacito (por ejemplo, podría venir la sílaba "ción" o la palabra " Hola").
+
+5. or '' (La trampa contra errores)
+Aquí es donde ocurre la magia defensiva de Python. A veces, la API manda un chunk vacío donde content es None (generalmente ocurre en el primer o último paquete de la transmisión, usados para indicar que empieza o termina el mensaje).
+
+Si intentas sumar un texto con None (es decir, "Hola" + None), Python lanzará un error y el programa colapsará.
+El operador or '' le dice a Python: "Si chunk.choices[0].delta.content es válido/tiene texto, úsalo. Pero si es None, entonces cámbialo por una cadena vacía '' (nada)."
+Sumar "Hola" + "" es perfectamente válido.
