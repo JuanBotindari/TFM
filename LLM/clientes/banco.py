@@ -1,25 +1,28 @@
-import sys
-import os
-
-# Esto añade la carpeta LLM al buscador de Python
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
-from base_llm import BaseRAG
+from ..base_llm import BaseModel
 
 
-class ClienteBanco(BaseRAG):  
-    # Clase heradada de BaseRAG
+class ClienteBanco(BaseModel):
+    """Cliente específico: Banco X.
+    
+    Hereda de BaseRAG e implementa los métodos abstractos
+    para personalizar el prompt y la carga de conocimiento.
+    """
 
-    def __init__(self, model_name="phi3"):              # Constructor con modelo configurable (por defecto "phi3")
-        super().__init__(model_name=model_name)         # Inicializa el padre (LLM, conexión, etc.)
-        self.nombre_cliente = "Banco X"                 # Nombre del cliente para personalización
-        self.docs_path = "./RAG-docs/02_Silver/BancoX"  # Ruta de los documentos para el RAG
-        self.vector_collection = "banco_x_vectors"      # Nombre de la colección de embeddings
+    def __init__(self, model_name="phi3"):
+        super().__init__(nombre_cliente="Banco X", model_name=model_name)
+        self.configurar_conocimiento()
 
+    # ── Métodos abstractos obligatorios ──────────────────────────────────────
 
-    def get_system_prompt(self, contexto, pregunta):  
-        # Método para obtener el prompt del sistema
-        return f"""Eres un auditor de cumplimiento para {self.nombre_cliente}. 
-        Usa estrictamente este contexto: {contexto}
-        Pregunta del usuario: {pregunta}
-        Respuesta formal y técnica:"""
+    def _get_template_prompt(self) -> str:
+        return """Eres un Auditor Senior del Banco X. 
+        Tu base de conocimiento actual es la siguiente:
+        {JSON_CONTEXTO}
+
+        Responde siempre de forma profesional y citando la fuente si está disponible."""
+
+    def _get_metodos_carga(self) -> list:
+        return [
+            lambda: self._cargar_documentos(path="./docs/banco/legal"),
+            lambda: self._procesar_imagenes(path="./docs/banco/organigramas"),
+        ]

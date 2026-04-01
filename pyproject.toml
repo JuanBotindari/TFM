@@ -13,3 +13,10 @@ dependencies = [
     "pandas>=3.0.1",
     "pypdf>=6.9.2",
 ]
+
+[build-system]
+requires = ["setuptools>=75.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["LLM", "LLM.clientes", "LLM.ingestion", "LLM.prompts", "LLM.governance", "LLM.evaluations"]

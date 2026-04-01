@@ -1,25 +1,29 @@
-import sys
-import os
-# Esto añade la carpeta LLM al buscador de Python
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from ..base_llm import BaseModel
 
-from base_llm import BaseRAG
 
-class ClienteEstudioContable(BaseRAG):
-    # Clase heradada de BaseRAG
-    def __init__(self, model_name="phi3"):                  # Constructor con modelo configurable (por defecto "phi3")
-        super().__init__(model_name=model_name)             # Inicializa el padre (LLM, conexión, etc.)
-        self.nombre_cliente = "Estudio Contable"            # Nombre del cliente para personalización
-        self.docs_path = "./RAG-docs/02_Silver/Contable"    # Ruta de los documentos para el RAG
-        self.vector_collection = "contable_vectors"         # Nombre de la colección de embeddings
-        
-    def get_system_prompt(self, contexto, pregunta):        
-        # Método para obtener el prompt del sistema
-        
+class ClienteEstudioContable(BaseModel):
+    """Cliente específico: Estudio Contable.
+    
+    Hereda de BaseModel e implementa los métodos abstractos
+    para personalizar el prompt y la carga de conocimiento.
+    """
+
+    def __init__(self, model_name="phi3"):
+        super().__init__(nombre_cliente="Estudio Contable", model_name=model_name)
+        self.docs_path = "./RAG-docs/02_Silver/Contable"
+        self.vector_collection = "contable_vectors"
+        self.configurar_conocimiento()
+
+    # ── Métodos abstractos obligatorios ──────────────────────────────────────
+
+    def _get_template_prompt(self) -> str:
         return f"""Eres un experto en normativa fiscal para {self.nombre_cliente}.
-        Basado en el contexto: {contexto}
-        Analiza la siguiente consulta: {pregunta}
-        Respuesta directa y basada en leyes:"""
+        Tu base de conocimiento actual es la siguiente:
+        {{JSON_CONTEXTO}}
 
+        Responde de forma directa y basada en leyes. Cita la fuente cuando esté disponible."""
 
-        
+    def _get_metodos_carga(self) -> list:
+        return [
+            lambda: self._cargar_documentos(path=self.docs_path),
+        ]
