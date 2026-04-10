@@ -1,0 +1,24 @@
+[project]
+name = "tfm"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "gradio>=6.11.0",
+    "ipykernel>=7.2.0",
+    "langchain-community>=0.4.1",
+    "langchain-ollama>=1.0.1",
+    "ollama>=0.6.1",
+    "openai>=2.31.0",
+    "openpyxl>=3.1.5",
+    "pandas>=3.0.1",
+    "pypdf>=6.9.2",
+]
+
+[build-system]
+requires = ["setuptools>=75.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["LLM", "LLM.clientes", "LLM.ingestion", "LLM.prompts", "LLM.governance", "LLM.evaluations"]

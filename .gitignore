@@ -4,3 +4,4 @@ docker-infra/ollama_data/
 # Archivos de sistema
 .DS_Store
 *.log
+.env
