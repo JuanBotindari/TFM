@@ -10,8 +10,6 @@ class ClienteEstudioContable(BaseModel):
 
     def __init__(self, model_name="phi3"):
         super().__init__(nombre_cliente="Estudio Contable", model_name=model_name)
-        self.docs_path = "./RAG-docs/02_Silver/Contable"
-        self.vector_collection = "contable_vectors"
         self.configurar_conocimiento()
 
     # ── Métodos abstractos obligatorios ──────────────────────────────────────
