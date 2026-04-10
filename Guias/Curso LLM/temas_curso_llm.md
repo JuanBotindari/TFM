@@ -201,3 +201,121 @@ Aquí es donde ocurre la magia defensiva de Python. A veces, la API manda un chu
 Si intentas sumar un texto con None (es decir, "Hola" + None), Python lanzará un error y el programa colapsará.
 El operador or '' le dice a Python: "Si chunk.choices[0].delta.content es válido/tiene texto, úsalo. Pero si es None, entonces cámbialo por una cadena vacía '' (nada)."
 Sumar "Hola" + "" es perfectamente válido.
+
+
+
+
+
+<br><br><br><br><br><br><br>
+
+---
+---
+---
+
+
+
+## Que son las tools 
+
+-- Week 2 - day 4 super importante
+
+que es tool calling?  VER IMAGEN tool_calling.png
+### Idea general
+
+Un LLM como yo no ejecuta funciones directamente, pero puede:
+
+Entender lo que el usuario quiere
+Detectar si hay una función disponible que lo resuelve
+Generar un JSON estructurado indicando cómo llamar esa función
+
+common use cases:
+- fetch data from a database
+- take action, like booking a meeting
+- perform complex calculations
+- Modifiy the UI
+
+
+````md id="h2k91x"
+## 🧠 Tool Calling (Function Calling) en LLM
+
+Los LLM (como ChatGPT) pueden usar funciones externas, pero **no las ejecutan directamente**.  
+Lo que hacen es generar un **JSON estructurado** indicando:
+
+- qué función usar
+- con qué parámetros
+
+👉 Luego **tu backend ejecuta esa función**.
+
+---
+
+## 🔧 Ejemplo
+
+```python
+price_function = {
+    "name": "get_ticket_price",
+    "description": "Get the price of a return ticket to the destination city.",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "destination_city": {
+                "type": "string",
+                "description": "City to travel to"
+            }
+        },
+        "required": ["destination_city"],
+        "additionalProperties": False
+    }
+}
+````
+
+---
+
+## 🧩 Partes clave
+
+* **name**
+  → Nombre de la función en tu backend
+
+* **description**
+  → Le dice al modelo cuándo usar la función
+
+* **parameters**
+  → Define cómo deben ser los inputs (tipo contrato)
+
+  * `type: object` → los parámetros son un JSON
+  * `properties` → define cada campo (nombre, tipo, descripción)
+  * `required` → campos obligatorios
+  * `additionalProperties: False` → evita parámetros extra
+
+---
+
+## 🔄 Flujo completo
+
+1. Usuario hace una pregunta
+2. El LLM analiza si alguna función aplica
+3. Si aplica → devuelve un JSON:
+
+```json
+{
+  "name": "get_ticket_price",
+  "arguments": {
+    "destination_city": "Roma"
+  }
+}
+```
+
+4. Tu backend ejecuta: `get_ticket_price("Roma")`
+5. Devuelve el resultado al LLM
+6. El LLM responde al usuario con el resultado final
+
+---
+
+## 🧠 Idea clave
+
+> El LLM decide **qué herramienta usar**, pero **vos la ejecutás**.
+
+```
+```
+
+
+
+
+
