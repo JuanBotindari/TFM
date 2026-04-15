@@ -87,7 +87,7 @@ class BaseModel(ABC):
                 if resultado:
                     self.manifiesto_json.append(resultado)
             except Exception as e:
-                print(f"⚠️ Error en método de carga: {e}")
+                print(f" Error en método de carga: {e}")
 
         # Transformamos la lista de diccionarios en un JSON legible para el LLM
         conocimiento_str = json.dumps(self.manifiesto_json, indent=2, ensure_ascii=False)
@@ -127,7 +127,7 @@ class BaseModel(ABC):
             Chunks de texto de la respuesta del modelo.
         """
         if self.chat_prompt is None:
-            yield "⚠️ Error: El modelo no tiene conocimiento cargado. Llama a configurar_conocimiento() primero."
+            yield " Error: El modelo no tiene conocimiento cargado. Llama a configurar_conocimiento() primero."
             return
 
         chain = self.chat_prompt | self.llm
@@ -140,16 +140,83 @@ class BaseModel(ABC):
     ################################################################################
 
     def _cargar_documentos(self, path=None):
-        """Carga documentos desde un path. Las hijas deben sobreescribir con lógica real."""
-        print(f"⚠️ _cargar_documentos() no implementado para '{self.nombre_cliente}'. Sobreescribe este método.")
-        return None
+        """Carga y extrae texto de todos los PDFs encontrados en path (búsqueda recursiva).
+
+        Requiere: pip install pypdf
+        """
+        if path is None:
+            print(f" _cargar_documentos() llamado sin path para '{self.nombre_cliente}'.")
+            return None
+        if not os.path.exists(path):
+            print(f" Path no encontrado: {path}")
+            return None
+
+        try:
+            from pypdf import PdfReader
+        except ImportError:
+            print(" pypdf no instalado. Ejecuta: pip install pypdf")
+            return None
+
+        documentos = []
+        for root, _, files in os.walk(path):
+            for archivo in sorted(files):
+                if archivo.lower().endswith(".pdf"):
+                    ruta = os.path.join(root, archivo)
+                    try:
+                        reader = PdfReader(ruta)
+                        texto = "\n".join(
+                            page.extract_text() or "" for page in reader.pages
+                        )
+                        documentos.append({
+                            "archivo": archivo,
+                            "tipo": "PDF",
+                            "contenido": texto[:5000],  # limitar tokens al LLM
+                        })
+                        print(f"   PDF cargado: {archivo}")
+                    except Exception as e:
+                        print(f"   Error leyendo {archivo}: {e}")
+
+        if not documentos:
+            print(f" No se encontraron PDFs en: {path}")
+            return None
+
+        print(f"📄 {len(documentos)} PDF(s) cargado(s) desde '{path}'.")
+        return {
+            "fuente": "documentos_pdf",
+            "path": path,
+            "total": len(documentos),
+            "archivos": documentos,
+        }
 
     def _procesar_imagenes(self, path=None):
-        """Procesa imágenes/organigramas. Las hijas deben sobreescribir con lógica real."""
-        print(f"⚠️ _procesar_imagenes() no implementado para '{self.nombre_cliente}'. Sobreescribe este método.")
-        return None
+        """Registra las imágenes disponibles en path como metadatos de contexto."""
+        if path is None:
+            print(f" _procesar_imagenes() llamado sin path para '{self.nombre_cliente}'.")
+            return None
+        if not os.path.exists(path):
+            print(f" Path de imágenes no encontrado: {path}")
+            return None
+
+        extensiones_img = {".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp"}
+        imagenes = [
+            f for f in os.listdir(path)
+            if os.path.splitext(f.lower())[1] in extensiones_img
+        ]
+
+        if not imagenes:
+            print(f" No se encontraron imágenes en: {path}")
+            return None
+
+        print(f" {len(imagenes)} imagen(es) registrada(s) desde '{path}'.")
+        return {
+            "fuente": "imagenes_referencia",
+            "path": path,
+            "total": len(imagenes),
+            "archivos": imagenes,
+            "nota": "Imágenes de referencia disponibles (organigramas, diagramas, etc.).",
+        }
 
     def _conectar_fuentes_vivas(self, url=None):
         """Conecta a fuentes en vivo (APIs, DBs). Las hijas deben sobreescribir con lógica real."""
-        print(f"⚠️ _conectar_fuentes_vivas() no implementado para '{self.nombre_cliente}'. Sobreescribe este método.")
+        print(f" _conectar_fuentes_vivas() no implementado para '{self.nombre_cliente}'. Sobreescribe este método.")
         return None
