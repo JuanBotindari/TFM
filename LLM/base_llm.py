@@ -17,10 +17,10 @@ class BaseModel(ABC):
         - _get_metodos_carga()  -> list
     """
 
-    def __init__(self, nombre_cliente="Genérico", model_name="phi3"):
+    def __init__(self, nombre_cliente="Genérico", model_name="phi3", base_url=None):
         self.nombre_cliente = nombre_cliente
         self.model_name = model_name
-        self.base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+        self.base_url = base_url or os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
         self.llm = self._inicializar_llm()
         self.manifiesto_json = []
         self.chat_prompt = None
@@ -89,10 +89,27 @@ class BaseModel(ABC):
             except Exception as e:
                 print(f" Error en método de carga: {e}")
 
-        # Transformamos la lista de diccionarios en un JSON legible para el LLM
-        conocimiento_str = json.dumps(self.manifiesto_json, indent=2, ensure_ascii=False)
+        # Mejoramos el RAG: Los LLM pequeños se marean con JSON.
+        # Pasamos la info a un formato tipo Markdown / Etiquetas limpias.
+        textos = []
+        for bloque in self.manifiesto_json:
+            if bloque.get("fuente") == "documentos_pdf":
+                for doc in bloque.get("archivos", []):
+                    # Separador visual fuerte para el modelo
+                    textos.append(
+                        f"--- DOCUMENTO: {doc['archivo']} ---\n"
+                        f"{doc['contenido']}\n"
+                        f"--- FIN DEL DOCUMENTO ---"
+                    )
+            elif bloque.get("fuente") == "imagenes_referencia":
+                nombres = ", ".join(bloque.get("archivos", []))
+                textos.append(f"--- CONTEXTO VISUAL ---\nExisten las siguientes imágenes disponibles: {nombres}")
 
-        # Creamos el System Prompt final insertando el JSON en el hueco del template
+        conocimiento_str = "\n\n".join(textos)
+        if not conocimiento_str.strip():
+            conocimiento_str = "La base de datos de conocimiento está vacía."
+
+        # Creamos el System Prompt final insertando el texto limpio en el hueco del template
         prompt_final = template_prompt.replace("{JSON_CONTEXTO}", conocimiento_str)
 
         # Configuramos el prompt en el modelo

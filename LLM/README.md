@@ -8,7 +8,7 @@ Este módulo le da "cerebro" y "conocimiento" a nuestra aplicación.
 En lugar de tener un chatbot genérico que responde con información general (o que inventa respuestas, fenómeno conocido como alucinación), utilizamos una técnica de IA llamada **RAG** (Retrieval-Augmented Generation). 
 
 **¿Cómo funciona de forma simple?**
-1. **Separación por Clientes:** Trabajamos con múltiples configuraciones, por ejemplo, un "Banco Santander" o un "Estudio Contable".
+1. **Separación por Clientes:** Trabajamos con múltiples configuraciones, por ejemplo, un "Banco" o un "Estudio Contable".
 2. **Bases de Conocimiento:** Cada uno de estos clientes posee sus documentos propios y privados (leyes, manuales, normativas, organigramas en PDF y JPG).
 3. **Inyección de Memoria Automática:** Al abrir un chat, el script busca todos esos documentos, extrae el texto usando Python, y se lo inyecta directamente al cerebro de la IA antes de que el usuario envíe su primer mensaje.
 4. **Respuesta Experta:** El modelo adopta esa personalidad y responde las preguntas de los usuarios referenciando a las fuentes exactas (los documentos cargados).
@@ -133,9 +133,9 @@ Estos métodos fuerzan a los desarrolladores a implementarlos obligatoriamente s
 Su propósito es ser minúsculas y manejables. Son meramente configuradores por cliente. A las clases hijas "no les importa el CÓMO" se abren los PDFs o conectan a Ollama; solo definen el **QUIÉN SOY** y el **DÓNDE ESTÁ LO MÍO**.
 
 #### A. Cliente Banco (`ClienteBanco`)
-- **Archivos:** Calcula rutas dinámicas apoyándose en su propia variable interna `__file__` asegurándose de resolver SIEMPRE en `C:/repositorios_github/TFM/TFM/RAG-docs/client-santander`. 
-- **Personalidad (`_get_template_prompt`):** Se sitúa firmemente en el rol de "Auditor Senior del Banco Santander", obligándole a usar lenguaje muy profesional, buscar entre sus RAG-docs y evitar responder si no encuentra respuesta.
-- **Flujo (`_get_metodos_carga`):** Solamente registra su carpeta general de `client-santander` para procesar documentos de texto en PDF.
+- **Archivos:** Calcula rutas dinámicas apoyándose en su propia variable interna `__file__` asegurándose de resolver SIEMPRE en `C:/repositorios_github/TFM/TFM/RAG-docs/client-banco`. 
+- **Personalidad (`_get_template_prompt`):** Se sitúa firmemente en el rol de "Auditor Senior del Banco", obligándole a usar lenguaje muy profesional, buscar entre sus RAG-docs y evitar responder si no encuentra respuesta.
+- **Flujo (`_get_metodos_carga`):** Solamente registra su carpeta general de `client-banco` para procesar documentos de texto en PDF.
 
 #### B. Cliente Estudio Contable (`ClienteEstudioContable`)
 - **Archivos:** Maneja un flujo un poco más complejo dividiendo en dos subcarpetas específicas: `pdfs` para conocimiento contable puro y `/imagenes` para conocimiento visual como organigramas. 
@@ -148,7 +148,7 @@ Su propósito es ser minúsculas y manejables. Son meramente configuradores por 
 
 Para que un auditor humano pueda interactuar frente a un ordenador, el proyecto usa esta interfaz implementada con **Gradio 6.x**. El proceso es completamente responsivo:
 
-1. El usuario se topa con un menú de opciones (Banco Santander, Estudio Contable). 
+1. El usuario se topa con un menú de opciones (Banco, Estudio Contable). 
 2. Cuando oprime **"Cargar Cliente"**, hace instanciar dinámicamente nuestra clase hija deseada. En ese instante exacto ocurre toda la secuencia técnica: La clase pide todos los archivos de `RAG-docs`, se filtran los PDF, se transcriben mediante PyPDF, y esa inmensa cantidad de conocimiento se formatea en un JSON interno que se implanta a Ollama. Todo esto sucede en segundos y cambia la etiqueta de la web a "Cliente X Listo para operar". 
 3. Cuando interactuamos a través de la caja inferior de chat, el Gradio utiliza la estructura de diccionarios en forma de MessageDict `{"role": "user", "content": ...}` (normativa exigida por Gradio v6+).
 4. Nuestro `app_gradio` recibe del método `BaseModel.responder()` una retransmisión de bytes que él procesa internamente como una **Función Generadora ("Yield Streaming")**, dando por resultado unas respuestas suaves que van apareciendo letra por letra en la pantalla de Windows hasta culminar el concepto.

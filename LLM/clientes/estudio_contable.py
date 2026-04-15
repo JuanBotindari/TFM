@@ -1,4 +1,5 @@
 import os
+import json
 from ..base_llm import BaseModel
 
 # Path absoluto al directorio RAG del estudio contable, calculado relativamente a este archivo:
@@ -19,22 +20,30 @@ class ClienteEstudioContable(BaseModel):
         RAG-docs/client-contable/imagenes/  → organigramas e imágenes de referencia
     """
 
-    def __init__(self, model_name="phi3"):
-        super().__init__(nombre_cliente="Estudio Contable", model_name=model_name)
+    def __init__(self):
+        # 1. Leer configuración externa
+        config_path = os.path.join(_RAGDOC_CONTABLE, "config.json")
+        try:
+            with open(config_path, "r", encoding="utf-8") as f:
+                self.config = json.load(f)
+        except Exception as e:
+            print(f"⚠️ No se pudo leer {config_path}. Usando valores por defecto.")
+            self.config = {}
+
+        # 2. Inicializar clase base con los valores de config
+        super().__init__(
+            nombre_cliente="Estudio Contable", 
+            model_name=self.config.get("modelo", "phi3"),
+            base_url=self.config.get("url_llm", "http://localhost:11434")
+        )
         self.configurar_conocimiento()
 
     # ── Métodos abstractos obligatorios ──────────────────────────────────────
 
     def _get_template_prompt(self) -> str:
-        # Nota: {{JSON_CONTEXTO}} en f-string → renderiza como {JSON_CONTEXTO}
-        # para que el .replace() en configurar_conocimiento() lo sustituya.
-        return f"""Eres un experto en normativa fiscal y contable para {self.nombre_cliente}.
-Tu base de conocimiento actual es la siguiente:
-{{JSON_CONTEXTO}}
-
-Responde de forma directa y basada en la documentación disponible.
-Cita siempre el documento fuente cuando esté disponible.
-Si no encuentras la información, indícalo claramente."""
+        # Retorna el prompt desde el JSON. Soporta {JSON_CONTEXTO} como variable.
+        default_prompt = f"Eres un experto para el {self.nombre_cliente}. Contexto: {{JSON_CONTEXTO}}"
+        return self.config.get("prompt", default_prompt)
 
     def _get_metodos_carga(self) -> list:
         pdfs_path = os.path.join(_RAGDOC_CONTABLE, "pdfs")

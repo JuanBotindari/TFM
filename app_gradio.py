@@ -26,7 +26,7 @@ _modelos: dict = {}      # cache: evita recargar si ya fue inicializado
 _modelo_activo = None    # instancia activa en cada momento
 
 CLIENTES = {
-    "🏦 Banco Santander": "banco",
+    "🏦 Banco": "banco",
     "📊 Estudio Contable": "contable",
 }
 
