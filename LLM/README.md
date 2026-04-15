@@ -1,204 +1,154 @@
-# 🧠 Módulo LLM — Arquitectura de Inteligencia
+# Arquitectura LLM + RAG (Generación Aumentada por Recuperación)
 
-Este módulo gestiona la lógica de los Modelos de Lenguaje (LLM) y la implementación del sistema RAG (Retrieval-Augmented Generation) para múltiples clientes.
+Bienvenido a la documentación del módulo de Inteligencia Artificial (LLM) del TFM. Esta guía está diseñada para que cualquier persona, independientemente de su nivel técnico, pueda entender cómo funciona nuestro sistema conversacional inteligente de punta a punta.
 
----
+## 🎯 ¿Qué hace este módulo?
 
-## 📂 Estructura de Archivos
+Este módulo le da "cerebro" y "conocimiento" a nuestra aplicación. 
+En lugar de tener un chatbot genérico que responde con información general (o que inventa respuestas, fenómeno conocido como alucinación), utilizamos una técnica de IA llamada **RAG** (Retrieval-Augmented Generation). 
 
-```
-LLM/
-├── __init__.py               ← Registro del paquete Python
-├── base_llm.py               ← Clase madre abstracta (BaseModel)
-├── README.md                 ← Este archivo
-├── prueba.ipynb              ← Notebook de pruebas
-│
-├── clientes/                 ← Clases hijas específicas por cliente
-│   ├── __init__.py           ← Registro del subpaquete + imports de conveniencia
-│   ├── banco.py              ← ClienteBanco (Banco X)
-│   └── estudio_contable.py   ← ClienteEstudioContable (Estudio Contable)
-│
-├── ingestion/                ← Scripts de ingesta de datos
-│   └── ingestor_basico.py    ← Verificación de acceso a carpetas del contenedor
-│
-├── evaluations/              ← Notebooks de evaluación de calidad
-│   ├── eval_banco.ipynb
-│   └── eval_estudio_contable.ipynb
-│
-├── prompts/                  ← Plantillas de prompts (próximamente)
-└── governance/               ← Políticas de gobernanza del modelo (próximamente)
-```
+**¿Cómo funciona de forma simple?**
+1. **Separación por Clientes:** Trabajamos con múltiples configuraciones, por ejemplo, un "Banco Santander" o un "Estudio Contable".
+2. **Bases de Conocimiento:** Cada uno de estos clientes posee sus documentos propios y privados (leyes, manuales, normativas, organigramas en PDF y JPG).
+3. **Inyección de Memoria Automática:** Al abrir un chat, el script busca todos esos documentos, extrae el texto usando Python, y se lo inyecta directamente al cerebro de la IA antes de que el usuario envíe su primer mensaje.
+4. **Respuesta Experta:** El modelo adopta esa personalidad y responde las preguntas de los usuarios referenciando a las fuentes exactas (los documentos cargados).
 
 ---
 
-## 📦 ¿Qué hacen los `__init__.py`?
+## 🏗️ Arquitectura General
 
-Los archivos `__init__.py` convierten una carpeta normal en un **paquete Python importable**. Sin ellos, Python no reconoce la carpeta como módulo y los `import` fallan.
+El código está construido usando **Programación Orientada a Objetos** aplicando el **Patrón Template Method** y **Herencia**. Se estructura mediante una **Clase Madre Base** que estandariza los procesos técnicos, y múltiples **Clases Hijas** que las heredan para personalizar al cliente.
 
-| Archivo | Qué hace |
-|---|---|
-| `LLM/__init__.py` | Registra `LLM/` como paquete. Permite hacer `from LLM.base_llm import BaseModel` desde cualquier parte del proyecto. |
-| `LLM/clientes/__init__.py` | Registra `clientes/` como subpaquete. Además, re-exporta las clases hijas para permitir imports directos como `from LLM.clientes import ClienteBanco`. |
-
-**Ejemplo práctico:**
-```python
-# Sin __init__.py → ❌ ImportError
-from LLM.clientes import ClienteBanco
-
-# Con __init__.py → ✅ Funciona
-from LLM.clientes import ClienteBanco
+**Árbol de Directorios:**
+```text
+📁 LLM/
+ ├── base_llm.py                  <-- La Clase Madre (La lógica y abstracción)
+ ├── clientes/                    <-- El "perfil" de cada cliente (Clases Hijas)
+ │    ├── banco.py                <-- Define personalidad y rutas para el Banco
+ │    └── estudio_contable.py     <-- Define personalidad y rutas para el Estudio
 ```
 
----
-
-## 🏗️ Arquitectura de Clases
-
-Se usa un patrón de **Herencia + Métodos Abstractos (ABC)** para garantizar que cada cliente siga el mismo contrato:
-
-1. **`BaseModel` (Clase Madre - Abstracta):** Define la infraestructura común (conexión Ollama, orquestación de conocimiento, método `responder()`). No se puede instanciar directamente.
-2. **Clases Hijas (en `/clientes`):** Heredan de `BaseModel` y **deben** implementar dos métodos abstractos: `_get_template_prompt()` y `_get_metodos_carga()`.
+### Motor de Lenguaje y Tecnologías:
+- Utilizamos **Ollama** de forma local, sirviendo como proxy el modelo **`phi3`**, un modelo de lenguaje con gran capacidad analítica y rápida ejecución.
+- Utilizamos **LangChain**, una librería que nos facilita orquestar los Prompts y enviar la información de manera estructurada y segura.
+- Utilizamos **pypdf** para la lectura y fragmentación de los archivos.
 
 ---
 
-## 🔧 Métodos de `BaseModel` (`base_llm.py`)
+## 🗺️ Diagrama de Clases y Métodos
 
-### Métodos públicos
-| Método | Descripción |
-|---|---|
-| `__init__(nombre_cliente, model_name)` | Inicializa atributos base y conecta con Ollama. |
-| `configurar_conocimiento()` | Orquesta todo: ejecuta las ingestas, genera el JSON y configura el prompt en el modelo. |
-| `responder(pregunta)` | Responde en streaming a una pregunta usando el conocimiento cargado. |
-
-### Métodos abstractos (las hijas DEBEN implementar)
-| Método | Descripción |
-|---|---|
-| `_get_template_prompt() → str` | Retorna el system prompt con `{JSON_CONTEXTO}` como placeholder para inyectar el conocimiento. |
-| `_get_metodos_carga() → list` | Retorna la lista de funciones de carga de datos (documentos, imágenes, APIs, etc.). |
-
-### Métodos internos
-| Método | Descripción |
-|---|---|
-| `_inicializar_llm()` | Crea la conexión con Ollama usando las variables de entorno. |
-| `_establecer_prompt_en_modelo(prompt)` | Configura el `ChatPromptTemplate` con el system prompt ya armado. Usa `SystemMessage` (no template) para evitar conflictos con las `{}` del JSON. |
-
-### Métodos de ingesta (sobreescribibles)
-| Método | Descripción |
-|---|---|
-| `_cargar_documentos(path)` | Base para cargar documentos. Las hijas sobreescriben con lógica real. |
-| `_procesar_imagenes(path)` | Base para procesar imágenes/organigramas. Las hijas sobreescriben. |
-| `_conectar_fuentes_vivas(url)` | Base para conectar APIs o DBs en vivo. Las hijas sobreescriben. |
-
----
-
-## 🔧 Métodos de las Clases Hijas
-
-### `ClienteBanco` (`clientes/banco.py`)
-| Método | Descripción |
-|---|---|
-| `__init__(model_name)` | Inicializa con nombre "Banco X" y ejecuta `configurar_conocimiento()`. |
-| `_get_template_prompt()` | Retorna prompt de "Auditor Senior del Banco X". |
-| `_get_metodos_carga()` | Carga documentos legales + organigramas del banco. |
-
-### `ClienteEstudioContable` (`clientes/estudio_contable.py`)
-| Método | Descripción |
-|---|---|
-| `__init__(model_name)` | Inicializa con nombre "Estudio Contable", configura rutas de docs y colección de vectores. |
-| `_get_template_prompt()` | Retorna prompt de "experto en normativa fiscal". |
-| `_get_metodos_carga()` | Carga documentos desde `./RAG-docs/02_Silver/Contable`. |
-
----
-
-## 📄 Archivo de Ingesta (`ingestion/ingestor_basico.py`)
-
-| Función | Descripción |
-|---|---|
-| `check_folders()` | Verifica que las carpetas clave del contenedor Docker (`/app/RAG-docs`, `/app/database`, `/app/LLM/ingestion`) existen y son accesibles. |
-
----
-
-## 🚀 Cómo usar
-
-```python
-from LLM.clientes import ClienteBanco
-
-bot = ClienteBanco()
-for chunk in bot.responder("¿Cuál es el protocolo de seguridad?"):
-    print(chunk, end="")
-```
-
----
-
-## ➕ Cómo crear un nuevo cliente
-
-1. Crea un archivo en `clientes/` (ej: `aseguradora.py`).
-2. Hereda de `BaseModel` e implementa los dos métodos abstractos:
-```python
-from ..base_llm import BaseModel
-
-class ClienteAseguradora(BaseModel):
-    def __init__(self, model_name="phi3"):
-        super().__init__(nombre_cliente="Aseguradora Y", model_name=model_name)
-        self.configurar_conocimiento()
-
-    def _get_template_prompt(self) -> str:
-        return """Tu prompt personalizado con {JSON_CONTEXTO} como placeholder."""
-
-    def _get_metodos_carga(self) -> list:
-        return [lambda: self._cargar_documentos(path="./docs/aseguradora")]
-```
-3. Agrégalo al `clientes/__init__.py`:
-```python
-from .aseguradora import ClienteAseguradora
-```
-
----
-
-## 🗺️ Mapa de Clases
+Para entender cómo se comunican los métodos desde el inicio del programa, aquí tienes un diagrama de flujo de toda la arquitectura:
 
 ```mermaid
 classDiagram
     class BaseModel {
-        <<abstract>>
-        -str nombre_cliente
-        -str model_name
-        -str base_url
-        -OllamaLLM llm
-        -list manifiesto_json
-        -ChatPromptTemplate chat_prompt
-        +__init__(nombre_cliente, model_name)
+        +__init__(nombre, model_name)
+        -_inicializar_llm() OllamaLLM
         +configurar_conocimiento()
-        +responder(pregunta)*
-        #_get_template_prompt()* str
-        #_get_metodos_carga()* list
-        -_inicializar_llm()
-        -_establecer_prompt_en_modelo(prompt)
-        -_cargar_documentos(path)
-        -_procesar_imagenes(path)
+        -_establecer_prompt_en_modelo(prompt_listo)
+        +responder(pregunta)
+        -_cargar_documentos(path) json
+        -_procesar_imagenes(path) json
         -_conectar_fuentes_vivas(url)
+        <<abstract>> _get_template_prompt()* str
+        <<abstract>> _get_metodos_carga()* list
     }
 
     class ClienteBanco {
-        +__init__(model_name)
-        #_get_template_prompt() str
-        #_get_metodos_carga() list
+        +__init__()
+        -_get_template_prompt() str
+        -_get_metodos_carga() list
     }
 
     class ClienteEstudioContable {
-        -str docs_path
-        -str vector_collection
-        +__init__(model_name)
-        #_get_template_prompt() str
-        #_get_metodos_carga() list
+        +__init__()
+        -_get_template_prompt() str
+        -_get_metodos_carga() list
     }
 
-    class ClienteNuevo {
-        <<futuro>>
-        +__init__(model_name)
-        #_get_template_prompt() str
-        #_get_metodos_carga() list
-    }
-
-    BaseModel <|-- ClienteBanco : hereda
-    BaseModel <|-- ClienteEstudioContable : hereda
-    BaseModel <|-- ClienteNuevo : hereda
+    BaseModel <|-- ClienteBanco : Hereda
+    BaseModel <|-- ClienteEstudioContable : Hereda
 ```
+
+```mermaid
+sequenceDiagram
+    participant Interfaz as app_gradio.py
+    participant Hija as Cliente (Banco/Contable)
+    participant Madre as BaseModel
+    participant Disco as RAG-docs/ (PDFs/Imgs)
+    participant LangChain as LangChain / Ollama
+
+    Interfaz->>Hija: Cargar Cliente()
+    Hija->>Madre: super().__init__()
+    Madre->>Madre: _inicializar_llm()
+    Hija->>Madre: configurar_conocimiento()
+    
+    Madre->>Hija: _get_metodos_carga() (¿Dónde busco info?)
+    Hija-->>Madre: Retorna las rutas absolutas de RAG-docs
+    
+    Madre->>Disco: Ejecuta _cargar_documentos() / _procesar_imagenes()
+    Disco-->>Madre: Textos extraídos y metadatos (JSON)
+    
+    Madre->>Hija: _get_template_prompt() (¿Cuál es la personalidad?)
+    Hija-->>Madre: "Eres un auditor..."
+    
+    Madre->>Madre: Inyecta el JSON en el Prompt
+    Madre->>LangChain: _establecer_prompt_en_modelo()
+    
+    Interfaz->>Madre: responder("¿Cómo facturo?")
+    Madre->>LangChain: pipeline.stream()
+    LangChain-->>Interfaz: Yield Chunk 1, Chunk 2... (Streaming)
+```
+
+---
+
+## 📖 Componentes Detallados
+
+A continuación se detalla a profundidad todo lo que sucede internamente en el código.
+
+### 1. `base_llm.py` (La Clase Madre: `BaseModel`)
+
+Esta es la "sala de máquinas" y está creada bajo importes abstractos (`ABC`). No se permite inicializarla directamente; cualquier cliente debe interactuar mediante sus herederas.
+
+**Métodos de Configuración y Control:**
+* **`__init__(self, nombre_cliente, model_name="phi3")`**: Constructor que guarda variables fundamentales, inicializa la lista interna de conocimiento y crea el LLM.
+* **`_inicializar_llm(self)`**: Función protegida que conecta con el endpoint local de `Ollama` (`http://localhost:11434`). Su `temperature` está intencionalmente configurada a `0` para garantizar que la IA se ciña estrictamente al texto suministrado sin alucinar o buscar "creatividad" excesiva.
+* **`configurar_conocimiento(self)`**: El cerebro de orquestación. Recorre todos los métodos de carga dictados por la clase hija (ver abajo), une los resultados recopilados en una lista de diccionarios que formatea como un `JSON Strings`, inyecta ese JSON en el placeholder exacto del `System Message` y le setea ese prompt al LLM.  
+* **`_establecer_prompt_en_modelo(self, prompt_listo)`**: Recibe el texto de la instrucción ya armada y utiliza las clases de LangChain (`ChatPromptTemplate`, `SystemMessage`, `HumanMessagePromptTemplate`) para generar el canal estandarizado donde la IA recibirá nuestras preguntas a partir de ese momento.
+
+**Métodos Abstractos (Decorados con `@abstractmethod`):**
+Estos métodos fuerzan a los desarrolladores a implementarlos obligatoriamente si crean nuevos clientes:
+* **`_get_template_prompt(self)`**: Otorga la "personalidad" de dicho chatbot e incluye un marcador `{JSON_CONTEXTO}`.
+* **`_get_metodos_carga(self)`**: Devuelve qué métodos de ingesta específicos deben activarse.
+
+**Métodos de Mapeo e Ingesta:**
+* **`_cargar_documentos(self, path)`**: Método central del RAG analógico. Busca iterativamente un path completo mediante `os.walk`, rastreando todos lo que finalice en `.pdf`. Llama a de `PdfReader` y almacena texto crudo, limitándolo a un set de caracteres para evitar rebalsar la ventana de tokenización del LLM local.
+* **`_procesar_imagenes(self, path)`**: Registra el contexto del mundo físico: enumera mediante extensiones controladas las imágenes de la carpeta y agrega a la bolsa de conocimiento del LLM una descripción de que dichas imágenes ("organigramas.jpg", por ejemplo) existen y pueden estar conectadas en la consulta.
+* **`_conectar_fuentes_vivas(self)`**: Interfaz de preparación para habilitar el uso futuro de bases SQL u otro tipo de endpoints en vivo al vuelo.
+
+---
+
+### 2. Clases Hijas (`banco.py` y `estudio_contable.py`)
+
+Su propósito es ser minúsculas y manejables. Son meramente configuradores por cliente. A las clases hijas "no les importa el CÓMO" se abren los PDFs o conectan a Ollama; solo definen el **QUIÉN SOY** y el **DÓNDE ESTÁ LO MÍO**.
+
+#### A. Cliente Banco (`ClienteBanco`)
+- **Archivos:** Calcula rutas dinámicas apoyándose en su propia variable interna `__file__` asegurándose de resolver SIEMPRE en `C:/repositorios_github/TFM/TFM/RAG-docs/client-santander`. 
+- **Personalidad (`_get_template_prompt`):** Se sitúa firmemente en el rol de "Auditor Senior del Banco Santander", obligándole a usar lenguaje muy profesional, buscar entre sus RAG-docs y evitar responder si no encuentra respuesta.
+- **Flujo (`_get_metodos_carga`):** Solamente registra su carpeta general de `client-santander` para procesar documentos de texto en PDF.
+
+#### B. Cliente Estudio Contable (`ClienteEstudioContable`)
+- **Archivos:** Maneja un flujo un poco más complejo dividiendo en dos subcarpetas específicas: `pdfs` para conocimiento contable puro y `/imagenes` para conocimiento visual como organigramas. 
+- **Personalidad (`_get_template_prompt`):** Asume el rol de consultor fiscal experto en el código civil y normativa contable. Se requiere estrictamente la cita a un documento en particular durante la charla. Utiliza el escape `{{JSON_CONTEXTO}}` para que los String dinámicos encajen en Python.
+- **Flujo (`_get_metodos_carga`):** Registra tanto llamadas para lectura de documentos vía `pypdf`, como llamadas de reconocimiento visual.
+
+---
+
+## 🖥️ Interfaz del Usuario (`app_gradio.py`)
+
+Para que un auditor humano pueda interactuar frente a un ordenador, el proyecto usa esta interfaz implementada con **Gradio 6.x**. El proceso es completamente responsivo:
+
+1. El usuario se topa con un menú de opciones (Banco Santander, Estudio Contable). 
+2. Cuando oprime **"Cargar Cliente"**, hace instanciar dinámicamente nuestra clase hija deseada. En ese instante exacto ocurre toda la secuencia técnica: La clase pide todos los archivos de `RAG-docs`, se filtran los PDF, se transcriben mediante PyPDF, y esa inmensa cantidad de conocimiento se formatea en un JSON interno que se implanta a Ollama. Todo esto sucede en segundos y cambia la etiqueta de la web a "Cliente X Listo para operar". 
+3. Cuando interactuamos a través de la caja inferior de chat, el Gradio utiliza la estructura de diccionarios en forma de MessageDict `{"role": "user", "content": ...}` (normativa exigida por Gradio v6+).
+4. Nuestro `app_gradio` recibe del método `BaseModel.responder()` una retransmisión de bytes que él procesa internamente como una **Función Generadora ("Yield Streaming")**, dando por resultado unas respuestas suaves que van apareciendo letra por letra en la pantalla de Windows hasta culminar el concepto.
