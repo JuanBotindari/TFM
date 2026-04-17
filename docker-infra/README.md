@@ -44,7 +44,9 @@ Una vez instalado Docker, sigue estos pasos para poner en marcha el proyecto:
 ### Paso 1: Levantar los servicios
 1- Escribe `CMD` en la barra de búsqueda de Windows.
 
-2- Navega hasta la carpeta de tu proyecto. Esto seria copiar el path completo y escribir en la terminal
+2- Abrir la aplicacion de **Docker Desktop**.
+
+3- Navega hasta la carpeta de tu proyecto. Esto seria copiar el path completo y escribir en la terminal
 ```bash
 cd INSERTAR_AQUI_PATH
 ```
