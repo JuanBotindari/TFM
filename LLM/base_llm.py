@@ -6,234 +6,131 @@ from langchain_core.prompts import ChatPromptTemplate, HumanMessagePromptTemplat
 from langchain_core.messages import SystemMessage
 from dotenv import load_dotenv
 
+# Nota: Estas librerías son necesarias para el RAG avanzado. 
+# Si no las tienes, ejecuta: pip install langchain-chroma langchain-huggingface pypdf
+try:
+    from langchain.text_splitter import RecursiveCharacterTextSplitter
+    from langchain_community.vectorstores import Chroma
+    from langchain_huggingface import HuggingFaceEmbeddings
+    from pypdf import PdfReader
+except ImportError as e:
+    print(f"⚠️ Librerías faltantes: {e}. El sistema funcionará con capacidades reducidas.")
+
 load_dotenv()
 
-
 class BaseModel(ABC):
-    """Clase Madre Orquestadora: Maneja la identidad y el conocimiento estructurado.
-    
-    Las clases hijas DEBEN implementar:
-        - _get_template_prompt() -> str
-        - _get_metodos_carga()  -> list
-    """
+    """Clase Madre Orquestadora Pro: Maneja identidad y RAG vectorial."""
 
-    def __init__(self, nombre_cliente="Genérico", model_name="phi3", base_url=None):
-        self.nombre_cliente = nombre_cliente
-        self.model_name = model_name
-        self.base_url = base_url or os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+    def __init__(self, path_cliente):
+        """
+        Args:
+            path_cliente: Ruta a la carpeta del cliente (ej: 'RAG-docs/client-banco')
+        """
+        self.path_cliente = path_cliente
+        self.nombre_cliente = os.path.basename(path_cliente)
+        
+        # Cargar configuraciones del cliente
+        self.config_tech = self._cargar_json("config/settings.json")
+        self.manifiesto = self._cargar_json("config/rag.json")
+        
+        # Inicializar Componentes
         self.llm = self._inicializar_llm()
-        self.manifiesto_json = []
+        self.embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+        self.vector_store = None
         self.chat_prompt = None
 
+    def _cargar_json(self, relative_path):
+        full_path = os.path.join(self.path_cliente, relative_path)
+        if os.path.exists(full_path):
+            with open(full_path, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        return {}
+
     def _inicializar_llm(self):
-        """Inicializa la conexión con Ollama."""
-        try:
-            return OllamaLLM(model=self.model_name, base_url=self.base_url, temperature=0)
-        except Exception as e:
-            print(f"❌ Error en Ollama: {e}")
-            return None
+        model = self.config_tech.get("modelo", "phi3")
+        url = self.config_tech.get("url_llm", "http://localhost:11434")
+        return OllamaLLM(model=model, base_url=url, temperature=0)
 
-    ################################################################################
-    # ---        MÉTODOS ABSTRACTOS (las hijas DEBEN implementar)              --- #
-    ################################################################################
-    ''' Decorador @abstractmethod
-    Cualquier clase que herede de mí ESTÁ OBLIGADA a escribir su propia versión de este método. 
-    Si no lo hace, Python no la dejará funcionar'''
-
-
-    @abstractmethod
-    def _get_template_prompt(self) -> str:
-        """Retorna el template del system prompt con {JSON_CONTEXTO} como placeholder.
+    def configurar_conocimiento(self, force_rebuild=False):
+        """Prepara el vector store y configura el System Prompt."""
+        db_path = os.path.join(self.path_cliente, "db/vector_store")
         
-        Ejemplo:
-            return '''Eres un experto de {nombre}.
-            Tu base de conocimiento es: {JSON_CONTEXTO}
-            Responde de forma profesional.'''
-        """
-        pass
-
-    @abstractmethod
-    def _get_metodos_carga(self) -> list:
-        """Retorna la lista de métodos (callables) de carga de conocimiento.
+        # Si la DB no existe o forzamos reconstrucción
+        if not os.path.exists(db_path) or force_rebuild:
+            self._crear_vector_db(db_path)
         
-        Ejemplo:
-            return [
-                lambda: self._cargar_documentos(path="./docs/legal"),
-                lambda: self._procesar_imagenes(path="./docs/organigramas"),
-            ]
-        """
-        pass
-
-    ################################################################################
-    # ---                  CONFIGURACIÓN DEL CONOCIMIENTO                      --- #
-    ################################################################################
-
-    def configurar_conocimiento(self):
-        """Orquesta la carga de conocimiento y configuración del prompt.
+        # Cargar base de datos existente
+        self.vector_store = Chroma(
+            persist_directory=db_path,
+            embedding_function=self.embeddings
+        )
         
-        1. Obtiene template y métodos de carga de la clase hija.
-        2. Ejecuta las ingestas.
-        3. Inyecta el JSON resultante en el template.
-        4. Configura el prompt en el modelo.
-        """
-        self.manifiesto_json = []
-        template_prompt = self._get_template_prompt()
-        lista_metodos = self._get_metodos_carga()
+        # Configurar el Role-Play y las instrucciones del LLM
+        self._establecer_prompt_dinamico()
+        print(f"🧠 Sistema de {self.nombre_cliente} listo para operar.")
 
-        # Ejecución de cada lógica de carga (Drive, Imágenes, etc.)
-        for metodo in lista_metodos:
-            try:
-                resultado = metodo()
-                if resultado:
-                    self.manifiesto_json.append(resultado)
-            except Exception as e:
-                print(f" Error en método de carga: {e}")
-
-        # Mejoramos el RAG: Los LLM pequeños se marean con JSON.
-        # Pasamos la info a un formato tipo Markdown / Etiquetas limpias.
-        textos = []
-        for bloque in self.manifiesto_json:
-            if bloque.get("fuente") == "documentos_pdf":
-                for doc in bloque.get("archivos", []):
-                    # Separador visual fuerte para el modelo
-                    textos.append(
-                        f"--- DOCUMENTO: {doc['archivo']} ---\n"
-                        f"{doc['contenido']}\n"
-                        f"--- FIN DEL DOCUMENTO ---"
-                    )
-            elif bloque.get("fuente") == "imagenes_referencia":
-                nombres = ", ".join(bloque.get("archivos", []))
-                textos.append(f"--- CONTEXTO VISUAL ---\nExisten las siguientes imágenes disponibles: {nombres}")
-
-        conocimiento_str = "\n\n".join(textos)
-        if not conocimiento_str.strip():
-            conocimiento_str = "La base de datos de conocimiento está vacía."
-
-        # Creamos el System Prompt final insertando el texto limpio en el hueco del template
-        prompt_final = template_prompt.replace("{JSON_CONTEXTO}", conocimiento_str)
-
-        # Configuramos el prompt en el modelo
-        self._establecer_prompt_en_modelo(prompt_final)
-
-    def _establecer_prompt_en_modelo(self, prompt_listo):
-        """Configura el Chat con el System Message definitivo.
+    def _crear_vector_db(self, db_path):
+        """Lee los documentos de las rutas del manifiesto y crea los vectores."""
+        all_chunks = []
+        text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=150)
         
-        Usa SystemMessage directamente (no template) para evitar conflictos
-        con las llaves {} del JSON inyectado en el contenido.
-        """
-        # SystemMessage con contenido ya formateado (sin interpretar {})
-        # HumanMessagePromptTemplate para la variable {pregunta} del usuario
+        # Recorrer los módulos definidos en el rag.json
+        for modulo in self.manifiesto.get("indice_conocimiento", {}).get("modulos", []):
+            dir_path = os.path.join(self.path_cliente, modulo.get("directorio"))
+            if os.path.exists(dir_path):
+                for file in os.listdir(dir_path):
+                    if file.endswith(".pdf"):
+                        full_file_path = os.path.join(dir_path, file)
+                        reader = PdfReader(full_file_path)
+                        text = "\n".join([page.extract_text() for page in reader.pages if page.extract_text()])
+                        chunks = text_splitter.split_text(text)
+                        # Agregar metadatos para trazabilidad
+                        for chunk in chunks:
+                            all_chunks.append({"text": chunk, "metadata": {"source": file, "modulo": modulo['nombre']}})
+        
+        if all_chunks:
+            texts = [c["text"] for c in all_chunks]
+            metadatas = [c["metadata"] for c in all_chunks]
+            Chroma.from_texts(
+                texts=texts,
+                metadatas=metadatas,
+                embedding=self.embeddings,
+                persist_directory=db_path
+            )
+            print(f"✅ Base de datos vectorial creada con {len(all_chunks)} fragmentos.")
+
+    def _establecer_prompt_dinamico(self):
+        """Construye el System Prompt basado en el manifiesto rag.json."""
+        m = self.manifiesto
+        instrucciones = m.get("instrucciones_sistema", {})
+        cliente = m.get("cliente", {})
+        
+        prompt_sys = f"""Eres {cliente.get('rol_llm_personalizado')}. 
+        Trabajas para {cliente.get('nombre')} en el sector de {cliente.get('sector')}.
+        
+        OBJETIVO: {instrucciones.get('objetivo_principal')}
+        REGLAS: {', '.join(instrucciones.get('reglas_oro', []))}
+        ESTILO: {instrucciones.get('estilo_respuesta')}
+        
+        Responde utilizando ÚNICAMENTE el contexto proporcionado. Si la información no está en el contexto, 
+        indícalo de forma profesional sugiriendo consultar el manual correspondiente."""
+
         self.chat_prompt = ChatPromptTemplate.from_messages([
-            SystemMessage(content=prompt_listo),
-            HumanMessagePromptTemplate.from_template("{pregunta}")
+            SystemMessage(content=prompt_sys),
+            HumanMessagePromptTemplate.from_template("CONOCIMIENTO RELEVANTE:\n{context}\n\nPREGUNTA DEL USUARIO: {pregunta}")
         ])
 
-        print(f"🧠 Sistema de {self.nombre_cliente} inicializado y cargado en el modelo.")
-
-    ################################################################################
-    # ---                      MÉTODO PARA RESPONDER                           --- #
-    ################################################################################
-
     def responder(self, pregunta):
-        """Genera respuestas en streaming usando el prompt configurado.
-        
-        Args:
-            pregunta: La consulta del usuario.
-            
-        Yields:
-            Chunks de texto de la respuesta del modelo.
-        """
-        if self.chat_prompt is None:
-            yield " Error: El modelo no tiene conocimiento cargado. Llama a configurar_conocimiento() primero."
+        """Realiza búsqueda semántica y genera respuesta."""
+        if not self.vector_store:
+            yield "Error: Base de conocimiento no inicializada."
             return
 
+        # 1. Recuperar los 4 fragmentos más relevantes
+        docs = self.vector_store.similarity_search(pregunta, k=4)
+        contexto = "\n\n".join([f"--- Fuente: {d.metadata['source']} ---\n{d.page_content}" for d in docs])
+        
+        # 2. Streaming de respuesta
         chain = self.chat_prompt | self.llm
-
-        for chunk in chain.stream({"pregunta": pregunta}):
+        for chunk in chain.stream({"context": contexto, "pregunta": pregunta}):
             yield chunk
-
-    ################################################################################
-    # --- MÉTODOS DE INGESTA BASE (las hijas deben sobreescribir con lógica)   --- #
-    ################################################################################
-
-    def _cargar_documentos(self, path=None):
-        """Carga y extrae texto de todos los PDFs encontrados en path (búsqueda recursiva).
-
-        Requiere: pip install pypdf
-        """
-        if path is None:
-            print(f" _cargar_documentos() llamado sin path para '{self.nombre_cliente}'.")
-            return None
-        if not os.path.exists(path):
-            print(f" Path no encontrado: {path}")
-            return None
-
-        try:
-            from pypdf import PdfReader
-        except ImportError:
-            print(" pypdf no instalado. Ejecuta: pip install pypdf")
-            return None
-
-        documentos = []
-        for root, _, files in os.walk(path):
-            for archivo in sorted(files):
-                if archivo.lower().endswith(".pdf"):
-                    ruta = os.path.join(root, archivo)
-                    try:
-                        reader = PdfReader(ruta)
-                        texto = "\n".join(
-                            page.extract_text() or "" for page in reader.pages
-                        )
-                        documentos.append({
-                            "archivo": archivo,
-                            "tipo": "PDF",
-                            "contenido": texto[:5000],  # limitar tokens al LLM
-                        })
-                        print(f"   PDF cargado: {archivo}")
-                    except Exception as e:
-                        print(f"   Error leyendo {archivo}: {e}")
-
-        if not documentos:
-            print(f" No se encontraron PDFs en: {path}")
-            return None
-
-        print(f"📄 {len(documentos)} PDF(s) cargado(s) desde '{path}'.")
-        return {
-            "fuente": "documentos_pdf",
-            "path": path,
-            "total": len(documentos),
-            "archivos": documentos,
-        }
-
-    def _procesar_imagenes(self, path=None):
-        """Registra las imágenes disponibles en path como metadatos de contexto."""
-        if path is None:
-            print(f" _procesar_imagenes() llamado sin path para '{self.nombre_cliente}'.")
-            return None
-        if not os.path.exists(path):
-            print(f" Path de imágenes no encontrado: {path}")
-            return None
-
-        extensiones_img = {".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp"}
-        imagenes = [
-            f for f in os.listdir(path)
-            if os.path.splitext(f.lower())[1] in extensiones_img
-        ]
-
-        if not imagenes:
-            print(f" No se encontraron imágenes en: {path}")
-            return None
-
-        print(f" {len(imagenes)} imagen(es) registrada(s) desde '{path}'.")
-        return {
-            "fuente": "imagenes_referencia",
-            "path": path,
-            "total": len(imagenes),
-            "archivos": imagenes,
-            "nota": "Imágenes de referencia disponibles (organigramas, diagramas, etc.).",
-        }
-
-    def _conectar_fuentes_vivas(self, url=None):
-        """Conecta a fuentes en vivo (APIs, DBs). Las hijas deben sobreescribir con lógica real."""
-        print(f" _conectar_fuentes_vivas() no implementado para '{self.nombre_cliente}'. Sobreescribe este método.")
-        return None

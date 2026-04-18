@@ -1,154 +1,102 @@
-# Arquitectura LLM + RAG (Generación Aumentada por Recuperación)
+# Arquitectura LLM + RAG Vectorial Profesional
 
-Bienvenido a la documentación del módulo de Inteligencia Artificial (LLM) del TFM. Esta guía está diseñada para que cualquier persona, independientemente de su nivel técnico, pueda entender cómo funciona nuestro sistema conversacional inteligente de punta a punta.
+Bienvenido a la documentación del núcleo de IA del TFM. Este módulo ha evolucionado de un simple lector de documentos a un sistema de **Generación Aumentada por Recuperación (RAG) Profesional** basado en bases de datos vectoriales.
 
 ## 🎯 ¿Qué hace este módulo?
 
-Este módulo le da "cerebro" y "conocimiento" a nuestra aplicación. 
-En lugar de tener un chatbot genérico que responde con información general (o que inventa respuestas, fenómeno conocido como alucinación), utilizamos una técnica de IA llamada **RAG** (Retrieval-Augmented Generation). 
+Este componente permite a la IA responder preguntas complejas basándose estrictamente en la documentación privada de un cliente (Bancos, Estudios Contables, etc.), evitando invenciones y garantizando precisión técnica.
 
-**¿Cómo funciona de forma simple?**
-1. **Separación por Clientes:** Trabajamos con múltiples configuraciones, por ejemplo, un "Banco" o un "Estudio Contable".
-2. **Bases de Conocimiento:** Cada uno de estos clientes posee sus documentos propios y privados (leyes, manuales, normativas, organigramas en PDF y JPG).
-3. **Inyección de Memoria Automática:** Al abrir un chat, el script busca todos esos documentos, extrae el texto usando Python, y se lo inyecta directamente al cerebro de la IA antes de que el usuario envíe su primer mensaje.
-4. **Respuesta Experta:** El modelo adopta esa personalidad y responde las preguntas de los usuarios referenciando a las fuentes exactas (los documentos cargados).
+**Las 3 innovaciones aplicadas:**
+1.  **Fragmentación (Chunking):** Los documentos no se leen "de un tirón". Se dividen en trozos inteligentes de 1000 caracteres para asegurar que el LLM encuentre la aguja en el pajar.
+2.  **Memoria Semántica (Embeddings):** Utilizamos modelos matemáticos para convertir el texto en vectores. Esto permite buscar por "significado" y no solo por palabras exactas.
+3.  **Orquestación por Manifiesto:** Todo el comportamiento del modelo (quién es, qué reglas sigue) se define en un archivo `rag.json` sin tocar el código Python.
 
 ---
 
-## 🏗️ Arquitectura General
+## 🏗️ Arquitectura de Archivos
 
-El código está construido usando **Programación Orientada a Objetos** aplicando el **Patrón Template Method** y **Herencia**. Se estructura mediante una **Clase Madre Base** que estandariza los procesos técnicos, y múltiples **Clases Hijas** que las heredan para personalizar al cliente.
+El sistema separa la lógica del motor (Cerebro) de los datos del cliente (Cuerpo).
 
-**Árbol de Directorios:**
 ```text
 📁 LLM/
- ├── base_llm.py                  <-- La Clase Madre (La lógica y abstracción)
- ├── clientes/                    <-- El "perfil" de cada cliente (Clases Hijas)
- │    ├── banco.py                <-- Define personalidad y rutas para el Banco
- │    └── estudio_contable.py     <-- Define personalidad y rutas para el Estudio
-```
+ ├── base_llm.py             # Clase Madre: Motor RAG, Chunks y Vectores.
+ └── clientes/               # Clientes específicos (Heredan de BaseModel)
+      ├── banco.py           # Perfil del Auditor Bancario.
+      └── estudio_contable.py # Perfil del Consultor Fiscal.
 
-### Motor de Lenguaje y Tecnologías:
-- Utilizamos **Ollama** de forma local, sirviendo como proxy el modelo **`phi3`**, un modelo de lenguaje con gran capacidad analítica y rápida ejecución.
-- Utilizamos **LangChain**, una librería que nos facilita orquestar los Prompts y enviar la información de manera estructurada y segura.
-- Utilizamos **pypdf** para la lectura y fragmentación de los archivos.
+📁 RAG-docs/
+ └── [cliente]/
+      ├── config/            # rag.json (Manifiesto) y settings.json.
+      ├── data/              # PDFs, Tablas y archivos crudos.
+      └── db/                # Base de datos vectorial (ChromaDB).
+```
 
 ---
 
-## 🗺️ Diagrama de Clases y Métodos
-
-Para entender cómo se comunican los métodos desde el inicio del programa, aquí tienes un diagrama de flujo de toda la arquitectura:
-
-```mermaid
-classDiagram
-    class BaseModel {
-        +__init__(nombre, model_name)
-        -_inicializar_llm() OllamaLLM
-        +configurar_conocimiento()
-        -_establecer_prompt_en_modelo(prompt_listo)
-        +responder(pregunta)
-        -_cargar_documentos(path) json
-        -_procesar_imagenes(path) json
-        -_conectar_fuentes_vivas(url)
-        <<abstract>> _get_template_prompt()* str
-        <<abstract>> _get_metodos_carga()* list
-    }
-
-    class ClienteBanco {
-        +__init__()
-        -_get_template_prompt() str
-        -_get_metodos_carga() list
-    }
-
-    class ClienteEstudioContable {
-        +__init__()
-        -_get_template_prompt() str
-        -_get_metodos_carga() list
-    }
-
-    BaseModel <|-- ClienteBanco : Hereda
-    BaseModel <|-- ClienteEstudioContable : Hereda
-```
+## 🗺️ Diagrama de Flujo (RAG Vectorial)
 
 ```mermaid
 sequenceDiagram
-    participant Interfaz as app_gradio.py
-    participant Hija as Cliente (Banco/Contable)
-    participant Madre as BaseModel
-    participant Disco as RAG-docs/ (PDFs/Imgs)
-    participant LangChain as LangChain / Ollama
+    participant App as Interfaz (Gradio)
+    participant Motor as BaseModel (Python)
+    participant VDB as Vector Store (ChromaDB)
+    participant LLM as IA (Ollama/Phi3)
 
-    Interfaz->>Hija: Cargar Cliente()
-    Hija->>Madre: super().__init__()
-    Madre->>Madre: _inicializar_llm()
-    Hija->>Madre: configurar_conocimiento()
+    App->>Motor: Inicializar Cliente
+    Motor->>Motor: Leer rag.json (Reglas y Rutas)
     
-    Madre->>Hija: _get_metodos_carga() (¿Dónde busco info?)
-    Hija-->>Madre: Retorna las rutas absolutas de RAG-docs
+    Note over Motor, VDB: Si no hay base de datos:
+    Motor->>Motor: Fragmentar PDFs (Chunks 1000ch)
+    Motor->>VDB: Generar Embeddings y Guardar
     
-    Madre->>Disco: Ejecuta _cargar_documentos() / _procesar_imagenes()
-    Disco-->>Madre: Textos extraídos y metadatos (JSON)
+    App->>Motor: Pregunta: "¿Protocolo de cajas?"
+    Motor->>VDB: Búsqueda Semántica (Top 4 chunks)
+    VDB-->>Motor: Retorna trozos de texto relevantes
     
-    Madre->>Hija: _get_template_prompt() (¿Cuál es la personalidad?)
-    Hija-->>Madre: "Eres un auditor..."
-    
-    Madre->>Madre: Inyecta el JSON en el Prompt
-    Madre->>LangChain: _establecer_prompt_en_modelo()
-    
-    Interfaz->>Madre: responder("¿Cómo facturo?")
-    Madre->>LangChain: pipeline.stream()
-    LangChain-->>Interfaz: Yield Chunk 1, Chunk 2... (Streaming)
+    Motor->>LLM: Inyecta Contexto + Reglas + Pregunta
+    LLM-->>App: Respuesta experta (Streaming)
+```
+
+---
+
+## 🛠️ Requisitos y Configuración
+
+### Dependencias (Gestión con UV)
+Para que el sistema funcione, instalamos las librerías de procesamiento vectorial:
+```powershell
+uv add langchain-chroma langchain-huggingface pypdf
+```
+
+### El Manifiesto Inteligente (`rag.json`)
+Cada cliente debe tener un archivo de configuración en su carpeta `config/`. Ejemplo:
+```json
+{
+    "cliente": { "rol_llm_personalizado": "Auditor Senior" },
+    "instrucciones_sistema": {
+        "reglas_oro": ["Citar siempre fuente", "No inventar cifras"]
+    },
+    "indice_conocimiento": {
+        "modulos": [
+            { "nombre": "Legal", "directorio": "data/pdfs/legal/" }
+        ]
+    }
+}
 ```
 
 ---
 
 ## 📖 Componentes Detallados
 
-A continuación se detalla a profundidad todo lo que sucede internamente en el código.
+### 1. `base_llm.py` (La Clase Madre)
+*   **`__init__`**: Carga automáticamente el manifiesto y el motor de embeddings.
+*   **`configurar_conocimiento()`**: Detecta si ya existe una base de datos en la carpeta `db/`. Si no existe, lanza el proceso de ingesta.
+*   **`_crear_vector_db()`**: El corazón del RAG. Usa `RecursiveCharacterTextSplitter` para crear trozos de texto con solapamiento (overlap) para no perder contexto.
+*   **`responder()`**: Aquí ocurre la magia. Antes de responder, consulta a `ChromaDB`, recupera los 4 párrafos más importantes y se los entrega al LLM para que "estudie" antes de hablar.
 
-### 1. `base_llm.py` (La Clase Madre: `BaseModel`)
-
-Esta es la "sala de máquinas" y está creada bajo importes abstractos (`ABC`). No se permite inicializarla directamente; cualquier cliente debe interactuar mediante sus herederas.
-
-**Métodos de Configuración y Control:**
-* **`__init__(self, nombre_cliente, model_name="phi3")`**: Constructor que guarda variables fundamentales, inicializa la lista interna de conocimiento y crea el LLM.
-* **`_inicializar_llm(self)`**: Función protegida que conecta con el endpoint local de `Ollama` (`http://localhost:11434`). Su `temperature` está intencionalmente configurada a `0` para garantizar que la IA se ciña estrictamente al texto suministrado sin alucinar o buscar "creatividad" excesiva.
-* **`configurar_conocimiento(self)`**: El cerebro de orquestación. Recorre todos los métodos de carga dictados por la clase hija (ver abajo), une los resultados recopilados en una lista de diccionarios que formatea como un `JSON Strings`, inyecta ese JSON en el placeholder exacto del `System Message` y le setea ese prompt al LLM.  
-* **`_establecer_prompt_en_modelo(self, prompt_listo)`**: Recibe el texto de la instrucción ya armada y utiliza las clases de LangChain (`ChatPromptTemplate`, `SystemMessage`, `HumanMessagePromptTemplate`) para generar el canal estandarizado donde la IA recibirá nuestras preguntas a partir de ese momento.
-
-**Métodos Abstractos (Decorados con `@abstractmethod`):**
-Estos métodos fuerzan a los desarrolladores a implementarlos obligatoriamente si crean nuevos clientes:
-* **`_get_template_prompt(self)`**: Otorga la "personalidad" de dicho chatbot e incluye un marcador `{JSON_CONTEXTO}`.
-* **`_get_metodos_carga(self)`**: Devuelve qué métodos de ingesta específicos deben activarse.
-
-**Métodos de Mapeo e Ingesta:**
-* **`_cargar_documentos(self, path)`**: Método central del RAG analógico. Busca iterativamente un path completo mediante `os.walk`, rastreando todos lo que finalice en `.pdf`. Llama a de `PdfReader` y almacena texto crudo, limitándolo a un set de caracteres para evitar rebalsar la ventana de tokenización del LLM local.
-* **`_procesar_imagenes(self, path)`**: Registra el contexto del mundo físico: enumera mediante extensiones controladas las imágenes de la carpeta y agrega a la bolsa de conocimiento del LLM una descripción de que dichas imágenes ("organigramas.jpg", por ejemplo) existen y pueden estar conectadas en la consulta.
-* **`_conectar_fuentes_vivas(self)`**: Interfaz de preparación para habilitar el uso futuro de bases SQL u otro tipo de endpoints en vivo al vuelo.
+### 2. Clases de Cliente (`banco.py`, etc.)
+Son clases minimalistas. Su único trabajo es decirle a la Clase Madre dónde está su carpeta de documentos. Todo lo demás es automático.
 
 ---
 
-### 2. Clases Hijas (`banco.py` y `estudio_contable.py`)
-
-Su propósito es ser minúsculas y manejables. Son meramente configuradores por cliente. A las clases hijas "no les importa el CÓMO" se abren los PDFs o conectan a Ollama; solo definen el **QUIÉN SOY** y el **DÓNDE ESTÁ LO MÍO**.
-
-#### A. Cliente Banco (`ClienteBanco`)
-- **Archivos:** Calcula rutas dinámicas apoyándose en su propia variable interna `__file__` asegurándose de resolver SIEMPRE en `C:/repositorios_github/TFM/TFM/RAG-docs/client-banco`. 
-- **Personalidad (`_get_template_prompt`):** Se sitúa firmemente en el rol de "Auditor Senior del Banco", obligándole a usar lenguaje muy profesional, buscar entre sus RAG-docs y evitar responder si no encuentra respuesta.
-- **Flujo (`_get_metodos_carga`):** Solamente registra su carpeta general de `client-banco` para procesar documentos de texto en PDF.
-
-#### B. Cliente Estudio Contable (`ClienteEstudioContable`)
-- **Archivos:** Maneja un flujo un poco más complejo dividiendo en dos subcarpetas específicas: `pdfs` para conocimiento contable puro y `/imagenes` para conocimiento visual como organigramas. 
-- **Personalidad (`_get_template_prompt`):** Asume el rol de consultor fiscal experto en el código civil y normativa contable. Se requiere estrictamente la cita a un documento en particular durante la charla. Utiliza el escape `{{JSON_CONTEXTO}}` para que los String dinámicos encajen en Python.
-- **Flujo (`_get_metodos_carga`):** Registra tanto llamadas para lectura de documentos vía `pypdf`, como llamadas de reconocimiento visual.
-
----
-
-## 🖥️ Interfaz del Usuario (`app_gradio.py`)
-
-Para que un auditor humano pueda interactuar frente a un ordenador, el proyecto usa esta interfaz implementada con **Gradio 6.x**. El proceso es completamente responsivo:
-
-1. El usuario se topa con un menú de opciones (Banco, Estudio Contable). 
-2. Cuando oprime **"Cargar Cliente"**, hace instanciar dinámicamente nuestra clase hija deseada. En ese instante exacto ocurre toda la secuencia técnica: La clase pide todos los archivos de `RAG-docs`, se filtran los PDF, se transcriben mediante PyPDF, y esa inmensa cantidad de conocimiento se formatea en un JSON interno que se implanta a Ollama. Todo esto sucede en segundos y cambia la etiqueta de la web a "Cliente X Listo para operar". 
-3. Cuando interactuamos a través de la caja inferior de chat, el Gradio utiliza la estructura de diccionarios en forma de MessageDict `{"role": "user", "content": ...}` (normativa exigida por Gradio v6+).
-4. Nuestro `app_gradio` recibe del método `BaseModel.responder()` una retransmisión de bytes que él procesa internamente como una **Función Generadora ("Yield Streaming")**, dando por resultado unas respuestas suaves que van apareciendo letra por letra en la pantalla de Windows hasta culminar el concepto.
+## 🖥️ Interfaz del Usuario
+Al usar **Gradio 6.x**, el sistema soporta respuestas en tiempo real (streaming). Cuando seleccionas un cliente, el motor carga su base de datos vectorial específica, permitiendo saltar entre clientes (Banco, Contable) manteniendo sus bases de conocimiento totalmente aisladas y seguras.

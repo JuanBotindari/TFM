@@ -8,7 +8,9 @@ License-File: LICENSE
 Requires-Dist: google-generativeai>=0.8.6
 Requires-Dist: gradio>=6.11.0
 Requires-Dist: ipykernel>=7.2.0
+Requires-Dist: langchain-chroma>=1.1.0
 Requires-Dist: langchain-community>=0.4.1
+Requires-Dist: langchain-huggingface>=1.2.2
 Requires-Dist: langchain-ollama>=1.0.1
 Requires-Dist: ollama>=0.6.1
 Requires-Dist: openai>=2.31.0
