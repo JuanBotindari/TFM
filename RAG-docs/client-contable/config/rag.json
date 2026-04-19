@@ -1,0 +1,63 @@
+{
+    "cliente": {
+        "nombre": "Estudio Contable",
+        "sector": "Contabilidad y Fiscalidad",
+        "rol_llm_personalizado": "Consultor Fiscal Experto"
+    },
+    "instrucciones_sistema": {
+        "prompt_maestro": "Eres un experto en normativa fiscal y contable para el Estudio Contable. Tu objetivo es asistir de forma directa y técnica. Cita siempre el documento fuente. Si no encuentras la información, indícalo claramente.",
+        "objetivo_principal": "Asistir en consultas sobre normativa contable, impuestos y procedimientos fiscales.",
+        "estilo_respuesta": "Técnico, preciso, citando leyes y artículos específicos.",
+        "reglas_oro": [
+            "Citar siempre el documento de origen.",
+            "Si hay ambigüedad normativa, sugerir consulta con un socio del estudio.",
+            "Priorizar la normativa vigente en casos de conflicto."
+        ]
+    },
+    "indice_conocimiento": {
+        "modulos": [
+            {
+                "id": "NORMATIVA",
+                "nombre": "Normativa Contable",
+                "tipo": "pdf",
+                "directorio": "data/pdfs/"
+            },
+            {
+                "id": "LIQUIDACIONES",
+                "nombre": "Tablas de Liquidación",
+                "tipo": "tablas",
+                "directorio": "data/tablas/"
+            },
+            {
+                "id": "SCRAPING",
+                "nombre": "Actualidad AFIP/Web",
+                "tipo": "web",
+                "directorio": "data/web/"
+            },
+            {
+                "id": "GRAFICOS",
+                "nombre": "Organigramas e Imágenes",
+                "tipo": "imagenes",
+                "directorio": "imagenes/"
+            }
+        ],
+        "relaciones_tematicas": [
+            {
+                "tema": "Organización y Tareas",
+                "descripcion": "Cómo se distribuye el trabajo y quién hace qué.",
+                "recursos_vinculados": [
+                    { "archivo": "manual_tareas.pdf", "rol": "Detalle escrito de las responsabilidades por puesto." },
+                    { "archivo": "organigrama_general.png", "rol": "Esquema visual de la jerarquía del estudio." }
+                ]
+            },
+            {
+                "tema": "Liquidación de Impuestos",
+                "descripcion": "Procesos de cálculo y calendarios de presentación.",
+                "recursos_vinculados": [
+                    { "archivo": "calendario_vencimientos.pdf", "rol": "Fechas límites de presentación." },
+                    { "archivo": "tasas_vigentes.xlsx", "rol": "Valores y porcentajes actualizados para el cálculo." }
+                ]
+            }
+        ]
+    }
+}

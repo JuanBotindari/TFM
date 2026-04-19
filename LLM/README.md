@@ -1,102 +1,70 @@
-# Arquitectura LLM + RAG Vectorial Profesional
+# Manual Maestro: El Motor de Inteligencia Artificial (LLM + RAG)
 
-Bienvenido a la documentación del núcleo de IA del TFM. Este módulo ha evolucionado de un simple lector de documentos a un sistema de **Generación Aumentada por Recuperación (RAG) Profesional** basado en bases de datos vectoriales.
-
-## 🎯 ¿Qué hace este módulo?
-
-Este componente permite a la IA responder preguntas complejas basándose estrictamente en la documentación privada de un cliente (Bancos, Estudios Contables, etc.), evitando invenciones y garantizando precisión técnica.
-
-**Las 3 innovaciones aplicadas:**
-1.  **Fragmentación (Chunking):** Los documentos no se leen "de un tirón". Se dividen en trozos inteligentes de 1000 caracteres para asegurar que el LLM encuentre la aguja en el pajar.
-2.  **Memoria Semántica (Embeddings):** Utilizamos modelos matemáticos para convertir el texto en vectores. Esto permite buscar por "significado" y no solo por palabras exactas.
-3.  **Orquestación por Manifiesto:** Todo el comportamiento del modelo (quién es, qué reglas sigue) se define en un archivo `rag.json` sin tocar el código Python.
+Este documento es una guía exhaustiva diseñada para explicar cómo funciona "por dentro" nuestra inteligencia artificial. Es la referencia ideal para entender la arquitectura del TFM desde cero.
 
 ---
 
-## 🏗️ Arquitectura de Archivos
-
-El sistema separa la lógica del motor (Cerebro) de los datos del cliente (Cuerpo).
-
-```text
-📁 LLM/
- ├── base_llm.py             # Clase Madre: Motor RAG, Chunks y Vectores.
- └── clientes/               # Clientes específicos (Heredan de BaseModel)
-      ├── banco.py           # Perfil del Auditor Bancario.
-      └── estudio_contable.py # Perfil del Consultor Fiscal.
-
-📁 RAG-docs/
- └── [cliente]/
-      ├── config/            # rag.json (Manifiesto) y settings.json.
-      ├── data/              # PDFs, Tablas y archivos crudos.
-      └── db/                # Base de datos vectorial (ChromaDB).
-```
+## 📂 1. ¿Qué hay dentro de la carpeta LLM?
+*   **`base_llm.py` (La Clase Madre)**: Es el plano arquitectónico. Aquí residen las funciones pesadas como la gestión de la base de datos vectorial, el procesamiento de textos y el cerebro de respuesta.
+*   **Carpeta `/clientes` (Las Clases Hijas)**: Son implementaciones específicas (ej: `banco.py`). Cada una representa a un cliente distinto con su propia base de conocimientos y reglas de comportamiento.
+*   **Archivos de Soporte**: Incluye gestores de entorno (`.env`) y cargadores de configuración que sirven como puente entre el código y los datos.
 
 ---
 
-## 🗺️ Diagrama de Flujo (RAG Vectorial)
-
-```mermaid
-sequenceDiagram
-    participant App as Interfaz (Gradio)
-    participant Motor as BaseModel (Python)
-    participant VDB as Vector Store (ChromaDB)
-    participant LLM as IA (Ollama/Phi3)
-
-    App->>Motor: Inicializar Cliente
-    Motor->>Motor: Leer rag.json (Reglas y Rutas)
-    
-    Note over Motor, VDB: Si no hay base de datos:
-    Motor->>Motor: Fragmentar PDFs (Chunks 1000ch)
-    Motor->>VDB: Generar Embeddings y Guardar
-    
-    App->>Motor: Pregunta: "¿Protocolo de cajas?"
-    Motor->>VDB: Búsqueda Semántica (Top 4 chunks)
-    VDB-->>Motor: Retorna trozos de texto relevantes
-    
-    Motor->>LLM: Inyecta Contexto + Reglas + Pregunta
-    LLM-->>App: Respuesta experta (Streaming)
-```
+## 💡 2. ¿Cómo funciona el sistema? (Conceptos clave)
+Utilizamos una arquitectura **RAG (Generación Aumentada por Recuperación)**. 
+1.  **Recuperación**: El sistema busca en tus carpetas.
+2.  **Aumento**: Añade la información encontrada a la pregunta del usuario.
+3.  **Generación**: La IA responde usando esos datos específicos.
 
 ---
 
-## 🛠️ Requisitos y Configuración
-
-### Dependencias (Gestión con UV)
-Para que el sistema funcione, instalamos las librerías de procesamiento vectorial:
-```powershell
-uv add langchain-chroma langchain-huggingface pypdf
-```
-
-### El Manifiesto Inteligente (`rag.json`)
-Cada cliente debe tener un archivo de configuración en su carpeta `config/`. Ejemplo:
-```json
-{
-    "cliente": { "rol_llm_personalizado": "Auditor Senior" },
-    "instrucciones_sistema": {
-        "reglas_oro": ["Citar siempre fuente", "No inventar cifras"]
-    },
-    "indice_conocimiento": {
-        "modulos": [
-            { "nombre": "Legal", "directorio": "data/pdfs/legal/" }
-        ]
-    }
-}
-```
+## 👨‍👩  3. El Sistema de Familia: Clase Madre e Hijas
+*   **Relación de Herencia**: La Clase Madre es el "Cerebro General". Las Hijas son "Personalidades Especializadas". 
+*   **Ventaja**: Si descubrimos una forma mejor de leer PDFs, solo la cambiamos una vez (en la Clase Madre) y automáticamente todas las Clases Hijas "aprenden" ese nuevo truco sin tocarlas.
 
 ---
 
-## 📖 Componentes Detallados
+## 🚀 4. Flujo de Trabajo Detallado
 
-### 1. `base_llm.py` (La Clase Madre)
-*   **`__init__`**: Carga automáticamente el manifiesto y el motor de embeddings.
-*   **`configurar_conocimiento()`**: Detecta si ya existe una base de datos en la carpeta `db/`. Si no existe, lanza el proceso de ingesta.
-*   **`_crear_vector_db()`**: El corazón del RAG. Usa `RecursiveCharacterTextSplitter` para crear trozos de texto con solapamiento (overlap) para no perder contexto.
-*   **`responder()`**: Aquí ocurre la magia. Antes de responder, consulta a `ChromaDB`, recupera los 4 párrafos más importantes y se los entrega al LLM para que "estudie" antes de hablar.
+El funcionamiento se divide en dos grandes momentos:
 
-### 2. Clases de Cliente (`banco.py`, etc.)
-Son clases minimalistas. Su único trabajo es decirle a la Clase Madre dónde está su carpeta de documentos. Todo lo demás es automático.
+### A. El Ciclo de Arranque (Solo cuando se carga el cliente)
+Cuando seleccionas un cliente y pulsas "Cargar", ocurre este proceso lineal:
+1.  **Sincronización**: El código vincula la carpeta física del cliente (ej: `client-banco`) con el objeto en memoria.
+2.  **Carga del Manifiesto**: Se lee el `rag.json`. Este archivo es vital porque le dice al sistema quién es y cuáles son sus límites.
+3.  **Encendido del Motor**: Se solicita a Ollama que reserve memoria para el modelo de lenguaje.
+4.  **Auditoría de Conocimiento**: El sistema verifica si ya existe la carpeta `db/`. 
+    *   *Si es la primera vez*: Escanea los documentos, los corta en pedazos (Chunks) y los traduce a vectores matemáticos (Embeddings).
+    *   *Si ya existe*: Carga el mapa de conocimiento directamente a la memoria RAM.
+5.  **Activación Institucional**: Se fusiona la identidad del manifiesto con las instrucciones del sistema.
+
+### B. El Ciclo de Interacción (Cada vez que preguntas)
+1.  **Búsqueda Semántica**: Buscamos en la base de datos vectorial los trozos de texto más parecidos a tu pregunta. No buscamos palabras iguales, buscamos "conceptos parecidos".
+2.  **Inyección de Contexto**: Tomamos esos trozos y los ponemos en un sobre junto a tu pregunta.
+3.  **Generación de Respuesta**: Se le envía todo a la IA, quien redacta la respuesta final basándose solo en ese sobre.
 
 ---
 
-## 🖥️ Interfaz del Usuario
-Al usar **Gradio 6.x**, el sistema soporta respuestas en tiempo real (streaming). Cuando seleccionas un cliente, el motor carga su base de datos vectorial específica, permitiendo saltar entre clientes (Banco, Contable) manteniendo sus bases de conocimiento totalmente aisladas y seguras.
+## 📖 5. Diccionario de Métodos: Guía de Funciones
+
+Aquí se explica cada función dentro de `base_llm.py` y qué rol juega:
+
+### Métodos de Configuración Inicial
+*   **`__init__(self, path_cliente)`**: Es el constructor. Establece el nombre del cliente, las rutas a sus carpetas y crea los objetos iniciales vacíos que se llenarán después.
+*   **`_inicializar_llm(self)`**: Configura la conexión técnica con Ollama. Un detalle importante es que fija la `temperature` en **0**. Esto "enfría" a la IA para que no sea creativa ni invente datos, obligándola a ser determinista.
+*   **`_cargar_json(self, relative_path)`**: Una utilidad maestra que lee archivos de texto JSON y los convierte en diccionarios de Python, manejando errores si el archivo no existe.
+
+### Métodos del Motor de Conocimiento (RAG)
+*   **`configurar_conocimiento(self, force_rebuild)`**: Es el director de orquesta. Decide si hay que construir la base de datos de vectores desde cero o si se puede cargar una vieja. Finaliza estableciendo la personalidad del chat.
+*   **`_crear_vector_db(self, db_path)`**: Es el método más pesado. Recorre las carpetas, usa `PdfReader` para extraer texto y lo pasa por el `text_splitter`. Crea el índice de vectores y lo guarda físicamente en el disco duro.
+*   **`_establecer_prompt_dinamico(self)`**: Funciona como un guionista de cine. Toma los datos de "Rol", "Objetivo", "Reglas" y "Estilo" del `rag.json` y escribe las instrucciones que guiarán a la IA durante toda la sesión.
+
+### Métodos de Operación en el Chat
+*   **`responder(self, pregunta)`**: Es el punto de contacto con el usuario.
+    1. Lanza una búsqueda semántica.
+    2. Identifica las fuentes de los documentos (para que sepas de dónde viene la información).
+    3. Envía la petición final a la IA y emite la respuesta en **Streaming** (letra a letra) para mejorar la experiencia de usuario.
+
+### Métodos de las Clases Hijas
+*   **`__init__(self)`**: Estas clases solo tienen este método. Su única misión es llamar a la "Clase Madre" (`super().__init__`) pasándole la ruta específica de sus documentos. Una vez hecho eso, se desentienden del trabajo pesado.

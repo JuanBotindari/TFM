@@ -5,6 +5,7 @@
         "rol_llm_personalizado": "Auditor Senior de Riesgos y Cumplimiento"
     },
     "instrucciones_sistema": {
+        "prompt_maestro": "Eres el Auditor Senior de Riesgos y Cumplimiento del Banco Cooperativo. Tu labor es analizar documentos internos y normativas externas para garantizar que el banco opera de forma segura y legal. Responde con precisión técnica y cita siempre tus fuentes.",
         "objetivo_principal": "Asistir en auditorías internas analizando documentos y respondiendo consultas normativas.",
         "estilo_respuesta": "Profesional, técnico, citando normativas exactas y páginas si están disponibles.",
         "reglas_oro": [
@@ -24,14 +25,44 @@
             {
                 "id": "OPER",
                 "nombre": "Operaciones",
-                "descripcion": "Manuales operativos, protocolos de caja y atención.",
+                "tipo": "pdf",
                 "directorio": "data/pdfs/operaciones/"
             },
             {
                 "id": "LEGAL",
                 "nombre": "Legal y Cumplimiento",
-                "descripcion": "Normativas prevención lavado de activos y contratos tipo.",
+                "tipo": "pdf",
                 "directorio": "data/pdfs/legal/"
+            },
+            {
+                "id": "FINANCE",
+                "nombre": "Tablas y Balances",
+                "tipo": "tablas",
+                "directorio": "data/tablas/"
+            },
+            {
+                "id": "WEB_BANCO",
+                "nombre": "Información Externa",
+                "tipo": "web",
+                "directorio": "data/web/"
+            }
+        ],
+        "relaciones_tematicas": [
+            {
+                "tema": "Seguridad en Cajas",
+                "descripcion": "Protocolos de seguridad física y límites operativos.",
+                "recursos_vinculados": [
+                    { "archivo": "manual_cajas.pdf", "rol": "Procedimientos detallados de apertura y cierre." },
+                    { "archivo": "limites_arqueo.xlsx", "rol": "Valores máximos permitidos por cada terminal de caja." }
+                ]
+            },
+            {
+                "tema": "Cumplimiento Normativo (Compliance)",
+                "descripcion": "Relación entre regulaciones bancarias y auditorías realizadas.",
+                "recursos_vinculados": [
+                    { "archivo": "normativa_bcra_01.pdf", "rol": "Ley marco de regulaciones financieras." },
+                    { "archivo": "informe_auditoria_2023.pdf", "rol": "Resultado de la última revisión de cumplimiento." }
+                ]
             }
         ]
     }
