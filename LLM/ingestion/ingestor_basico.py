@@ -3,7 +3,7 @@ import os
 def check_folders():
     # En el contenedor, la raíz del TFM es /app
     paths = {
-        "Documentos Silver": "/app/RAG-docs/client-santander",
+        "Documentos Silver": "/app/RAG-docs/client-banco",
         "Base de Datos": "/app/database",
         "Scripts LLM": "/app/LLM/ingestion"
     }

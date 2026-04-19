@@ -317,5 +317,141 @@ price_function = {
 
 
 
+<br><br><br><br>
+------
+---
+---
+---
+---
+<br><br><br>
 
 
+
+# WEEK 3
+
+
+
+
+
+
+Sí, tu profe se refiere a **los dos niveles de uso en Hugging Face**, y es clave entenderlos porque cambian totalmente cómo trabajás con modelos 👇
+
+---
+
+## 🟢 1. High-level API → `pipeline` (lo fácil y rápido)
+
+Es la forma **más simple de usar modelos**. No te preocupás por tokens, tensores ni detalles internos.
+
+👉 Ejemplo:
+
+```python
+from transformers import pipeline
+
+classifier = pipeline("sentiment-analysis")
+result = classifier("Me encanta este curso")
+print(result)
+```
+
+💡 Qué hace por vos:
+
+* Descarga el modelo automáticamente
+* Tokeniza el texto (lo convierte en números)
+* Ejecuta el modelo
+* Decodifica el resultado
+
+👉 Es como:
+**“Quiero usar IA sin complicarme”**
+
+---
+
+## 🔴 2. Low-level API → tokenizer + model (lo potente)
+
+Acá trabajás **más cerca del modelo real**. Tenés control total.
+
+👉 Ejemplo:
+
+```python
+from transformers import AutoTokenizer, AutoModelForSequenceClassification
+
+tokenizer = AutoTokenizer.from_pretrained("distilbert-base-uncased")
+model = AutoModelForSequenceClassification.from_pretrained("distilbert-base-uncased")
+
+inputs = tokenizer("Me encanta este curso", return_tensors="pt")
+outputs = model(**inputs)
+```
+
+💡 Acá vos controlás:
+
+* Cómo se tokeniza el texto
+* Qué modelo usás exactamente
+* Los tensores (inputs numéricos)
+* El output crudo del modelo
+
+👉 Es como:
+**“Quiero entender y controlar todo lo que pasa”**
+
+---
+
+## 🧠 Diferencia clave (resumen corto)
+
+| Nivel      | Facilidad    | Control | Uso típico                    |
+| ---------- | ------------ | ------- | ----------------------------- |
+| `pipeline` | 🔥 Muy fácil | ❌ Bajo  | pruebas rápidas, demos        |
+| low-level  | 😐 Medio     | ✅ Alto  | proyectos reales, fine-tuning |
+
+---
+
+## ⚡ Analogía rápida
+
+* `pipeline` = pedir comida por app 🍔
+* low-level = cocinar vos mismo 👨‍🍳
+
+---
+
+## 🚀 Cuándo usar cada uno
+
+Usá `pipeline` si:
+
+* Estás aprendiendo
+* Querés prototipar rápido
+* No te importa el detalle interno
+
+Usá low-level si:
+
+* Querés entrenar o ajustar modelos
+* Necesitás eficiencia o personalización
+* Estás haciendo algo más serio (ej: tu TFM)
+
+---
+
+Si querés, en el siguiente paso te explico **qué es exactamente el tokenizer (eso que te dijeron de “tokens”)** porque es la clave para entender el low-level 💡
+
+
+
+puntadeleste4175
+
+
+
+
+
+
+
+
+
+🧠 ¿Qué es Quantization?
+
+La quantization (cuantización) es básicamente:
+
+Reducir la precisión de los números del modelo para que ocupe menos memoria y vaya más rápido
+
+⚖️ Trade-off (lo importante)
+Bits	Memoria	Velocidad	Precisión
+32	🔴 Alta	🐢 Lento	✅ Alta
+16	🟠 Media	⚡ Medio	✅ Muy buena
+8	🟡 Baja	⚡ Rápido	👍 Buena
+4	🟢 Muy baja	🚀 Muy rápido	⚠️ Pierde algo
+
+
+Es como tener un switch de luz donde podes girar de un lado a otro y elegir que tan fuerte queres que sea la luz. SI tengo muchos bits, puedo ir cambiando la intensidad de la luz de forma muy suave, pero si tengo pocos bits, solo puedo cambiar la intensidad de la luz de forma brusca..
+
+Supongamos que tengo 2 bits, puedo tener 4 niveles de intensidad (0, 1, 2, 3). Si tengo 3 bits, puedo tener 8 niveles de intensidad (0, 1, 2, 3, 4, 5, 6, 7). Si tengo 4 bits, puedo tener 16 niveles de intensidad (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15). 
