@@ -1,10 +1,11 @@
 import os
 import json
 import pandas as pd
+import re
 from abc import ABC, abstractmethod
-from langchain_ollama import OllamaLLM
-from langchain_core.prompts import ChatPromptTemplate, HumanMessagePromptTemplate
-from langchain_core.messages import SystemMessage
+from langchain_ollama import ChatOllama
+from langchain_core.prompts import ChatPromptTemplate, HumanMessagePromptTemplate, MessagesPlaceholder
+from langchain_core.messages import SystemMessage, HumanMessage, ToolMessage
 from dotenv import load_dotenv
 from tabulate import tabulate
 
@@ -17,11 +18,7 @@ from pypdf import PdfReader
 load_dotenv()
 
 class BaseModel(ABC):
-    """Clase Madre Orquestadora: Motor RAG multimodal con Telemetría Centralizada."""
-
-    ################################################################################
-    # 1. INICIALIZACIÓN Y CONSTRUCTOR
-    ################################################################################
+    """Clase Madre Agéntica: Optimizada para Tool-Calling por Protocolo de Etiquetas."""
 
     def __init__(self, path_cliente):
         self.path_cliente = path_cliente
@@ -29,36 +26,75 @@ class BaseModel(ABC):
         
         self._telemetria("header")
 
-        # Cargar configuraciones
+        # Configs
         self.config_tech = self._cargar_json("config/settings.json")
         self.manifiesto = self._cargar_json("config/rag.json")
+        self.ejemplos_qa = self._cargar_json("config/ejemplos_qa.json")
         
-        # Inicializar Componentes de IA
+        # IA Components
         self.llm = self._inicializar_llm()
         self.embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
         self.vector_store = None
         self.chat_prompt = None
-        self.archivos_reporte = [] # Buffer para la tabla final
+        self.archivos_reporte = []
 
     def _inicializar_llm(self):
         model = self.config_tech.get("modelo", "phi3")
         url = self.config_tech.get("url_llm", "http://localhost:11434")
-        return OllamaLLM(model=model, base_url=url, temperature=0)
+        return ChatOllama(model=model, base_url=url, temperature=0)
+
+    ################################################################################
+    # 1. Metodos de utilidad y Telemetría
+    ################################################################################
+    '''
+    Esta seccion es solo de metodos que se usan para cargar archivos y mostrar informacion
+    '''
 
     def _cargar_json(self, relative_path):
         full_path = os.path.join(self.path_cliente, relative_path)
         if os.path.exists(full_path):
             with open(full_path, 'r', encoding='utf-8') as f:
-                return json.load(f)
-        return {}
+                try: return json.load(f)
+                except: return []
+        return []
+
+    def _telemetria(self, estado, data=None):
+        if estado == "header":
+            print(f"\n{'='*60}\n🤖 AGENTE ACTIVO: {self.nombre_cliente.upper()}\n{'='*60}")
+        elif estado == "auditoria":
+            print(f"🔍 Auditando mapas de conocimiento...")
+        elif estado == "tabla_conocimiento":
+            print("\n📊 REPORTE DE CAPACIDADES:")
+            headers = ["Recurso", "Área", "Acceso", "Estado"]
+            print(tabulate(self.archivos_reporte, headers=headers, tablefmt="fancy_grid"))
+        elif estado == "listo":
+            print(f"\n🧠 Motor IA listo. Usando protocolo [USAR_TABLA].\n")
+        elif estado == "pensando":
+            p = data.get("pregunta")
+            docs_scores = data.get("docs_with_scores")
+            print(f"\n🤔 ANALIZANDO PREGUNTA: \"{p}\"")
+            print(f"   > CERCANÍA CON DOCUMENTOS (Score):")
+            for doc, score in docs_scores:
+                # En Chroma, menor distancia es más cercanía. 
+                # Generalmente < 0.8 es bueno.
+                status = "✅ CERCANO" if score < 0.8 else "❌ LEJOS"
+                print(f"     - [{doc.metadata['source']}]: {score:.4f} ({status})")
+        elif estado == "intencion":
+            print(f"\n🧠 [BRAIN RAW OUTPUT]:")
+            print(f"{'-'*40}\n{data.get('raw_content')}\n{'-'*40}")
+        elif estado == "ejecutando_tool":
+            print(f"🛠️  [TOOL EXECUTION] Buscando en tablas: '{data.get('termino')}'...")
 
     ################################################################################
-    # 2. MOTOR RAG MULTIMODAL
+    # 2. GESTIÓN DE CONOCIMIENTO (INDEXACIÓN)
     ################################################################################
+    '''
+    Esta seccion es solo de metodos que se usan para gestionar el conocimiento. 
+    En esta seccion se define el prompt dinámico que se usa para generar la respuesta.
+    '''
 
     def configurar_conocimiento(self, force_rebuild=False):
         db_path = os.path.join(self.path_cliente, "db/vector_store")
-        
         self._telemetria("auditoria")
         
         if not os.path.exists(db_path) or force_rebuild:
@@ -66,22 +102,18 @@ class BaseModel(ABC):
         else:
             self._escanear_archivos_para_reporte()
 
-        self.vector_store = Chroma(
-            persist_directory=db_path,
-            embedding_function=self.embeddings
-        )
+        self.vector_store = Chroma(persist_directory=db_path, embedding_function=self.embeddings)
+        self._establecer_prompt_dinamico()
         
         self._telemetria("tabla_conocimiento")
-        self._establecer_prompt_dinamico()
         self._telemetria("listo")
 
     def _escanear_archivos_para_reporte(self):
-        """Prepara el reporte de archivos si la DB ya existe."""
         for modulo in self.manifiesto.get("indice_conocimiento", {}).get("modulos", []):
             dir_path = os.path.join(self.path_cliente, modulo.get("directorio"))
             if os.path.exists(dir_path):
                 for f in os.listdir(dir_path):
-                    self.archivos_reporte.append([f, modulo['nombre'], modulo.get("tipo", "pdf").upper(), "Existente 💾"])
+                    self.archivos_reporte.append([f, modulo['nombre'], "Indirecto", "Listo 💾"])
 
     def _crear_vector_db(self, db_path):
         all_chunks = []
@@ -90,24 +122,21 @@ class BaseModel(ABC):
         for modulo in self.manifiesto.get("indice_conocimiento", {}).get("modulos", []):
             dir_path = os.path.join(self.path_cliente, modulo.get("directorio"))
             tipo = modulo.get("tipo", "pdf").lower()
-            
             if not os.path.exists(dir_path): continue
-
-            res = []
-            if tipo == "pdf": res = self._procesar_pdf(dir_path, modulo)
-            elif tipo == "tablas": res = self._procesar_tablas(dir_path, modulo)
-            elif tipo == "web": res = self._procesar_web(dir_path, modulo)
-            elif tipo == "imagenes": res = self._procesar_imagenes(dir_path, modulo)
             
-            all_chunks.extend(res)
-        
+            if tipo == "pdf": all_chunks.extend(self._procesar_pdf(dir_path, modulo))
+            elif tipo == "web": all_chunks.extend(self._procesar_web(dir_path, modulo))
+            elif tipo == "tablas":
+                for f in os.listdir(dir_path):
+                    self.archivos_reporte.append([f, modulo['nombre'], "AGENTE", "Listo 🛠️"])
+
         if all_chunks:
             texts = [c["text"] for c in all_chunks]
             metadatas = [c["metadata"] for c in all_chunks]
             Chroma.from_texts(texts=texts, metadatas=metadatas, embedding=self.embeddings, persist_directory=db_path)
 
     ################################################################################
-    # 3. MÉTODOS DE PROCESAMIENTO (LIMPIOS)
+    # 3. PROCESADORES (LOGICA DE INGESTA)
     ################################################################################
 
     def _procesar_pdf(self, path, modulo):
@@ -115,120 +144,107 @@ class BaseModel(ABC):
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=150)
         for file in os.listdir(path):
             if file.endswith(".pdf"):
-                full_path = os.path.join(path, file)
-                reader = PdfReader(full_path)
-                text = "\n".join([page.extract_text() for page in reader.pages if page.extract_text()])
-                chunks = text_splitter.split_text(text)
-                for chunk in chunks:
-                    chunks_modulo.append({"text": chunk, "metadata": {"source": file, "modulo": modulo['nombre']}})
-                self.archivos_reporte.append([file, modulo['nombre'], "PDF Extractor", "Nuevo ✅"])
-        return chunks_modulo
-
-    def _procesar_tablas(self, path, modulo):
-        chunks_modulo = []
-        for file in os.listdir(path):
-            full_path = os.path.join(path, file)
-            df = None
-            if file.endswith(".csv"): df = pd.read_csv(full_path)
-            elif file.endswith((".xlsx", ".xls")): df = pd.read_excel(full_path)
-            if df is not None:
-                text = f"Tabla: {file}. Módulo: {modulo['nombre']}\n\n" + df.to_markdown(index=False)
-                chunks_modulo.append({"text": text, "metadata": {"source": file, "modulo": modulo['nombre']}})
-                self.archivos_reporte.append([file, modulo['nombre'], "Pandas Engine", "Nuevo ✅"])
+                try:
+                    full_path = os.path.join(path, file)
+                    reader = PdfReader(full_path)
+                    text = "\n".join([page.extract_text() for page in reader.pages if page.extract_text()])
+                    chunks = text_splitter.split_text(text)
+                    for chunk in chunks:
+                        chunks_modulo.append({"text": chunk, "metadata": {"source": file, "modulo": modulo['nombre']}})
+                    self.archivos_reporte.append([file, modulo['nombre'], "RAG PDF", "Nuevo ✅"])
+                except: pass
         return chunks_modulo
 
     def _procesar_web(self, path, modulo):
         chunks_modulo = []
-        text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=150)
         for file in os.listdir(path):
             if file.endswith((".txt", ".html", ".json")):
                 with open(os.path.join(path, file), 'r', encoding='utf-8') as f:
                     text = f.read()
-                    chunks = text_splitter.split_text(text)
-                    for chunk in chunks:
-                        chunks_modulo.append({"text": chunk, "metadata": {"source": file, "modulo": modulo['nombre']}})
-                    self.archivos_reporte.append([file, modulo['nombre'], "Web Crawler Data", "Nuevo ✅"])
+                    chunks_modulo.append({"text": text, "metadata": {"source": file, "modulo": modulo['nombre']}})
+                    self.archivos_reporte.append([file, modulo['nombre'], "RAG Web", "Nuevo ✅"])
         return chunks_modulo
 
     def _procesar_imagenes(self, path, modulo):
-        chunks_modulo = []
-        imgs = [f for f in os.listdir(path) if f.lower().endswith((".png", ".jpg", ".jpeg"))]
-        for img in imgs:
-            text = f"RECURSO VISUAL: {img} en {modulo['nombre']}."
-            chunks_modulo.append({"text": text, "metadata": {"source": img, "modulo": modulo['nombre']}})
-            self.archivos_reporte.append([img, modulo['nombre'], "Visual Entry", "Nuevo ✅"])
-        return chunks_modulo
+        pass
 
     ################################################################################
-    # 4. LÓGICA DE PROMPTS Y GENERACIÓN
+    # 4. LÓGICA AGÉNTICA (PROTOCOLOS Y HERRAMIENTAS)
     ################################################################################
 
     def _establecer_prompt_dinamico(self):
         m = self.manifiesto
         instr = m.get("instrucciones_sistema", {})
-        relaciones = m.get("indice_conocimiento", {}).get("relaciones_tematicas", [])
         
-        mapa_relaciones = ""
-        if relaciones:
-            mapa_relaciones = "\n\nMAPA DE RELACIONES:\n"
-            for r in relaciones:
-                recursos = ", ".join([f"{rec['archivo']} ({rec['rol']})" for rec in r['recursos_vinculados']])
-                mapa_relaciones += f"- TEMA: {r['tema']}. {r['descripcion']} Recursos: {recursos}\n"
-
-        prompt_final = f"""{instr.get('prompt_maestro')}
+        prompt_sys = f"""{instr.get('prompt_maestro')}
         ESTILO REQUERIDO: {instr.get('estilo_respuesta')}
         REGLAS DE ORO: {', '.join(instr.get('reglas_oro', []))}
-        {mapa_relaciones}
         
-        Usa el MAPA DE RELACIONES para sugerir recursos si es necesario."""
+        PROTOCOLO DE ACCESO A DATOS ESTRUCTURADOS (TABLAS):
+        Si necesitas datos precisos como CUITs, saldos, nombres técnicos o detalles de la base de datos de seguros que NO están en el conocimiento RAG de abajo, debes solicitar la herramienta de tablas escribiendo:
+        [USAR_TABLA: término_de_búsqueda]
+        
+        Ejemplo: Si te piden el CUIT de Leonel y no aparece abajo, escribe "[USAR_TABLA: Leonel]". No des respuestas aproximadas ni inventes datos."""
 
         self.chat_prompt = ChatPromptTemplate.from_messages([
-            SystemMessage(content=prompt_final),
-            HumanMessagePromptTemplate.from_template("CONOCIMIENTO:\n{context}\n\nPREGUNTA: {pregunta}")
+            SystemMessage(content=prompt_sys),
+            MessagesPlaceholder(variable_name="history", optional=True),
+            HumanMessagePromptTemplate.from_template("CONOCIMIENTO RAG DISPONIBLE:\n{context}\n\nPREGUNTA USUARIO: {pregunta}")
         ])
+
+    def consultar_tablas_y_db(self, consulta):
+        """Busca directamente en los archivos físicos de tablas y bases de datos."""
+        self._telemetria("ejecutando_tool", {"termino": consulta})
+        resultados = []
+        for modulo in self.manifiesto.get("indice_conocimiento", {}).get("modulos", []):
+            if modulo.get("tipo") == "tablas":
+                dir_path = os.path.join(self.path_cliente, modulo.get("directorio"))
+                if not os.path.exists(dir_path): continue
+                for file in os.listdir(dir_path):
+                    f_path = os.path.join(dir_path, file)
+                    if file.endswith((".txt", ".md", ".csv")):
+                        with open(f_path, 'r', encoding='utf-8', errors='ignore') as f:
+                            cuerpo = f.read()
+                            if consulta.lower() in cuerpo.lower():
+                                # Devolver el bloque donde se encontró la coincidencia
+                                pos = cuerpo.lower().find(consulta.lower())
+                                start, end = max(0, pos-1000), pos+3000
+                                resultados.append(f"ORIGEN: {file}\nDATOS:\n{cuerpo[start:end]}")
+        return "\n".join(resultados) if resultados else "No se hallaron coincidencias en las tablas físicas."
 
     def responder(self, pregunta):
         if not self.vector_store:
-            yield "Error: No inicializado."
+            yield "Error de sistema: Base no cargada."
             return
 
-        docs = self.vector_store.similarity_search(pregunta, k=4)
-        self._telemetria("pensando", {"pregunta": pregunta, "docs": docs})
+        # 1. Recuperar con Scores (ver que tan cerca está)
+        # Traemos 10 para ver la comparativa de cercanía
+        docs_scores = self.vector_store.similarity_search_with_score(pregunta, k=10)
+        self._telemetria("pensando", {"pregunta": pregunta, "docs_with_scores": docs_scores})
         
-        contexto = "\n\n".join([f"[{d.metadata['source']}] {d.page_content}" for d in docs])
-        chain = self.chat_prompt | self.llm
-        for chunk in chain.stream({"context": contexto, "pregunta": pregunta}):
-            yield chunk
+        # 2. Umbral: Si la cercanía es mayor a 0.8, consideramos que no tiene nada que ver
+        docs_validos = [doc for doc, score in docs_scores if score < 0.85]
+        
+        contexto_rag = ""
+        if docs_validos:
+            contexto_rag = "\n\n".join([f"[{d.metadata['source']}] {d.page_content}" for d in docs_validos])
+        else:
+            contexto_rag = "NO SE DETECTÓ CONOCIMIENTO RELEVANTE PARA ESTA PREGUNTA."
 
-    ################################################################################
-    # 5. SISTEMA CENTRALIZADO DE TELEMETRÍA (LOGS ESTÉTICOS)
-    ################################################################################
-
-    def _telemetria(self, estado, data=None):
-        """Gestiona toda la visualización por pantalla de forma centralizada."""
-        if estado == "header":
-            print(f"\n{'='*60}\n🚀 INICIALIZANDO CLIENTE: {self.nombre_cliente.upper()}\n{'='*60}")
+        # 3. Generación
+        prompt_mensajes = self.chat_prompt.format_messages(context=contexto_rag, pregunta=pregunta)
+        respuesta_ia = self.llm.invoke(prompt_mensajes)
         
-        elif estado == "auditoria":
-            print(f"🔍 Auditando base de conocimiento para {self.nombre_cliente}...")
+        self._telemetria("intencion", {"raw_content": respuesta_ia.content})
         
-        elif estado == "inicio_ingesta":
-            print("⚡ DB no detectada. Iniciando fase de aprendizaje profundo...")
+        match = re.search(r"\[USAR_TABLA:\s*(.*?)\]", respuesta_ia.content)
         
-        elif estado == "tabla_conocimiento":
-            print("\n📊 REPORTE DE RECURSOS VINCULADOS:")
-            headers = ["Archivo", "Carpeta/Módulo", "Motor de Carga", "Estado"]
-            print(tabulate(self.archivos_reporte, headers=headers, tablefmt="fancy_grid"))
-            print(f"✨ Total de activos aprendidos: {len(self.archivos_reporte)}")
-        
-        elif estado == "listo":
-            print(f"\n🧠 Motor IA preparado. Listo para recibir consultas.\n")
-            
-        elif estado == "pensando":
-            p = data.get("pregunta")
-            docs = data.get("docs")
-            fuentes = list(set([d.metadata['source'] for d in docs]))
-            print(f"\n🤔 PENSANDO...")
-            print(f"   > Pregunta: \"{p}\"")
-            print(f"   > Extrayendo conocimiento de: {fuentes}")
-            print(f"   > Generando respuesta final...\n")
+        if match:
+            termino = match.group(1).strip()
+            datos_tablas = self.consultar_tablas_y_db(termino)
+            contexto_enriquecido = contexto_rag + f"\n\nDATOS OBTENIDOS DE LAS TABLAS DE NEGOCIO:\n{datos_tablas}"
+            prompt_actualizado = self.chat_prompt.format_messages(context=contexto_enriquecido, pregunta=pregunta)
+            for chunk in self.llm.stream(prompt_actualizado):
+                yield chunk.content
+        else:
+            yield respuesta_ia.content

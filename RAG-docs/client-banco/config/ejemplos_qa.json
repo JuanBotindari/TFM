@@ -1,0 +1,12 @@
+[
+    {
+        "pregunta": "Cual es el protocolo de apertura de cajas?",
+        "fichero_fuente": "manual_cajas.pdf",
+        "respuesta_modelo": "El protocolo de apertura consta de 3 pasos críticos:\n1. Verificación de seguridad perimetral.\n2. Acceso con doble custodia (Gerente y Tesorero).\n3. Inspección visual de precintos y cámaras."
+    },
+    {
+        "pregunta": "Que limite de efectivo puede haber en una terminal de caja?",
+        "fichero_fuente": "limites_arqueo.xlsx",
+        "respuesta_modelo": "Según la última normativa de seguridad financiera, el límite máximo permitido por terminal es de $500,000. Cualquier excedente debe ser derivado a bóveda central de forma inmediata."
+    }
+]
