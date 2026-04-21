@@ -1,20 +1,26 @@
 [project]
 name = "tfm"
 version = "0.1.0"
-description = "Add your description here"
+description = "Proyecto TFM - RAG Multimodal"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "google-generativeai>=0.8.6",
     "gradio>=6.11.0",
     "ipykernel>=7.2.0",
+    "langchain-chroma>=1.1.0",
     "langchain-community>=0.4.1",
+    "langchain-huggingface>=1.2.2",
     "langchain-ollama>=1.0.1",
+    "langchain-text-splitters>=1.1.1",
     "ollama>=0.6.1",
     "openai>=2.31.0",
     "openpyxl>=3.1.5",
     "pandas>=3.0.1",
     "pypdf>=6.9.2",
+    "sentence-transformers>=5.4.1",
+    "tabulate>=0.9.0",
+    "tabulate",
 ]
 
 [build-system]
@@ -22,4 +28,4 @@ requires = ["setuptools>=75.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
-packages = ["LLM", "LLM.clientes", "LLM.ingestion", "LLM.prompts", "LLM.governance", "LLM.evaluations"]
+packages = ["LLM", "LLM.clientes"]

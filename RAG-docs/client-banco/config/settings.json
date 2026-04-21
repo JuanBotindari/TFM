@@ -1,0 +1,4 @@
+{
+  "modelo": "llama3.2",
+  "url_llm": "http://localhost:11434"
+}

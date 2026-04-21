@@ -2,6 +2,9 @@
 
 Este modelo representa la arquitectura relacional para el área de seguros. Está diseñado para ser interpretado por modelos de lenguaje (LLMs) y generar consultas SQL precisas.
 
+
+
+
 ## 1. Diagrama de Entidad-Relación (Mermaid)
 
 ```mermaid
