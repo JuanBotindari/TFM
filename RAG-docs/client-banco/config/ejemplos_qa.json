@@ -123,5 +123,10 @@
         "pregunta": "¿Por qué los casos complejos son más útiles?",
         "fichero_fuente": "2.4 Casos de uso",
         "respuesta_modelo": "Porque evalúan razonamiento multi-step."
+    },
+    {
+        "pregunta": "¿Por qué los casos complejos son más útiles?",
+        "fichero_fuente": "2.4 Casos de uso",
+        "respuesta_modelo": "Porque evalúan razonamiento multi-step."
     }
 ]
