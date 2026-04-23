@@ -1,8 +1,8 @@
 [
     {
-        "pregunta": "Cual es el protocolo de apertura de cajas?",
-        "fichero_fuente": "manual_cajas.pdf",
-        "respuesta_modelo": "El protocolo de apertura consta de 3 pasos críticos:\n1. Verificación de seguridad perimetral.\n2. Acceso con doble custodia (Gerente y Tesorero).\n3. Inspección visual de precintos y cámaras."
+        "pregunta": "¿Por qué el hecho de que el entorno sea simulado no elimina la relevancia de los desafíos identificados?",
+        "fichero_fuente": "1.1 Identificación",
+        "respuesta_modelo": "Porque el entorno reproduce condiciones reales (complejidad, regulación, interdependencia), por lo que los problemas de gestión de datos y conocimiento siguen siendo representativos."
     },
     {
         "pregunta": "Que limite de efectivo puede haber en una terminal de caja?",
