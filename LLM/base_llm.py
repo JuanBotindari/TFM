@@ -86,6 +86,16 @@ class BaseModel(ABC):
             print(f"🛠️  [TOOL EXECUTION] Buscando en tablas: '{data.get('termino')}'...")
 
     ################################################################################
+    # TEMPORAL: FUNCION PARA GUARDAR LAS RESPUESTAS EN UN JSON
+    ################################################################################
+
+    def _guardar_log(self, datos):
+        log_path = os.path.join(self.path_cliente, "evaluaciones_pendientes.json")
+        os.makedirs(os.path.dirname(log_path), exist_ok=True)
+        with open(log_path, "a", encoding="utf-8") as f:
+            f.write(json.dumps(datos, ensure_ascii=False) + "\n")
+
+    ################################################################################
     # 2. GESTIÓN DE CONOCIMIENTO (INDEXACIÓN)
     ################################################################################
     '''
@@ -238,13 +248,25 @@ class BaseModel(ABC):
         self._telemetria("intencion", {"raw_content": respuesta_ia.content})
         
         match = re.search(r"\[USAR_TABLA:\s*(.*?)\]", respuesta_ia.content)
-        
+
+        respuesta_final_texto = "" # Variable para acumular la respuesta
+
         if match:
             termino = match.group(1).strip()
             datos_tablas = self.consultar_tablas_y_db(termino)
             contexto_enriquecido = contexto_rag + f"\n\nDATOS OBTENIDOS DE LAS TABLAS DE NEGOCIO:\n{datos_tablas}"
             prompt_actualizado = self.chat_prompt.format_messages(context=contexto_enriquecido, pregunta=pregunta)
             for chunk in self.llm.stream(prompt_actualizado):
+                respuesta_final_texto += chunk.content
                 yield chunk.content
         else:
-            yield respuesta_ia.content
+            respuesta_final_texto += respuesta_ia.content
+            yield respuesta_final_texto
+        
+        # --- GUARDAR RESPUESTA PARA EL SEGUNDO LLM ---
+        self.ultima_interaccion = {
+            "pregunta": pregunta,
+            "respuesta": respuesta_final_texto
+        }
+        # Guardar en log
+        self._guardar_log(self.ultima_interaccion)
