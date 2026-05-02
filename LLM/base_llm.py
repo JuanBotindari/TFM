@@ -1,8 +1,14 @@
+import sys
 import os
+import shutil
 import json
 import pandas as pd
 import re
 from abc import ABC, abstractmethod
+
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8')
+
 from langchain_ollama import ChatOllama
 from langchain_core.prompts import ChatPromptTemplate, HumanMessagePromptTemplate, MessagesPlaceholder
 from langchain_core.messages import SystemMessage, HumanMessage, ToolMessage
@@ -33,7 +39,9 @@ class BaseModel(ABC):
         
         # IA Components
         self.llm = self._inicializar_llm()
-        self.embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+        # Cambiamos a un modelo multilingüe, ya que los textos están en español
+        modelo_embeddings = self.config_tech.get("modelo_embeddings", "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
+        self.embeddings = HuggingFaceEmbeddings(model_name=modelo_embeddings)
         self.vector_store = None
         self.chat_prompt = None
         self.archivos_reporte = []
@@ -75,9 +83,8 @@ class BaseModel(ABC):
             print(f"\n🤔 ANALIZANDO PREGUNTA: \"{p}\"")
             print(f"   > CERCANÍA CON DOCUMENTOS (Score):")
             for doc, score in docs_scores:
-                # En Chroma, menor distancia es más cercanía. 
-                # Generalmente < 0.8 es bueno.
-                status = "✅ CERCANO" if score < 0.8 else "❌ LEJOS"
+                # El modelo multilingue devuelve L2 entre 10 y ~20+.
+                status = "✅ CERCANO" if score < 16.5 else "⚠️ REGULAR" if score < 19.0 else "❌ LEJOS"
                 print(f"     - [{doc.metadata['source']}]: {score:.4f} ({status})")
         elif estado == "intencion":
             print(f"\n🧠 [BRAIN RAW OUTPUT]:")
@@ -107,6 +114,9 @@ class BaseModel(ABC):
         db_path = os.path.join(self.path_cliente, "db/vector_store")
         self._telemetria("auditoria")
         
+        if force_rebuild and os.path.exists(db_path):
+            shutil.rmtree(db_path, ignore_errors=True)
+            
         if not os.path.exists(db_path) or force_rebuild:
             self._crear_vector_db(db_path)
         else:
@@ -232,8 +242,9 @@ class BaseModel(ABC):
         docs_scores = self.vector_store.similarity_search_with_score(pregunta, k=10)
         self._telemetria("pensando", {"pregunta": pregunta, "docs_with_scores": docs_scores})
         
-        # 2. Umbral: Si la cercanía es mayor a 0.8, consideramos que no tiene nada que ver
-        docs_validos = [doc for doc, score in docs_scores if score < 0.85]
+        # 2. Nos quedamos con los 5 mejores documentos que provee la búsqueda vectorial
+        # (El nuevo modelo multilingüe tiene una escala de distancia L2 diferente, oscila aprox entre 10 y 20)
+        docs_validos = [doc for doc, score in docs_scores[:5]]
         
         contexto_rag = ""
         if docs_validos:

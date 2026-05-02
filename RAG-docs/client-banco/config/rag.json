@@ -26,16 +26,10 @@
         },
         "modulos": [
             {
-                "id": "OPER",
-                "nombre": "Operaciones",
+                "id": "DOCS",
+                "nombre": "Documentación General",
                 "tipo": "pdf",
-                "directorio": "data/pdfs/operaciones/"
-            },
-            {
-                "id": "LEGAL",
-                "nombre": "Legal y Cumplimiento",
-                "tipo": "pdf",
-                "directorio": "data/pdfs/legal/"
+                "directorio": "data/pdfs/"
             },
             {
                 "id": "FINANCE",

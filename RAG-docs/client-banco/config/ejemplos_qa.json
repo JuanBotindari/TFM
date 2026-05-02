@@ -1,462 +1,127 @@
 [
     {
-        "pregunta": "Cual es el protocolo de apertura de cajas?",
-        "fichero_fuente": "manual_cajas.pdf",
-        "respuesta_modelo": "El protocolo de apertura consta de 3 pasos críticos:\n1. Verificación de seguridad perimetral.\n2. Acceso con doble custodia (Gerente y Tesorero).\n3. Inspección visual de precintos y cámaras."
+        "pregunta": "¿Por qué el hecho de que el entorno sea simulado no elimina la relevancia de los desafíos identificados?",
+        "fichero_fuente": "1.1 Identificación",
+        "respuesta_modelo": "Porque el entorno reproduce condiciones reales (complejidad, regulación, interdependencia), por lo que los problemas de gestión de datos y conocimiento siguen siendo representativos."
     },
     {
-        "pregunta": "Que limite de efectivo puede haber en una terminal de caja?",
-        "fichero_fuente": "limites_arqueo.xlsx",
-        "respuesta_modelo": "Según la última normativa de seguridad financiera, el límite máximo permitido por terminal es de $500,000. Cualquier excedente debe ser derivado a bóveda central de forma inmediata."
+        "pregunta": "¿Cómo influye el marco regulatorio europeo en la gestión de datos del área de seguros?",
+        "fichero_fuente": "1.1 Identificación",
+        "respuesta_modelo": "Introduce exigencias de trazabilidad, protección de datos y cumplimiento normativo que condicionan almacenamiento, acceso y uso de la información."
     },
     {
-        "pregunta": "¿Qué tipo de organización es el Banco Santander en este contexto?",
-        "fichero_fuente": "1.1 Identificación.pdf",
-        "respuesta_modelo": "Es una institución financiera de gran escala."
+        "pregunta": "¿Qué implicaciones tiene que Seguros Retail esté integrada con otros productos financieros?",
+        "fichero_fuente": "1.1 Identificación",
+        "respuesta_modelo": "Genera interdependencia entre sistemas, aumenta la complejidad de datos y requiere mayor coordinación y gobernanza."
     },
     {
-        "pregunta": "¿El entorno descrito es real o simulado?",
-        "fichero_fuente": "1.1 Identificación.pdf",
-        "respuesta_modelo": "Es un entorno simulado."
+        "pregunta": "¿Por qué la integración de seguros con productos financieros incrementa la complejidad operativa?",
+        "fichero_fuente": "1.1 Identificación",
+        "respuesta_modelo": "Porque implica múltiples fuentes de datos, distintos procesos y relaciones cruzadas entre productos."
     },
     {
-        "pregunta": "¿Cuál es el área específica analizada dentro del banco?",
-        "fichero_fuente": "1.1 Identificación.pdf",
-        "respuesta_modelo": "El área de seguros."
+        "pregunta": "¿Cómo se relaciona la interdependencia de sistemas con los problemas de accesibilidad del conocimiento?",
+        "fichero_fuente": "1.1 Identificación",
+        "respuesta_modelo": "La dispersión de información en varios sistemas dificulta localizar, entender y reutilizar el conocimiento."
     },
     {
-        "pregunta": "¿Cómo se denomina la unidad dentro del área de seguros?",
-        "fichero_fuente": "1.1 Identificación.pdf",
-        "respuesta_modelo": "Seguros Retail."
+        "pregunta": "¿Por qué la gestión del ciclo completo de la póliza aumenta la necesidad de acceso a múltiples fuentes de datos?",
+        "fichero_fuente": "1.2 Descripción general",
+        "respuesta_modelo": "Porque cada etapa (emisión, modificación, cancelación) requiere información distinta distribuida en diferentes sistemas."
     },
     {
-        "pregunta": "¿A qué tipo de clientes se orienta Seguros Retail?",
-        "fichero_fuente": "1.1 Identificación.pdf",
-        "respuesta_modelo": "A clientes particulares."
+        "pregunta": "¿Cómo afecta la interacción con múltiples áreas a la consistencia de los datos?",
+        "fichero_fuente": "1.2 Descripción general",
+        "respuesta_modelo": "Puede generar inconsistencias, duplicidades y diferencias de interpretación entre equipos."
     },
     {
-        "pregunta": "¿En qué país opera el entorno descrito?",
-        "fichero_fuente": "1.1 Identificación.pdf",
-        "respuesta_modelo": "En España."
+        "pregunta": "¿Por qué la falta de estandarización impacta directamente en la eficiencia operativa?",
+        "fichero_fuente": "1.2 Descripción general",
+        "respuesta_modelo": "Porque dificulta interpretar datos correctamente y retrasa procesos."
     },
     {
-        "pregunta": "¿El marco regulatorio es solo nacional o también europeo?",
-        "fichero_fuente": "1.1 Identificación.pdf",
-        "respuesta_modelo": "Tanto nacional como europeo."
+        "pregunta": "¿Qué relación existe entre la distribución de la información y la complejidad en la toma de decisiones?",
+        "fichero_fuente": "1.2 Descripción general",
+        "respuesta_modelo": "Cuanto más distribuida está la información, más difícil es consolidarla y tomar decisiones informadas."
     },
     {
-        "pregunta": "¿La unidad de seguros opera de forma aislada o integrada con otras áreas?",
-        "fichero_fuente": "1.1 Identificación.pdf",
-        "respuesta_modelo": "Integrada con otras áreas."
+        "pregunta": "¿Por qué la gestión del conocimiento es crítica en este contexto?",
+        "fichero_fuente": "1.2 Descripción general",
+        "respuesta_modelo": "Porque permite transformar datos dispersos en información accesible y útil para la operación."
     },
     {
-        "pregunta": "¿La venta cruzada forma parte de la estrategia del área?",
-        "fichero_fuente": "1.1 Identificación.pdf",
-        "respuesta_modelo": "Sí, forma parte de la estrategia."
+        "pregunta": "¿Por qué el SME puede convertirse en un cuello de botella organizacional?",
+        "fichero_fuente": "1.3 Roles principales",
+        "respuesta_modelo": "Porque concentra conocimiento crítico no documentado del que dependen otros roles."
     },
     {
-        "pregunta": "¿Qué tipo de desafíos introduce la interdependencia entre sistemas?",
-        "fichero_fuente": "1.1 Identificación.pdf",
-        "respuesta_modelo": "Desafíos de gobernanza, consistencia semántica y accesibilidad del conocimiento."
+        "pregunta": "¿Cómo afecta la dependencia de documentación a los desarrolladores?",
+        "fichero_fuente": "1.3 Roles principales",
+        "respuesta_modelo": "Sin documentación adecuada, aumenta el riesgo de errores y dependencia de expertos."
     },
     {
-        "pregunta": "¿Cuál es el objetivo principal del área de seguros?",
-        "fichero_fuente": "1.2 Descripción general.pdf",
-        "respuesta_modelo": "Comercializar, gestionar y dar soporte a productos aseguradores."
+        "pregunta": "¿Qué riesgo organizacional implica la concentración de conocimiento en pocos perfiles?",
+        "fichero_fuente": "1.3 Roles principales",
+        "respuesta_modelo": "Pérdida de conocimiento ante rotación o indisponibilidad."
     },
     {
-        "pregunta": "¿El área solo vende seguros o también los gestiona?",
-        "fichero_fuente": "1.2 Descripción general.pdf",
-        "respuesta_modelo": "También los gestiona."
+        "pregunta": "¿Cómo se relaciona el rol de IT con la eficiencia operativa del área?",
+        "fichero_fuente": "1.3 Roles principales",
+        "respuesta_modelo": "Gestiona accesos y sistemas, lo que puede introducir demoras si los procesos no son ágiles."
     },
     {
-        "pregunta": "¿Qué productos financieros se integran con los seguros?",
-        "fichero_fuente": "1.2 Descripción general.pdf",
-        "respuesta_modelo": "Préstamos personales, hipotecas y cuentas corrientes."
+        "pregunta": "¿Por qué la coordinación entre roles es clave para el acceso al conocimiento?",
+        "fichero_fuente": "1.3 Roles principales",
+        "respuesta_modelo": "Porque el conocimiento está distribuido entre distintos perfiles y sistemas."
     },
     {
-        "pregunta": "¿El área cubre todo el ciclo de vida de las pólizas?",
-        "fichero_fuente": "1.2 Descripción general.pdf",
-        "respuesta_modelo": "Sí, cubre todo el ciclo de vida."
+        "pregunta": "¿Por qué los productos son una unidad clave de conocimiento en el sistema?",
+        "fichero_fuente": "2.1 Productos",
+        "respuesta_modelo": "Porque permiten interpretar pólizas, procesos y consultas."
     },
     {
-        "pregunta": "¿Qué tipo de datos utiliza el área?",
-        "fichero_fuente": "1.2 Descripción general.pdf",
-        "respuesta_modelo": "Datos estructurados y no estructurados."
+        "pregunta": "¿Cómo influye la vinculación con productos financieros en la complejidad del análisis?",
+        "fichero_fuente": "2.1 Productos",
+        "respuesta_modelo": "Requiere cruzar datos entre dominios distintos (seguros y banca)."
     },
     {
-        "pregunta": "¿La información está centralizada o distribuida?",
-        "fichero_fuente": "1.2 Descripción general.pdf",
-        "respuesta_modelo": "Está distribuida."
+        "pregunta": "¿Qué problema puede surgir si un producto no está correctamente definido?",
+        "fichero_fuente": "2.1 Productos",
+        "respuesta_modelo": "Interpretaciones erróneas y respuestas incorrectas."
     },
     {
-        "pregunta": "¿El área interactúa con otros equipos del banco?",
-        "fichero_fuente": "1.2 Descripción general.pdf",
-        "respuesta_modelo": "Sí, interactúa con otros equipos."
+        "pregunta": "¿Por qué la distribución de la información de productos complica su gestión?",
+        "fichero_fuente": "2.1 Productos",
+        "respuesta_modelo": "Porque obliga a consultar múltiples fuentes para entender un mismo producto."
     },
     {
-        "pregunta": "¿Qué problema genera la falta de estandarización?",
-        "fichero_fuente": "1.2 Descripción general.pdf",
-        "respuesta_modelo": "Genera inconsistencias y errores de interpretación."
+        "pregunta": "¿Cómo afecta esto a un sistema RAG?",
+        "fichero_fuente": "2.1 Productos",
+        "respuesta_modelo": "Aumenta el riesgo de recuperación incompleta o incorrecta."
     },
     {
-        "pregunta": "¿Por qué es importante la gestión del conocimiento?",
-        "fichero_fuente": "1.2 Descripción general.pdf",
-        "respuesta_modelo": "Para mejorar eficiencia y toma de decisiones."
+        "pregunta": "¿Por qué los casos de uso son clave para evaluar un RAG?",
+        "fichero_fuente": "2.4 Casos de uso",
+        "respuesta_modelo": "Porque simulan interacción real."
     },
     {
-        "pregunta": "¿La operativa depende de múltiples sistemas?",
-        "fichero_fuente": "1.2 Descripción general.pdf",
-        "respuesta_modelo": "Sí, depende de múltiples sistemas."
+        "pregunta": "¿Qué habilidades evalúan simultáneamente?",
+        "fichero_fuente": "2.4 Casos de uso",
+        "respuesta_modelo": "Recuperación, comprensión y generación."
     },
     {
-        "pregunta": "¿Qué rol traduce necesidades de negocio en requerimientos?",
-        "fichero_fuente": "1.3 Roles principales .pdf",
-        "respuesta_modelo": "El analista de negocio."
+        "pregunta": "¿Por qué requieren conocimiento del dominio?",
+        "fichero_fuente": "2.4 Casos de uso",
+        "respuesta_modelo": "Para interpretar correctamente preguntas."
     },
     {
-        "pregunta": "¿Quién construye consultas sobre bases de datos?",
-        "fichero_fuente": "1.3 Roles principales .pdf",
-        "respuesta_modelo": "Los desarrolladores."
+        "pregunta": "¿Qué indica una respuesta alucinada?",
+        "fichero_fuente": "2.4 Casos de uso",
+        "respuesta_modelo": "Que el modelo no está grounded."
     },
     {
-        "pregunta": "¿Qué significa SME?",
-        "fichero_fuente": "1.3 Roles principales .pdf",
-        "respuesta_modelo": "Subject Matter Expert."
-    },
-    {
-        "pregunta": "¿Qué rol tiene conocimiento profundo del negocio?",
-        "fichero_fuente": "1.3 Roles principales .pdf",
-        "respuesta_modelo": "El SME."
-    },
-    {
-        "pregunta": "¿Quién gestiona accesos a sistemas?",
-        "fichero_fuente": "1.3 Roles principales .pdf",
-        "respuesta_modelo": "El equipo de IT."
-    },
-    {
-        "pregunta": "¿Qué equipo supervisa cumplimiento normativo?",
-        "fichero_fuente": "1.3 Roles principales .pdf",
-        "respuesta_modelo": "El equipo de compliance."
-    },
-    {
-        "pregunta": "¿Qué problema genera la concentración de conocimiento en SMEs?",
-        "fichero_fuente": "1.3 Roles principales .pdf",
-        "respuesta_modelo": "Genera cuellos de botella y dependencia."
-    },
-    {
-        "pregunta": "¿Los desarrolladores dependen de documentación?",
-        "fichero_fuente": "1.3 Roles principales .pdf",
-        "respuesta_modelo": "Sí."
-    },
-    {
-        "pregunta": "¿Qué rol conecta negocio y tecnología?",
-        "fichero_fuente": "1.3 Roles principales .pdf",
-        "respuesta_modelo": "El analista de negocio."
-    },
-    {
-        "pregunta": "¿La interacción entre roles es simple o compleja?",
-        "fichero_fuente": "1.3 Roles principales .pdf",
-        "respuesta_modelo": "Es compleja."
-    },
-    {
-        "pregunta": "¿Qué identifica de manera única a cada producto?",
-        "fichero_fuente": "2.1 Productos .pdf",
-        "respuesta_modelo": "Un código único."
-    },
-    {
-        "pregunta": "¿Los productos forman parte del conocimiento de negocio?",
-        "fichero_fuente": "2.1 Productos .pdf",
-        "respuesta_modelo": "Sí."
-    },
-    {
-        "pregunta": "¿Los productos pueden estar vinculados a otros productos financieros?",
-        "fichero_fuente": "2.1 Productos .pdf",
-        "respuesta_modelo": "Sí."
-    },
-    {
-        "pregunta": "¿La información de productos está centralizada o distribuida?",
-        "fichero_fuente": "2.1 Productos .pdf",
-        "respuesta_modelo": "Está distribuida."
-    },
-    {
-        "pregunta": "¿Por qué es importante comprender correctamente los productos?",
-        "fichero_fuente": "2.1 Productos .pdf",
-        "respuesta_modelo": "Para evitar errores y garantizar respuestas precisas."
-    },
-    {
-        "pregunta": "¿Cuál es el código del Seguro de Vida Riesgo?",
-        "fichero_fuente": "2.1.1 Seguro de Vida Riesgo (SVR) .pdf",
-        "respuesta_modelo": "SVR01."
-    },
-    {
-        "pregunta": "¿Qué evento cubre este producto?",
-        "fichero_fuente": "2.1.1 Seguro de Vida Riesgo (SVR) .pdf",
-        "respuesta_modelo": "El fallecimiento del titular."
-    },
-    {
-        "pregunta": "¿La prima es única o periódica?",
-        "fichero_fuente": "2.1.1 Seguro de Vida Riesgo (SVR) .pdf",
-        "respuesta_modelo": "Periódica (mensual)."
-    },
-    {
-        "pregunta": "¿Se requiere evaluación médica para contratarlo?",
-        "fichero_fuente": "2.1.1 Seguro de Vida Riesgo (SVR) .pdf",
-        "respuesta_modelo": "Sí."
-    },
-    {
-        "pregunta": "¿Con qué tipo de productos financieros suele estar vinculado?",
-        "fichero_fuente": "2.1.1 Seguro de Vida Riesgo (SVR) .pdf",
-        "respuesta_modelo": "Préstamos o hipotecas."
-    },
-    {
-        "pregunta": "¿Cuál es el código del Seguro de Hogar?",
-        "fichero_fuente": "2.1.2 Seguro de Hogar (SHG).pdf",
-        "respuesta_modelo": "SHG02."
-    },
-    {
-        "pregunta": "¿Qué tipo de riesgos cubre?",
-        "fichero_fuente": "2.1.2 Seguro de Hogar (SHG).pdf",
-        "respuesta_modelo": "Daños materiales y robos."
-    },
-    {
-        "pregunta": "¿Con qué producto financiero suele estar asociado?",
-        "fichero_fuente": "2.1.2 Seguro de Hogar (SHG).pdf",
-        "respuesta_modelo": "Hipotecas."
-    },
-    {
-        "pregunta": "¿Protege solo al cliente o también al banco?",
-        "fichero_fuente": "2.1.2 Seguro de Hogar (SHG).pdf",
-        "respuesta_modelo": "A ambos, cliente y banco."
-    },
-    {
-        "pregunta": "¿La información del producto proviene de un único sistema?",
-        "fichero_fuente": "2.1.2 Seguro de Hogar (SHG).pdf",
-        "respuesta_modelo": "No, proviene de múltiples sistemas."
-    },
-    {
-        "pregunta": "¿Cuál es el código del Seguro de Protección de Pagos?",
-        "fichero_fuente": "2.1.3 Seguro de Protección de Pagos (SPP) .pdf",
-        "respuesta_modelo": "SPP03."
-    },
-    {
-        "pregunta": "¿Qué situación cubre este seguro?",
-        "fichero_fuente": "2.1.3 Seguro de Protección de Pagos (SPP) .pdf",
-        "respuesta_modelo": "Incapacidad temporal."
-    },
-    {
-        "pregunta": "¿Está vinculado a préstamos personales?",
-        "fichero_fuente": "2.1.3 Seguro de Protección de Pagos (SPP) .pdf",
-        "respuesta_modelo": "Sí."
-    },
-    {
-        "pregunta": "¿Qué tipo de incapacidad cubre?",
-        "fichero_fuente": "2.1.3 Seguro de Protección de Pagos (SPP) .pdf",
-        "respuesta_modelo": "Incapacidad temporal."
-    },
-    {
-        "pregunta": "¿Requiere cruzar datos con otros sistemas?",
-        "fichero_fuente": "2.1.3 Seguro de Protección de Pagos (SPP) .pdf",
-        "respuesta_modelo": "Sí."
-    },
-    {
-        "pregunta": "¿Qué representa una póliza?",
-        "fichero_fuente": "2.2 Componentes de una póliza.pdf",
-        "respuesta_modelo": "Un contrato asegurador."
-    },
-    {
-        "pregunta": "¿Qué atributo identifica de forma única a la póliza?",
-        "fichero_fuente": "2.2 Componentes de una póliza.pdf",
-        "respuesta_modelo": "El número de póliza."
-    },
-    {
-        "pregunta": "¿Qué valores puede tomar el estado?",
-        "fichero_fuente": "2.2 Componentes de una póliza.pdf",
-        "respuesta_modelo": "ACTIVA, CANCELADA, SUSPENDIDA."
-    },
-    {
-        "pregunta": "¿Qué indica la prima?",
-        "fichero_fuente": "2.2 Componentes de una póliza.pdf",
-        "respuesta_modelo": "El importe que paga el cliente."
-    },
-    {
-        "pregunta": "¿La póliza está asociada a un cliente?",
-        "fichero_fuente": "2.2 Componentes de una póliza.pdf",
-        "respuesta_modelo": "Sí."
-    },
-    {
-        "pregunta": "¿Qué definen los procesos en el área de seguros?",
-        "fichero_fuente": "2.3 Procesos.pdf",
-        "respuesta_modelo": "Las acciones para gestionar el ciclo de vida de las pólizas."
-    },
-    {
-        "pregunta": "¿Incluyen solo tareas técnicas?",
-        "fichero_fuente": "2.3 Procesos.pdf",
-        "respuesta_modelo": "No, también incluyen decisiones de negocio."
-    },
-    {
-        "pregunta": "¿Requieren acceso a múltiples fuentes de datos?",
-        "fichero_fuente": "2.3 Procesos.pdf",
-        "respuesta_modelo": "Sí."
-    },
-    {
-        "pregunta": "¿Participan distintos roles en los procesos?",
-        "fichero_fuente": "2.3 Procesos.pdf",
-        "respuesta_modelo": "Sí."
-    },
-    {
-        "pregunta": "¿La falta de documentación puede afectar los procesos?",
-        "fichero_fuente": "2.3 Procesos.pdf",
-        "respuesta_modelo": "Sí."
-    },
-    {
-        "pregunta": "¿Cuál es el primer paso en la emisión de una póliza?",
-        "fichero_fuente": "2.3.1 Emisión de póliza .pdf",
-        "respuesta_modelo": "La validación del cliente."
-    },
-    {
-        "pregunta": "¿Qué se verifica en la validación del cliente?",
-        "fichero_fuente": "2.3.1 Emisión de póliza .pdf",
-        "respuesta_modelo": "Que los datos sean correctos y actualizados."
-    },
-    {
-        "pregunta": "¿La selección del producto influye en el proceso?",
-        "fichero_fuente": "2.3.1 Emisión de póliza .pdf",
-        "respuesta_modelo": "Sí."
-    },
-    {
-        "pregunta": "¿Qué tipo de variables se analizan en la evaluación de riesgo?",
-        "fichero_fuente": "2.3.1 Emisión de póliza .pdf",
-        "respuesta_modelo": "Perfil del cliente, historial, variables médicas (según producto)."
-    },
-    {
-        "pregunta": "¿Qué ocurre en la generación de la póliza?",
-        "fichero_fuente": "2.3.1 Emisión de póliza .pdf",
-        "respuesta_modelo": "Se crea la póliza y se asigna un número."
-    },
-    {
-        "pregunta": "¿Sobre qué tabla se realizan principalmente las consultas de pólizas?",
-        "fichero_fuente": "2.3.2 Consulta de póliza.pdf",
-        "respuesta_modelo": "Sobre la tabla POLIZAS."
-    },
-    {
-        "pregunta": "¿Qué tipo de información contiene la tabla POLIZAS?",
-        "fichero_fuente": "2.3.2 Consulta de póliza.pdf",
-        "respuesta_modelo": "Información principal de las pólizas (estado, fechas, producto, cliente)."
-    },
-    {
-        "pregunta": "¿Cuándo es necesario cruzar datos con otras tablas?",
-        "fichero_fuente": "2.3.2 Consulta de póliza.pdf",
-        "respuesta_modelo": "Cuando se necesita información adicional."
-    },
-    {
-        "pregunta": "¿Qué tabla se usa comúnmente para obtener información del cliente?",
-        "fichero_fuente": "2.3.2 Consulta de póliza.pdf",
-        "respuesta_modelo": "CLIENTES."
-    },
-    {
-        "pregunta": "¿Las consultas pueden variar en complejidad?",
-        "fichero_fuente": "2.3.2 Consulta de póliza.pdf",
-        "respuesta_modelo": "Sí."
-    },
-    {
-        "pregunta": "¿Qué evento representa la cancelación de una póliza?",
-        "fichero_fuente": "2.3.3 Cancelación de póliza .pdf",
-        "respuesta_modelo": "El cierre del contrato asegurador."
-    },
-    {
-        "pregunta": "¿Cuáles son dos motivos comunes de cancelación?",
-        "fichero_fuente": "2.3.3 Cancelación de póliza .pdf",
-        "respuesta_modelo": "Solicitud del cliente e impago."
-    },
-    {
-        "pregunta": "¿Qué campo se actualiza en el sistema al cancelar una póliza?",
-        "fichero_fuente": "2.3.3 Cancelación de póliza .pdf",
-        "respuesta_modelo": "El campo ESTADO."
-    },
-    {
-        "pregunta": "¿Qué valor toma el estado tras la cancelación?",
-        "fichero_fuente": "2.3.3 Cancelación de póliza .pdf",
-        "respuesta_modelo": "CANCELADA."
-    },
-    {
-        "pregunta": "¿Una póliza cancelada puede seguir modificándose?",
-        "fichero_fuente": "2.3.3 Cancelación de póliza .pdf",
-        "respuesta_modelo": "No."
-    },
-    {
-        "pregunta": "¿Qué representan los casos de uso dentro del sistema?",
-        "fichero_fuente": "2.4 Casos de uso.pdf",
-        "respuesta_modelo": "Escenarios de interacción con el sistema."
-    },
-    {
-        "pregunta": "¿Por qué son importantes en sistemas RAG?",
-        "fichero_fuente": "2.4 Casos de uso.pdf",
-        "respuesta_modelo": "Porque entrenan y evalúan la capacidad del RAG."
-    },
-    {
-        "pregunta": "¿Los casos de uso requieren interpretación de lenguaje natural?",
-        "fichero_fuente": "2.4 Casos de uso.pdf",
-        "respuesta_modelo": "Sí."
-    },
-    {
-        "pregunta": "¿Permiten detectar alucinaciones en el modelo?",
-        "fichero_fuente": "2.4 Casos de uso.pdf",
-        "respuesta_modelo": "Sí."
-    },
-    {
-        "pregunta": "¿Implican identificar fuentes de datos específicas?",
-        "fichero_fuente": "2.4 Casos de uso.pdf",
-        "respuesta_modelo": "Sí."
-    },
-    {
-        "pregunta": "¿En qué tabla se consulta el estado de una póliza?",
-        "fichero_fuente": "2.4 Casos de uso.pdf",
-        "respuesta_modelo": "En la tabla POLIZAS."
-    },
-    {
-        "pregunta": "¿Qué campo contiene el estado de la póliza?",
-        "fichero_fuente": "2.4 Casos de uso.pdf",
-        "respuesta_modelo": "El campo ESTADO."
-    },
-    {
-        "pregunta": "¿Qué producto corresponde al código SPP03?",
-        "fichero_fuente": "2.4 Casos de uso.pdf",
-        "respuesta_modelo": "Seguro de Protección de Pagos."
-    },
-    {
-        "pregunta": "¿Qué cobertura tiene el Seguro de Protección de Pagos?",
-        "fichero_fuente": "2.4 Casos de uso.pdf",
-        "respuesta_modelo": "Incapacidad temporal."
-    },
-    {
-        "pregunta": "¿Qué se necesita hacer para saber qué cliente tiene una póliza?",
-        "fichero_fuente": "2.4 Casos de uso.pdf",
-        "respuesta_modelo": "Consultar la tabla POLIZAS y, si es necesario, cruzar con CLIENTES."
-    },
-    {
-        "pregunta": "¿Un caso de uso puede requerir cruzar varias tablas?",
-        "fichero_fuente": "2.4 Casos de uso.pdf",
-        "respuesta_modelo": "Sí."
-    },
-    {
-        "pregunta": "¿Qué tipo de pregunta implica consultar tanto cliente como producto?",
-        "fichero_fuente": "2.4 Casos de uso.pdf",
-        "respuesta_modelo": "Una consulta que pide cliente y producto de una póliza."
-    },
-    {
-        "pregunta": "¿El sistema debe interpretar códigos de producto?",
-        "fichero_fuente": "2.4 Casos de uso.pdf",
-        "respuesta_modelo": "Sí."
-    },
-    {
-        "pregunta": "¿Las consultas pueden requerir múltiples pasos?",
-        "fichero_fuente": "2.4 Casos de uso.pdf",
-        "respuesta_modelo": "Sí."
-    },
-    {
-        "pregunta": "¿Qué error se detecta si el modelo responde con información no existente?",
-        "fichero_fuente": "2.4 Casos de uso.pdf",
-        "respuesta_modelo": "Una alucinación."
+        "pregunta": "¿Por qué los casos complejos son más útiles?",
+        "fichero_fuente": "2.4 Casos de uso",
+        "respuesta_modelo": "Porque evalúan razonamiento multi-step."
     }
 ]
