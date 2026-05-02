@@ -5,3 +5,8 @@ docker-infra/ollama_data/
 .DS_Store
 *.log
 .env
+__pycache__/
+*.pyc
+
+# Bases de datos de clientes (vector stores)
+RAG-docs/*/db/
