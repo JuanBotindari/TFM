@@ -1,0 +1,78 @@
+[
+  {
+    "pregunta": "¿Qué papel juegan actualmente los datos y la información interna en el desarrollo de las tareas diarias de su organización?",
+    "id_chunk_correcto": 17
+  },
+  {
+    "pregunta": "¿Considera que el conocimiento sobre procesos, sistemas o normativa es un activo clave para el funcionamiento del negocio? ¿Por qué?",
+    "id_chunk_correcto": 23
+  },
+  {
+    "pregunta": "En su experiencia, ¿qué impacto tiene contar (o no) con información clara y accesible a la hora de tomar decisiones operativas o de negocio?",
+    "id_chunk_correcto": 50
+  },
+  {
+    "pregunta": "¿Diría que la dependencia del conocimiento interno ha aumentado en los últimos años? ¿A qué lo atribuye?",
+    "id_chunk_correcto": 9
+  },
+  {
+    "pregunta": "¿Existen en su organización dificultades para acceder a la información necesaria cuando surge una necesidad concreta?",
+    "id_chunk_correcto": 18
+  },
+  {
+    "pregunta": "¿Con qué frecuencia se encuentran con datos, tablas, documentos o procesos que no están suficientemente documentados o cuya interpretación no es clara?",
+    "id_chunk_correcto": 21
+  },
+  {
+    "pregunta": "¿Qué consecuencias prácticas genera esta falta de documentación o claridad? [Salto de ajuste de texto](por ejemplo: pérdida de tiempo, errores, dependencia de otras personas, retrabajo)",
+    "id_chunk_correcto": 19
+  },
+  {
+    "pregunta": "¿Ha ocurrido que se tomen decisiones o se desarrollen soluciones basadas en interpretaciones incorrectas de los datos?",
+    "id_chunk_correcto": 50
+  },
+  {
+    "pregunta": "¿Considera que la falta de una gobernanza clara de los datos afecta al rendimiento o eficiencia del modelo de negocio?",
+    "id_chunk_correcto": 9
+  },
+  {
+    "pregunta": "¿Cómo describiría el volumen y la complejidad de los datos con los que trabajan habitualmente?",
+    "id_chunk_correcto": 17
+  },
+  {
+    "pregunta": "¿Intervienen múltiples sistemas, bases de datos o equipos en el acceso y uso de la información?",
+    "id_chunk_correcto": 16
+  },
+  {
+    "pregunta": "¿La especialización de roles hace que el conocimiento esté distribuido o concentrado en determinadas personas o áreas?",
+    "id_chunk_correcto": 35
+  },
+  {
+    "pregunta": "Aunque el volumen de datos sea distinto, ¿considera que los problemas de acceso, documentación y dependencia del conocimiento son similares a los de otras organizaciones?",
+    "id_chunk_correcto": 3
+  },
+  {
+    "pregunta": "Cuando surge una duda o necesidad concreta, ¿a quién suele recurrirse para resolverla?",
+    "id_chunk_correcto": 34
+  },
+  {
+    "pregunta": "¿Con qué frecuencia la resolución de una tarea depende del conocimiento de una persona específica?",
+    "id_chunk_correcto": 35
+  },
+  {
+    "pregunta": "¿Qué tipo de tareas considera más costosas en tiempo debido a la falta de información clara o accesible?",
+    "id_chunk_correcto": 19
+  },
+  {
+    "pregunta": "¿Se repiten consultas, cruces de información o tareas que ya han sido resueltas anteriormente?",
+    "id_chunk_correcto": 74
+  },
+  {
+    "pregunta": "¿Existen directrices o demandas desde niveles directivos para mejorar la autonomía, eficiencia o rapidez en el trabajo con datos?",
+    "id_chunk_correcto": 23
+  },
+  {
+    "pregunta": "¿Cómo se gestionan actualmente las solicitudes a equipos de IT o soporte? [Salto de ajuste de texto]¿Considera que este proceso podría ser más eficiente?",
+    "id_chunk_correcto": 38
+  }
+]
