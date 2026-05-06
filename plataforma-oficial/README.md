@@ -1,79 +1,51 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+The Ultimate Prompt 
 
-## Getting Started
-
-First, run the development server:
-
-```bash
-npm run dev
-```
-
-
-prompt para v0.dev
-
-
-Básicamente estamos desarrollando LLm con Rag para que empresas pequeñas cómo grandes puedan guardar:
-- documentos con informacion de la actividad y empresa
-- imagenes y organigramas de la empresa
-- tablas con data, productos, proveedores, etc
-
-
-COmentarios adicionales:
-- NExt.js
-- necesito que la web sea lo mas dinamica, y hecha como si fueran diseñadores de super calidad y que estuvieron en cada detalle durante horas. QUiero detalles super. Como si fueran graficos de calidad maxima en un videojuego
-- vamos a tener varias empresas que dentro tendran varios usuario (cada empresa tendra un admin y varios usuario, y esos usuarios pueden tener diferentes roles por ejemplo editor, viewer)
-- necesito que sea una web bien bonita, moderna y las animaciones SUPER fluidas, elegantes y que sea extremadamente profesional. Me refiero a animaciones que llamen la atencion de una manera u otra pero que sean muy agradables de ver.
-- actualmente tengo 2 clientes: "estudio contable" y  "banco S"
-- vamos a trabajar con base de datos supabase, por favor crea tablas que creas que son necesarias. No te olvides que vamos a tener las entidades empresa y usuario, y que la empresa va a poder tener varios usuarios, no te olvides de los roles admin, editor, viewer y que el rol admin puede crear, editar y eliminar usuarios y roles, 
-- supabase para base de datos
-
-
-
-como estoy pensando la estructura de paginas (cada uno es una pagina, no una seccion):
-
-Para los usuarios que no estan logueados:
-
-pagina inicial
-- about us
-- prices (aca son las suscripciones con 3 opciones)
-- contact
-- presentacion (esta pagina es la que vamos a usar para cuando queremos venderle a clientes, el diseño tiene que ser muy profesional, osea un diseño nivel marketing).
-- login/register (cuando se le de click a esto, tiene que haber una opcion que permita elegir si es empresa o usuario, y que redirija al login o register de ese tipo. No te olvides que tiene que haber 3 roles diferentes admin, editor, viewer. Por ahora solo trabaja con empresa/usuarios. No te olvides que empresa va a poder tener varios usuarios.) Ademas, tiene uqe haber una opcion donde se ponga algo asi como "login_personalizado" y que redirija al login para un usuario personalizado para que la gente que quiera investigar 
-
-Para los usuarios que estan logueados:
-- pagina inicial logueados (donde tienen que tener un menu con "inicio" y "cerrar sesion"). Ver cosas generales que quiera el usuario etc. No te olvides que tiene que ser lo mas profesional y elegante posible. Tiene que estar dividido en varias secciones por ejemplo para empresas y para usuarios, osea que si un usuario es empresa tiene que ver las opciones de empresa y si es usuario tiene que ver las opciones de usuario. Ademas tiene que tener el header y footer de la plataforma, no te olvides de eso. El header y el footer tiene que estar en todas las paginas, por supuesto. Si esta logueado, debe tener un boton a la izquierda que despliegue el menu lateral de la izquierda donde estarian el resto de paginas una vez loguedas (la barra lateral izquierda debe ser fluida, suave y profesional y estar en todo el resto de paginas). Este menu lateral se puede desplegar (para que aparezcan los iconos de la izquierda con su descripcion) o aplastarlos contra la izquierda (donde ahi solo aparecerian los iconos y no su texto)
-- dashboard (editable por cada usuario)
-- pagina donde estara el chat
-- pagina ingresar documentos e informacion (esta sera compleja porque tambien se puede subir info a las tablas ademas de documentos)
-- pagina para hacer querys sql
-- pagina de control de usuarios de la empresa (solo visible para los admins de esa empresa)
-- pagina de control de documentos e tablas existentes de esa empresa (para que puedan manejar si un usuario peude ver mas o menos)
-
-
-
-
-Estilo general:
-
-
-### **SECTION: VISUAL IDENTITY & DESIGN SYSTEM (UI/UX)**
-
-**1. Reference-Based Aesthetics:**
-* **Landing Page Structure (`theme_landingpage.jpg`):** Replicate the "Soft Enterprise" look. Use large radial mesh gradients in the background (soft blues and whites). Hero typography must be bold, using **Geist Sans**, with wide-rounded corner cards (24px) for feature highlights.
-* **Light Dashboard (`theme_logueado_light_desplegado.jpg`):** Use this for the "Light Mode" workspace. Implement a clean, card-based **Bento Grid** for analytics and stats. The sidebar should be pure white with subtle $1px$ borders (`border-slate-200`) and minimalist icons.
-* **AI Chat Interface (`theme_logueado_dark_chatllm.jpg`):** This is the core reference for the RAG interaction. The chat input must be a **floating pill-shaped textarea** with internal buttons for "Attach", "Search", and "Model Selection". Below the input, include quick-action "pills" (e.g., "Analyze Table", "Summarize PDF").
-* **Dark Dashboard & Sidebar (`theme_logueado_dark_colapsado.jpg`):** Replicate the deep-toned sidebar and the high-contrast blue action buttons. Use the "collapsed" sidebar state with tooltips for a "Pro" feel.
-
-**2. Multi-Theme Engine (The Three Modes):**
-The system must support an instant toggle between three distinct professional themes:
-* **Mode 1: "Enterprise Light"** (Reference: `theme_logueado_light_desplegado.jpg` / `theme_logueado_dark_vs_light.jpg` left side). Background: `#F8FAFC`. Cards: `White`. Borders: `Slate-200`. Primary Accent: `Blue-600`.
-* **Mode 2: "Sophisticated Grey"** (Reference: `theme_logueado_dark_vs_light.jpg` right side). Background: `#111111` (Zinc-950). Cards: `#18181B`. Borders: `#27272A`. This is the default for high-focus work.
-* **Mode 3: "Midnight Blue/Black"** (Reference: `theme_logueado_dark_colapsado.jpg`). Background: `#000000` (Pure Black). Cards: `#0A0A0A` with a subtle blue glow or outer-shadow. Accents: `Vibrant Blue` (`#3b82f6`).
-
-**3. Specific UI Components:**
-* **The "Knowledge Base" Table:** Inspired by the user table in `theme_logueado_dark_colapsado.jpg`, use a dark, sleek data table with row-hover highlights, pagination at the bottom, and status badges (e.g., "Indexed" in green, "Processing" in pulsing amber).
-* **The AI Response Style:** When the LLM responds, it should render "Source Citations" as small translucent cards. If the response contains data, it must automatically render an **interactive Shadcn Data-Table** inside the chat bubble.
-* **Animations:** Use **Framer Motion** for:
-    * Smooth theme cross-fades.
-    * Sidebar expansion/collapse with `spring` physics.
-    * Bento-grid cards staggered entrance.
+> "Build a full-stack, enterprise-grade SaaS platform named **'TFM-producto'** using **Next.js, Tailwind CSS, and Framer Motion**. The platform is an AI RAG (Retrieval-Augmented Generation) ecosystem designed for companies (such as banks and accounting firms) to manage and query their knowledge base (documents, images, org charts, and data tables).
+>
+> **1. OVERALL GOAL & VISUAL QUALITY:**
+> - The application must be extremely dynamic, fluid, and elegant. I need premium, designer-level attention to detail, with smooth micro-interactions that grab attention professionally (akin to high-end video game UI quality).
+> - **Database integration:** Use UI components and states ready to be hooked up to **Supabase**.
+>
+> **2. DATA ARCHITECTURE & ROLES (Mock Supabase):**
+> - Structure the UI assuming two main entities: **Organizations (Companies)** and **Users**.
+> - An organization has multiple users.
+> - Role system: **Admin** (can create, edit, delete users/roles within their org), **Editor**, and **Viewer**.
+> - Create UI states to simulate the necessary tables (profiles, organizations, documents, roles).
+>
+> **3. PUBLIC ROUTES (Unauthenticated Users):**
+> - **Landing Page:** 'Soft Enterprise' design.
+> - **About Us** & **Contact**.
+> - **Pricing:** Subscription cards with 3 tiers (Basic, Pro, Enterprise).
+> - **Presentation (Pitch Deck):** A pure marketing page aimed at closing corporate sales. Ultra-professional layout.
+> - **Auth (Login/Register):** A clean modal or page. Users must be able to select whether they are logging in as a 'Company' or a 'User'. 
+> - **Guest Login:** Include a 'Log in as Guest / Try Demo' button. This should route to a sandbox version of the dashboard where the user can explore specific features with strict **Read-Only** permissions (no modifications allowed).
+>
+> **4. PRIVATE ROUTES (Authenticated Users):**
+> - **Global Layout:** Universal Header (with a 'Log out' button) and Footer.
+> - **Smart Sidebar:** A fluid, professional left navigation menu. It must be toggleable between 'expanded' (icons + text) and 'collapsed' (icons only). Use Framer Motion for smooth state transitions.
+> - **Conditional Rendering:** Dashboard options must adapt based on whether the logged-in user is an Organization Admin or a standard user.
+> - **Internal Pages:**
+>   - **Main Dashboard:** Overview layout (editable via widgets per user).
+>   - **AI Chat Interface:** The core interactive LLM feature.
+>   - **Knowledge Ingestion:** A complex page for uploading documents (PDFs, images) and data tables (CSVs).
+>   - **SQL Queries UI:** Interface to query uploaded tables. **UI Logic:** If the user is an Admin, show execution and modification controls. If the user is an Editor, Viewer, or Guest, restrict the UI to a strict 'Read-Only' mode (SELECT queries only), completely hiding or disabling destructive actions.
+>   - **User Management (Admin only):** Manage team members and assign roles.
+>   - **Document Access Control:** Panel to manage which users have access to specific documents or tables.
+>
+> **5. VISUAL IDENTITY & DESIGN SYSTEM (Based on References):**
+> - **Landing Page (`theme_landingpage.jpg`):** 'Soft Enterprise' style. Use soft radial mesh gradients in the background (blues and whites). Bold hero typography (**Geist Sans**) and cards with wide-rounded corners (24px) for features.
+> - **Light Dashboard (`theme_logueado_light_desplegado.jpg`):** For the 'Light' mode. Implement a clean, card-based **Bento Grid** for analytics. The sidebar must be pure white with subtle $1px$ borders (`border-slate-200`) and minimalist icons.
+> - **AI Chat Interface (`theme_logueado_dark_chatllm.jpg`):** The chat input must be a **floating pill-shaped textarea** with internal buttons for 'Attach', 'Search', and 'Model Selection'. Below the input, include quick-action pills (e.g., 'Analyze Table', 'Summarize PDF').
+> - **Dark Dashboard (`theme_logueado_dark_colapsado.jpg`):** Replicate the deep-toned sidebar and high-contrast blue action buttons. Use tooltips for the collapsed sidebar state to give it a 'Pro' feel.
+>
+> **6. MULTI-THEME ENGINE:**
+> The system must support an instant toggle between three professional themes:
+> - **Mode 1: 'Enterprise Light'** (`theme_logueado_dark_vs_light.jpg` left side). Background: `#F8FAFC`. Cards: White. Borders: `Slate-200`. Accent: `Blue-600`.
+> - **Mode 2: 'Sophisticated Grey'** (`theme_logueado_dark_vs_light.jpg` right side). Background: `#111111` (Zinc-950). Cards: `#18181B`. Borders: `#27272A`. Ideal for high-focus work.
+> - **Mode 3: 'Midnight Blue/Black'** (`theme_logueado_dark_colapsado.jpg`). Background: `#000000` (Pure Black). Cards: `#0A0A0A` with a subtle blue outer-glow. Accent: `Vibrant Blue` (`#3b82f6`).
+>
+> **7. SPECIFIC COMPONENTS & ANIMATIONS:**
+> - **Knowledge Base Table:** A dark, sleek data table with row-hover highlights, pagination, and status badges (e.g., 'Indexed' in green, 'Processing' in a pulsing amber).
+> - **AI Responses:** RAG source citations must be rendered as small translucent cards. If the response contains data, automatically render an **interactive Shadcn Data-Table** inside the chat bubble.
+> - **Framer Motion:** Use it for smooth cross-fades between themes, `spring` physics for the sidebar toggle, and staggered entrances for Bento Grid cards."
 
