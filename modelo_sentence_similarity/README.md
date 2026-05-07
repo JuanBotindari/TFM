@@ -2,6 +2,93 @@
 
 ## Configuración y Utilidades
 
+````md
+# Cosine Similarity — Explicación simple
+
+En este ejemplo:
+
+- `p1 = [25, 68.2]`
+- `p2 = [82, 95.3]`
+- `p3 = [32, 71.3]`
+
+Cada vector representa:
+
+```text
+[edad, peso]
+````
+
+---
+
+# Idea principal
+
+La similitud del coseno NO compara el tamaño del vector.
+
+Compara la **dirección**.
+
+Dos vectores son similares si apuntan hacia el mismo lugar.
+
+Por eso `p1` y `p3` son parecidos.
+
+---
+
+# Fórmula
+
+\cos(\theta)=\frac{A\cdot B}{|A||B|}
+
+---
+
+# 1. Producto punto (`A · B`)
+
+El producto punto multiplica cada componente y luego suma.
+
+Ejemplo entre `p1` y `p3`:
+
+(25\cdot32)+(68.2\cdot71.3)=5661.66
+
+Esto mide cuánto “apuntan” en la misma dirección.
+
+* Valor grande → muy similares
+* Valor pequeño → poco similares
+
+---
+
+# 2. Magnitud (`|A|`)
+
+La magnitud es el tamaño del vector.
+
+Ejemplo para `p1`:
+
+|p1|=\sqrt{25^2+68.2^2}=72.64
+
+Ejemplo para `p3`:
+
+|p3|=\sqrt{32^2+71.3^2}=78.15
+
+---
+
+# 3. Multiplicación de magnitudes
+
+Ahora multiplicamos ambas magnitudes:
+
+72.64\cdot78.15=5676.81
+
+Esto sirve para normalizar el resultado y evitar que el tamaño afecte la comparación.
+
+---
+
+# 4. Resultado final
+
+\frac{5661.66}{5676.81}=0.997
+
+El resultado es casi `1`.
+
+Eso significa que `p1` y `p3` son MUY similares porque apuntan casi en la misma dirección.
+
+```
+```
+
+
+
 ### 0. Importaciones y Configuración Inicial
 Se puede ignorar, solo configura el loggin y las constantes globales, no es importante para entender el código.
 
