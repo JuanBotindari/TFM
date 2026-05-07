@@ -1,12 +1,127 @@
 [
     {
-        "pregunta": "Cual es el protocolo de apertura de cajas?",
-        "fichero_fuente": "manual_cajas.pdf",
-        "respuesta_modelo": "El protocolo de apertura consta de 3 pasos críticos:\n1. Verificación de seguridad perimetral.\n2. Acceso con doble custodia (Gerente y Tesorero).\n3. Inspección visual de precintos y cámaras."
+        "pregunta": "¿Por qué el hecho de que el entorno sea simulado no elimina la relevancia de los desafíos identificados?",
+        "fichero_fuente": "1.1 Identificación",
+        "respuesta_modelo": "Porque el entorno reproduce condiciones reales (complejidad, regulación, interdependencia), por lo que los problemas de gestión de datos y conocimiento siguen siendo representativos."
     },
     {
-        "pregunta": "Que limite de efectivo puede haber en una terminal de caja?",
-        "fichero_fuente": "limites_arqueo.xlsx",
-        "respuesta_modelo": "Según la última normativa de seguridad financiera, el límite máximo permitido por terminal es de $500,000. Cualquier excedente debe ser derivado a bóveda central de forma inmediata."
+        "pregunta": "¿Cómo influye el marco regulatorio europeo en la gestión de datos del área de seguros?",
+        "fichero_fuente": "1.1 Identificación",
+        "respuesta_modelo": "Introduce exigencias de trazabilidad, protección de datos y cumplimiento normativo que condicionan almacenamiento, acceso y uso de la información."
+    },
+    {
+        "pregunta": "¿Qué implicaciones tiene que Seguros Retail esté integrada con otros productos financieros?",
+        "fichero_fuente": "1.1 Identificación",
+        "respuesta_modelo": "Genera interdependencia entre sistemas, aumenta la complejidad de datos y requiere mayor coordinación y gobernanza."
+    },
+    {
+        "pregunta": "¿Por qué la integración de seguros con productos financieros incrementa la complejidad operativa?",
+        "fichero_fuente": "1.1 Identificación",
+        "respuesta_modelo": "Porque implica múltiples fuentes de datos, distintos procesos y relaciones cruzadas entre productos."
+    },
+    {
+        "pregunta": "¿Cómo se relaciona la interdependencia de sistemas con los problemas de accesibilidad del conocimiento?",
+        "fichero_fuente": "1.1 Identificación",
+        "respuesta_modelo": "La dispersión de información en varios sistemas dificulta localizar, entender y reutilizar el conocimiento."
+    },
+    {
+        "pregunta": "¿Por qué la gestión del ciclo completo de la póliza aumenta la necesidad de acceso a múltiples fuentes de datos?",
+        "fichero_fuente": "1.2 Descripción general",
+        "respuesta_modelo": "Porque cada etapa (emisión, modificación, cancelación) requiere información distinta distribuida en diferentes sistemas."
+    },
+    {
+        "pregunta": "¿Cómo afecta la interacción con múltiples áreas a la consistencia de los datos?",
+        "fichero_fuente": "1.2 Descripción general",
+        "respuesta_modelo": "Puede generar inconsistencias, duplicidades y diferencias de interpretación entre equipos."
+    },
+    {
+        "pregunta": "¿Por qué la falta de estandarización impacta directamente en la eficiencia operativa?",
+        "fichero_fuente": "1.2 Descripción general",
+        "respuesta_modelo": "Porque dificulta interpretar datos correctamente y retrasa procesos."
+    },
+    {
+        "pregunta": "¿Qué relación existe entre la distribución de la información y la complejidad en la toma de decisiones?",
+        "fichero_fuente": "1.2 Descripción general",
+        "respuesta_modelo": "Cuanto más distribuida está la información, más difícil es consolidarla y tomar decisiones informadas."
+    },
+    {
+        "pregunta": "¿Por qué la gestión del conocimiento es crítica en este contexto?",
+        "fichero_fuente": "1.2 Descripción general",
+        "respuesta_modelo": "Porque permite transformar datos dispersos en información accesible y útil para la operación."
+    },
+    {
+        "pregunta": "¿Por qué el SME puede convertirse en un cuello de botella organizacional?",
+        "fichero_fuente": "1.3 Roles principales",
+        "respuesta_modelo": "Porque concentra conocimiento crítico no documentado del que dependen otros roles."
+    },
+    {
+        "pregunta": "¿Cómo afecta la dependencia de documentación a los desarrolladores?",
+        "fichero_fuente": "1.3 Roles principales",
+        "respuesta_modelo": "Sin documentación adecuada, aumenta el riesgo de errores y dependencia de expertos."
+    },
+    {
+        "pregunta": "¿Qué riesgo organizacional implica la concentración de conocimiento en pocos perfiles?",
+        "fichero_fuente": "1.3 Roles principales",
+        "respuesta_modelo": "Pérdida de conocimiento ante rotación o indisponibilidad."
+    },
+    {
+        "pregunta": "¿Cómo se relaciona el rol de IT con la eficiencia operativa del área?",
+        "fichero_fuente": "1.3 Roles principales",
+        "respuesta_modelo": "Gestiona accesos y sistemas, lo que puede introducir demoras si los procesos no son ágiles."
+    },
+    {
+        "pregunta": "¿Por qué la coordinación entre roles es clave para el acceso al conocimiento?",
+        "fichero_fuente": "1.3 Roles principales",
+        "respuesta_modelo": "Porque el conocimiento está distribuido entre distintos perfiles y sistemas."
+    },
+    {
+        "pregunta": "¿Por qué los productos son una unidad clave de conocimiento en el sistema?",
+        "fichero_fuente": "2.1 Productos",
+        "respuesta_modelo": "Porque permiten interpretar pólizas, procesos y consultas."
+    },
+    {
+        "pregunta": "¿Cómo influye la vinculación con productos financieros en la complejidad del análisis?",
+        "fichero_fuente": "2.1 Productos",
+        "respuesta_modelo": "Requiere cruzar datos entre dominios distintos (seguros y banca)."
+    },
+    {
+        "pregunta": "¿Qué problema puede surgir si un producto no está correctamente definido?",
+        "fichero_fuente": "2.1 Productos",
+        "respuesta_modelo": "Interpretaciones erróneas y respuestas incorrectas."
+    },
+    {
+        "pregunta": "¿Por qué la distribución de la información de productos complica su gestión?",
+        "fichero_fuente": "2.1 Productos",
+        "respuesta_modelo": "Porque obliga a consultar múltiples fuentes para entender un mismo producto."
+    },
+    {
+        "pregunta": "¿Cómo afecta esto a un sistema RAG?",
+        "fichero_fuente": "2.1 Productos",
+        "respuesta_modelo": "Aumenta el riesgo de recuperación incompleta o incorrecta."
+    },
+    {
+        "pregunta": "¿Por qué los casos de uso son clave para evaluar un RAG?",
+        "fichero_fuente": "2.4 Casos de uso",
+        "respuesta_modelo": "Porque simulan interacción real."
+    },
+    {
+        "pregunta": "¿Qué habilidades evalúan simultáneamente?",
+        "fichero_fuente": "2.4 Casos de uso",
+        "respuesta_modelo": "Recuperación, comprensión y generación."
+    },
+    {
+        "pregunta": "¿Por qué requieren conocimiento del dominio?",
+        "fichero_fuente": "2.4 Casos de uso",
+        "respuesta_modelo": "Para interpretar correctamente preguntas."
+    },
+    {
+        "pregunta": "¿Qué indica una respuesta alucinada?",
+        "fichero_fuente": "2.4 Casos de uso",
+        "respuesta_modelo": "Que el modelo no está grounded."
+    },
+    {
+        "pregunta": "¿Por qué los casos complejos son más útiles?",
+        "fichero_fuente": "2.4 Casos de uso",
+        "respuesta_modelo": "Porque evalúan razonamiento multi-step."
     }
 ]
