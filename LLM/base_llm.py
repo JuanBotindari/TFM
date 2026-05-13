@@ -21,7 +21,8 @@ from langchain_chroma import Chroma
 from langchain_huggingface import HuggingFaceEmbeddings
 from pypdf import PdfReader
 
-load_dotenv()
+# Cargar variables de entorno desde la raíz del repositorio
+load_dotenv(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), '.env'))
 
 class BaseModel(ABC):
     """Clase Madre Agéntica: Optimizada para Tool-Calling por Protocolo de Etiquetas."""
