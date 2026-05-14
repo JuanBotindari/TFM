@@ -78,6 +78,16 @@ def ejecutar_prueba_especifica():
         return
 
     # 3. Chunking
+    '''
+    Aquí tienes qué hace cada parte:
+
+RecursiveCharacterTextSplitter: Es una herramienta que corta el texto buscando los puntos más naturales. No corta por cortar, sino que intenta mantener los párrafos y oraciones unidos.
+chunk_size: Es el tamaño máximo de cada trozo (ej. 1000 caracteres). Imagina que es el tamaño de la "ficha" que la IA va a leer cada vez.
+chunk_overlap: Es el solapamiento. Hace que el final de un trozo y el principio del siguiente compartan un poco de texto (ej. 100 caracteres). Esto es vital para que no se pierda el contexto si una frase importante queda justo en el corte.
+separators: Es la jerarquía de corte. Primero intenta cortar por párrafos (\n\n), si el trozo es muy grande busca saltos de línea (\n), luego puntos (.), y finalmente espacios. Así evita romper palabras por la mitad.
+split_text: Es la orden de "¡Corta ya!". Toma todo el texto acumulado de los PDFs (full_text) y lo convierte en una lista de trozos pequeños (chunks).
+    '''
+
     text_splitter = RecursiveCharacterTextSplitter(
         chunk_size=CONFIG["chunk_size"], 
         chunk_overlap=CONFIG["overlap"], 
@@ -86,10 +96,42 @@ def ejecutar_prueba_especifica():
     chunks = text_splitter.split_text(full_text)
     logger.info(f"Documento dividido en {len(chunks)} chunks.")
 
+
+
     # 4. Generación de Embeddings
     logger.info("[PASO 3] Generando embeddings para chunks y queries...")
+    '''
+    Este paso es la "traducción" definitiva del lenguaje humano al lenguaje de las máquinas.
+
+    ¿Qué está pasando aquí?
+    Traducción a Números (Embeddings): El modelo toma cada trozo de texto y lo convierte en una lista larguísima de números decimales (llamada vector).
+    embed_documents: Es la orden que le damos al modelo para que procese todos los trozos a la vez.
+    Significado Matemático: Lo increíble es que estos números no son aleatorios. El modelo coloca cada frase en un "mapa" matemático de cientos de dimensiones. Si dos frases significan lo mismo (ej: "Hola" y "Buen día"), sus listas de números serán muy parecidas.
+    '''
+
     chunk_embeddings = embeddings_model.embed_documents(chunks)
     query_embeddings = embeddings_model.embed_documents(test_queries)
+
+    # 4. Visualización: Texto Real vs Vector
+    logger.info("\n" + "="*80)
+    logger.info("DEMOSTRACIÓN DE EMBEDDINGS (TEXTO -> VECTOR)")
+    logger.info("="*80)
+
+    logger.info("\n--- EJEMPLOS DE CHUNKS (FRAGMENTOS DE PDF) ---")
+    for i in range(min(3, len(chunks))):
+        texto_limpio = chunks[i][:120].replace('\n', ' ')
+        logger.info(f"\nID {i} - TEXTO REAL: {texto_limpio}...")
+        # Mostramos solo los primeros 6 números del vector para legibilidad
+        vector_sample = [round(num, 4) for num in chunk_embeddings[i][:6]]
+        logger.info(f"ID {i} - VECTOR: {vector_sample} ... [Total: {len(chunk_embeddings[i])} dimensiones]")
+
+    logger.info("\n--- EJEMPLOS DE QUERIES (CONSULTAS GENERADAS) ---")
+    for i in range(min(3, len(test_queries))):
+        logger.info(f"\nQ {i} - TEXTO REAL: {test_queries[i]}...")
+        vector_sample = [round(num, 4) for num in query_embeddings[i][:6]]
+        logger.info(f"Q {i} - VECTOR: {vector_sample} ... [Total: {len(query_embeddings[i])} dimensiones]")
+    logger.info("\n" + "="*80)
+
 
     # 5. Cálculo de Similitud y Matriz
     # Identificamos los índices correctos para la evaluación
@@ -97,22 +139,28 @@ def ejecutar_prueba_especifica():
     valid_queries = []
     valid_query_emb = []
     
-    for i, q in enumerate(test_queries):
+    for i, q in enumerate(test_queries):    # q es una de las consultas generadas aleatoriamente, i es el indice de la consulta
         idx = -1
-        for j, c in enumerate(chunks):
-            if q in c:
-                idx = j
+        for j, c in enumerate(chunks):     # c es un chunk del documento, j es el indice del chunk
+            if q in c:                      # si la consulta esta en el chunk
+                idx = j                     # guardamos el indice del chunk
                 break
-        if idx != -1:
-            correct_indices.append(idx)
-            valid_queries.append(q)
-            valid_query_emb.append(query_embeddings[i])
+        if idx != -1:                       # si se encontro el chunk
+            correct_indices.append(idx)     # guardamos el indice del chunk
+            valid_queries.append(q)         # guardamos la consulta
+            valid_query_emb.append(query_embeddings[i]) # guardamos el embedding de la consulta
 
-    if not correct_indices:
+    if not correct_indices:                 # si no se encontro ningun chunk
         logger.error("No se encontraron los textos de las consultas en los chunks. Prueba con otros parámetros.")
         return
 
+
+
+
     similarity_matrix = cosine_similarity(np.array(valid_query_emb), np.array(chunk_embeddings))
+
+
+
 
     if CONFIG["imprimir_matriz"]:
         logger.info("\n[MATRIZ DE SIMILITUD (Vista Parcial 5x5)]")
