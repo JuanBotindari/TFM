@@ -7,13 +7,23 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_huggingface import HuggingFaceEmbeddings
 from transformers import AutoTokenizer
 
-# Importamos las utilidades y clases del script original
-# Asegúrate de que embedding_test.py esté en la misma carpeta
-from embedding_test import (
-    setup_logger, load_documents, generate_test_queries, 
-    cosine_similarity, MRREvaluator, ChunkAccuracyEvaluator, 
-    LLMJudgeEvaluator, MODELS, PDF_DIR, TOP_K
-)
+import sys
+
+# Aseguramos que el directorio actual esté en el PATH para evitar errores de importación
+current_dir = os.path.dirname(os.path.abspath(__file__))
+if current_dir not in sys.path:
+    sys.path.append(current_dir)
+
+try:
+    from embedding_test import (
+        setup_logger, load_documents, generate_test_queries, 
+        cosine_similarity, MRREvaluator, ChunkAccuracyEvaluator, 
+        LLMJudgeEvaluator, MODELS, PDF_DIR, TOP_K
+    )
+except ImportError as e:
+    print(f"Error al importar desde embedding_test.py: {e}")
+    print("Asegúrate de que embedding_test.py existe en la misma carpeta y no tiene errores de sintaxis.")
+    sys.exit(1)
 
 # ============================================================================
 # CONFIGURACIÓN DE EJECUCIÓN ESPECÍFICA
@@ -41,6 +51,11 @@ def ejecutar_prueba_especifica():
     logger.info("="*80)
 
     # 1. Preparación del Conjunto de Datos
+    '''
+    PASO 1: Preparación del examen
+        Carga los textos de los PDFs.
+        Extrae frases aleatorias (las consultas) para usarlas como preguntas del examen.
+    '''
     if CONFIG["imprimir_preparacion"]:
         logger.info(f"\n[PASO 1] Preparando datos desde: {PDF_DIR}")
     
