@@ -227,22 +227,22 @@ def main():
 
                 # C. GENERACIÓN DE EMBEDDINGS
                 start_embed = time.time()
-                chunk_embeddings = embeddings.embed_documents(chunks)
-                query_embeddings = embeddings.embed_documents(test_queries)
-                embed_time = time.time() - start_embed
+                chunk_embeddings = embeddings.embed_documents(chunks) # se genera el embedding de cada chunk
+                query_embeddings = embeddings.embed_documents(test_queries) # se genera el embedding de cada consulta
+                embed_time = time.time() - start_embed # se calcula el tiempo que tarda en generar los embeddings
 
                 # D. GROUND TRUTH INDEXING (¿En qué chunk está cada query?)
                 v_queries, v_correct_indices, v_query_embeddings = [], [], []
-                for i, q in enumerate(test_queries):
-                    for j, c in enumerate(chunks):
-                        if q in c:
-                            v_queries.append(q)
-                            v_correct_indices.append(j)
-                            v_query_embeddings.append(query_embeddings[i])
+                for i, q in enumerate(test_queries):    # q es una de las consultas generadas aleatoriamente, i es el indice de la consulta
+                    for j, c in enumerate(chunks):      # c es un chunk del documento, j es el indice del chunk
+                        if q in c:                      # si la consulta esta en el chunk
+                            v_queries.append(q)         # guardamos el indice del chunk
+                            v_correct_indices.append(j) # guardamos la consulta
+                            v_query_embeddings.append(query_embeddings[i]) # guardamos el embedding de la consulta
                             break
                 
-                if not v_queries: continue
-                v_query_embeddings = np.array(v_query_embeddings)
+                if not v_queries: continue                          # si no se encuentra ninguna consulta, se salta
+                v_query_embeddings = np.array(v_query_embeddings)   # se convierte en un array de numpy
 
                 # E. RETRIEVAL & MATCHING (Similitud del Coseno)
                 similarity_matrix = cosine_similarity(v_query_embeddings, chunk_embeddings)
