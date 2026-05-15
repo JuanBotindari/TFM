@@ -56,7 +56,12 @@ MODELS = [
 ]
 TOP_K = 3 
 
-#AGREGAR LA CANTIDAD DE DIMENSIONES UQE TIENE CADA MODELO
+# AGREGAR LA CANTIDAD DE DIMENSIONES UQE TIENE CADA MODELO
+# metrica de rendimiento segun dimensiones 
+# halucination Rate
+#  tokens
+
+
 
 # ============================================================================
 # 2. FUNCIONES DE UTILIDAD (Procesamiento de Datos)
