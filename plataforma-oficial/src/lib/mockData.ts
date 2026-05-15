@@ -34,6 +34,7 @@ export interface Document {
   uploadedAt: string;
   orgId: string;
   accessUserIds: string[];
+  filePath?: string;
 }
 
 export interface ChatMessage {
@@ -58,7 +59,7 @@ export interface SqlQuery {
 
 export const mockOrganizations: Organization[] = [
   {
-    id: 'org-001',
+    id: 'org-banco',
     name: 'Banco Metropolitano',
     slug: 'banco-metropolitano',
     industry: 'Banca & Finanzas',
@@ -69,21 +70,21 @@ export const mockOrganizations: Organization[] = [
     usersCount: 28,
   },
   {
-    id: 'org-002',
+    id: 'org-estudio',
     name: 'Estudio Contable Botindari',
     slug: 'estudio-botindari',
     industry: 'Contabilidad',
     logo: '📊',
-    plan: 'pro',
+    plan: 'enterprise',
     createdAt: '2024-03-22',
     documentsCount: 156,
     usersCount: 12,
   },
   {
-    id: 'org-003',
-    name: 'TechVentures Corp',
-    slug: 'techventures',
-    industry: 'Tecnología',
+    id: 'org-demo',
+    name: 'Demo Public',
+    slug: 'demo-public',
+    industry: 'General',
     logo: '🚀',
     plan: 'basic',
     createdAt: '2024-06-10',
@@ -95,50 +96,73 @@ export const mockOrganizations: Organization[] = [
 // ── Users ──────────────────────────────────
 
 export const mockUsers: User[] = [
+  // ── Banco Metropolitano ─────────────────
   {
-    id: 'user-001',
-    name: 'Juan Botindari',
-    email: 'admin@banco.com',
+    id: 'user-banco-admin',
+    name: 'Admin Banco',
+    email: 'admin_banco@tfm.com',
     role: 'admin',
-    orgId: 'org-001',
+    orgId: 'org-banco',
     avatar: '',
     joinedAt: '2024-01-15',
   },
   {
-    id: 'user-002',
-    name: 'María García',
-    email: 'editor@banco.com',
-    role: 'editor',
-    orgId: 'org-001',
+    id: 'user-banco-demo',
+    name: 'Demo Banco',
+    email: 'demo@banco.com',
+    role: 'viewer',
+    orgId: 'org-banco',
     avatar: '',
     joinedAt: '2024-02-20',
   },
   {
-    id: 'user-003',
-    name: 'Carlos López',
-    email: 'viewer@banco.com',
-    role: 'viewer',
-    orgId: 'org-001',
+    id: 'user-banco-editor',
+    name: 'Editor Banco',
+    email: 'usuario_editor@banco.com',
+    role: 'editor',
+    orgId: 'org-banco',
     avatar: '',
-    joinedAt: '2024-03-05',
+    joinedAt: '2024-02-25',
   },
+
+  // ── Estudio Contable ────────────────────
   {
-    id: 'user-004',
-    name: 'Ana Martínez',
-    email: 'admin@estudio.com',
+    id: 'user-estudio-admin',
+    name: 'Admin Estudio',
+    email: 'admin_estudio@tfm.com',
     role: 'admin',
-    orgId: 'org-002',
+    orgId: 'org-estudio',
     avatar: '',
     joinedAt: '2024-03-22',
   },
   {
-    id: 'user-005',
-    name: 'Roberto Díaz',
-    email: 'editor@estudio.com',
+    id: 'user-estudio-demo',
+    name: 'Demo Estudio',
+    email: 'demo@estudio.com',
+    role: 'viewer',
+    orgId: 'org-estudio',
+    avatar: '',
+    joinedAt: '2024-04-05',
+  },
+  {
+    id: 'user-estudio-editor',
+    name: 'Editor Estudio',
+    email: 'usuario_editor@estudio.com',
     role: 'editor',
-    orgId: 'org-002',
+    orgId: 'org-estudio',
     avatar: '',
     joinedAt: '2024-04-10',
+  },
+
+  // ── Demo Public ─────────────────────────
+  {
+    id: 'user-guest',
+    name: 'Invitado Demo',
+    email: 'guest@demo.tfm',
+    role: 'viewer',
+    orgId: 'org-demo',
+    avatar: '',
+    joinedAt: '2024-06-10',
   },
 ];
 
@@ -306,25 +330,65 @@ export const mockSqlQueries: SqlQuery[] = [
   },
 ];
 
-// ── Dashboard Stats ────────────────────────
-
-export const dashboardStats = {
-  totalDocuments: 342,
-  indexedDocuments: 298,
-  totalQueries: 1547,
-  avgResponseTime: '1.2s',
-  activeUsers: 28,
-  storageUsed: '12.4 GB',
-  storageTotal: '50 GB',
-  chatSessions: 892,
-  weeklyGrowth: 12.5,
-  monthlyCharts: [
-    { month: 'Ene', queries: 120, documents: 25 },
-    { month: 'Feb', queries: 180, documents: 32 },
-    { month: 'Mar', queries: 210, documents: 45 },
-    { month: 'Abr', queries: 165, documents: 38 },
-    { month: 'May', queries: 240, documents: 52 },
-    { month: 'Jun', queries: 290, documents: 48 },
-    { month: 'Jul', queries: 342, documents: 62 },
-  ],
+// ── Dashboard Stats per Organization ────────
+export const orgStats: Record<string, any> = {
+  'org-banco': {
+    totalDocuments: 342,
+    indexedDocuments: 298,
+    totalQueries: 1547,
+    avgResponseTime: '1.2s',
+    activeUsers: 28,
+    storageUsed: '12.4 GB',
+    storageTotal: '50 GB',
+    weeklyGrowth: 12.5,
+    monthlyCharts: [
+      { month: 'Ene', queries: 120 },
+      { month: 'Feb', queries: 180 },
+      { month: 'Mar', queries: 210 },
+      { month: 'Abr', queries: 165 },
+      { month: 'May', queries: 240 },
+      { month: 'Jun', queries: 290 },
+      { month: 'Jul', queries: 342 },
+    ],
+  },
+  'org-estudio': {
+    totalDocuments: 156,
+    indexedDocuments: 142,
+    totalQueries: 892,
+    avgResponseTime: '0.8s',
+    activeUsers: 12,
+    storageUsed: '4.2 GB',
+    storageTotal: '20 GB',
+    weeklyGrowth: 8.2,
+    monthlyCharts: [
+      { month: 'Ene', queries: 45 },
+      { month: 'Feb', queries: 62 },
+      { month: 'Mar', queries: 88 },
+      { month: 'Abr', queries: 75 },
+      { month: 'May', queries: 110 },
+      { month: 'Jun', queries: 130 },
+      { month: 'Jul', queries: 156 },
+    ],
+  },
+  'org-demo': {
+    totalDocuments: 45,
+    indexedDocuments: 40,
+    totalQueries: 124,
+    avgResponseTime: '1.5s',
+    activeUsers: 5,
+    storageUsed: '0.8 GB',
+    storageTotal: '5 GB',
+    weeklyGrowth: 2.1,
+    monthlyCharts: [
+      { month: 'Ene', queries: 10 },
+      { month: 'Feb', queries: 15 },
+      { month: 'Mar', queries: 22 },
+      { month: 'Abr', queries: 18 },
+      { month: 'May', queries: 25 },
+      { month: 'Jun', queries: 30 },
+      { month: 'Jul', queries: 45 },
+    ],
+  },
 };
+
+export const dashboardStats = orgStats['org-banco']; // Default/Legacy fallback

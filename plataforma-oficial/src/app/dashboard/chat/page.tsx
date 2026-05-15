@@ -20,32 +20,54 @@ export default function ChatPage() {
     scrollToBottom();
   }, [messages, isTyping]);
 
-  const handleSend = (e: React.FormEvent) => {
+  const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim()) return;
+    if (!input.trim() || isTyping) return;
 
+    const userMessage = input.trim();
     const newMsg = {
       id: Date.now().toString(),
       role: 'user' as const,
-      content: input,
+      content: userMessage,
       timestamp: new Date().toISOString()
     };
 
-    setMessages([...messages, newMsg]);
+    setMessages(prev => [...prev, newMsg]);
     setInput('');
     setIsTyping(true);
 
-    // Simulate AI response
-    setTimeout(() => {
-      setIsTyping(false);
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: userMessage,
+          history: messages.map(m => ({ role: m.role, content: m.content }))
+        })
+      });
+
+      if (!response.ok) throw new Error('Failed to get response');
+
+      const data = await response.json();
+      
       setMessages(prev => [...prev, {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: 'Esta es una respuesta simulada basada en tus documentos. En un entorno real, aquí se procesaría tu consulta contra Supabase y el modelo LLM.',
-        sources: [{ docName: 'Base de Conocimiento General', relevance: 0.85 }],
+        content: data.content,
+        sources: data.sources || [],
         timestamp: new Date().toISOString()
       }]);
-    }, 1500);
+    } catch (err) {
+      console.error('Chat error:', err);
+      setMessages(prev => [...prev, {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: 'Lo siento, hubo un error al conectar con el servidor de IA.',
+        timestamp: new Date().toISOString()
+      }]);
+    } finally {
+      setIsTyping(false);
+    }
   };
 
   return (

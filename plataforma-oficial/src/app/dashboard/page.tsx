@@ -3,7 +3,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
-import { dashboardStats } from '@/lib/mockData';
+import { orgStats } from '@/lib/mockData';
 import { FileText, Search, Users, HardDrive, ArrowUpRight } from 'lucide-react';
 
 const staggerContainer = {
@@ -21,6 +21,9 @@ const itemVariants = {
 
 export default function DashboardPage() {
   const { currentUser, currentOrg } = useAuth();
+  
+  // Get stats for current organization or fallback to default
+  const stats = currentOrg?.id ? (orgStats[currentOrg.id] || orgStats['org-banco']) : orgStats['org-banco'];
 
   return (
     <motion.div variants={staggerContainer} initial="hidden" animate="show">
@@ -42,10 +45,10 @@ export default function DashboardPage() {
       }}>
         {/* KPI Cards */}
         {[
-          { label: 'Documentos Indexados', value: dashboardStats.indexedDocuments, total: dashboardStats.totalDocuments, icon: FileText, color: 'var(--accent)' },
-          { label: 'Consultas (Mes)', value: dashboardStats.totalQueries, growth: '+12.5%', icon: Search, color: '#22C55E' },
-          { label: 'Usuarios Activos', value: dashboardStats.activeUsers, icon: Users, color: '#F59E0B' },
-          { label: 'Almacenamiento', value: dashboardStats.storageUsed, total: dashboardStats.storageTotal, icon: HardDrive, color: '#8B5CF6' }
+          { label: 'Documentos Indexados', value: stats.indexedDocuments, total: stats.totalDocuments, icon: FileText, color: 'var(--accent)' },
+          { label: 'Consultas (Mes)', value: stats.totalQueries, growth: `+${stats.weeklyGrowth}%`, icon: Search, color: '#22C55E' },
+          { label: 'Usuarios Activos', value: stats.activeUsers, icon: Users, color: '#F59E0B' },
+          { label: 'Almacenamiento', value: stats.storageUsed, total: stats.storageTotal, icon: HardDrive, color: '#8B5CF6' }
         ].map((stat, i) => (
           <motion.div key={i} variants={itemVariants} className="card" style={{ padding: 24 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
@@ -77,8 +80,8 @@ export default function DashboardPage() {
         <motion.div variants={itemVariants} className="card" style={{ padding: 24 }}>
           <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 24 }}>Actividad de Consultas</h3>
           <div style={{ height: 250, display: 'flex', alignItems: 'flex-end', gap: 16, paddingBottom: 20 }}>
-            {dashboardStats.monthlyCharts.map((data, i) => {
-              const maxQueries = Math.max(...dashboardStats.monthlyCharts.map(d => d.queries));
+            {stats.monthlyCharts.map((data: any, i: number) => {
+              const maxQueries = Math.max(...stats.monthlyCharts.map((d: any) => d.queries));
               const height = `${(data.queries / maxQueries) * 100}%`;
               return (
                 <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
