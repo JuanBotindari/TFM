@@ -6,20 +6,26 @@ import { useAuth } from '@/contexts/AuthContext';
 import Sidebar from '@/components/Sidebar';
 import { motion } from 'framer-motion';
 
+import { useUser } from '@clerk/nextjs';
+
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuth();
+  const { isLoaded } = useUser();
   const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    if (!isAuthenticated) {
+  }, []);
+
+  useEffect(() => {
+    if (mounted && isLoaded && !isAuthenticated) {
       router.push('/auth');
     }
-  }, [isAuthenticated, router]);
+  }, [mounted, isLoaded, isAuthenticated, router]);
 
-  if (!mounted || !isAuthenticated) return null;
+  if (!mounted || !isLoaded || (!isAuthenticated && mounted)) return null;
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg-primary)' }}>
