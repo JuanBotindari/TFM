@@ -128,7 +128,7 @@ Ahora vamos a aplicarlo a cada uno de nuestros ejemplos:
 * **`cosine_similarity(a, b)`**: Esta función calcula la **Similitud del Coseno** ya.
 * **`load_documents(directory)`**: Usa LangChain para leer todos los PDFs y concatena todo su texto.
 * **`get_word_counts(chunks)`**: Calcula estadísticas simples de número mínimo, máximo y promedio de palabras de los fragmentos.
-* **`generate_test_queries(text, num_queries=10)`**: Genera el **"Ground Truth"** separando el PDF por puntos, filtrando oraciones cortas y eligiendo 10 al azar para probar.
+* **`generate_test_queries(text, num_queries=10)`**: Genera el **"Ground Truth"** separando el PDF por puntos, filtrando oraciones cortas y eligiendo 10 al azar para probar y evaluar.
 
 ---
 

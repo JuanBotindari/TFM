@@ -11,7 +11,12 @@ from langchain_community.document_loaders import PyPDFDirectoryLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_huggingface import HuggingFaceEmbeddings
 from transformers import AutoTokenizer
-from google import genai
+try:
+    from google import genai
+    HAS_GENAI = True
+except ImportError:
+    HAS_GENAI = False
+
 from dotenv import load_dotenv
 
 # ============================================================================
@@ -39,7 +44,8 @@ for lib in ["urllib3", "httpx", "sentence_transformers", "huggingface_hub", "tra
 
 # --- Constantes Globales ---
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-PDF_DIR = r"C:\repositorios_github\TFM\TFM\RAG-docs\client-banco\data\pdfs"
+# Ruta dinámica: busca la carpeta RAG-docs subiendo un nivel desde el script actual
+PDF_DIR = os.path.abspath(os.path.join(BASE_DIR, "..", "RAG-docs", "client-banco", "data", "pdfs"))
 
 CHUNK_SIZES = [500, 1000, 1500]
 OVERLAPS = [50, 150, 300]
@@ -49,6 +55,8 @@ MODELS = [
     "sentence-transformers/distiluse-base-multilingual-cased-v1"
 ]
 TOP_K = 3 
+
+#AGREGAR LA CANTIDAD DE DIMENSIONES UQE TIENE CADA MODELO
 
 # ============================================================================
 # 2. FUNCIONES DE UTILIDAD (Procesamiento de Datos)
@@ -79,9 +87,16 @@ def get_word_counts(chunks: List[str]) -> Dict[str, float]:
     }
 
 def generate_test_queries(text: str, num_queries: int = 10) -> List[str]:
-    """Genera consultas aleatorias extrayendo frases reales del texto (Ground Truth sintético)."""
+    """
+    Genera consultas aleatorias extrayendo frases reales del texto (Ground Truth sintético).
+    Para saber si un modelo es bueno, necesitas preguntas cuya respuesta conozcas de antemano (esto se llama Ground Truth).
+    """
+
+    # Divide el texto: Corta todo el documento cada vez que encuentra un punto (.) para obtener frases.
     sentences = text.split('.')
+    # Limpia y filtra: Borra espacios vacíos y descarta frases muy cortas (menos de 30 letras) para que no se cuelen trozos de texto sin sentido.
     sentences = [s.strip() for s in sentences if len(s.strip()) > 30]
+    # Elige al azar: Selecciona un grupo pequeño de esas frases (por defecto 10) para usarlas como las preguntas del "examen" para la IA.
     return random.sample(sentences, min(num_queries, len(sentences)))
 
 # ============================================================================
@@ -123,11 +138,13 @@ class LLMJudgeEvaluator:
     def __init__(self):
         try:
             api_key = os.getenv("GOOGLE_API_KEY")
-            if api_key:
+            if api_key and HAS_GENAI:
                 self.client = genai.Client(api_key=api_key)
                 self.model_id = 'gemini-1.5-flash'
                 self.available = True
             else:
+                if not HAS_GENAI and api_key:
+                    logging.warning("⚠️ La librería 'google-genai' no está instalada. El LLM Judge no estará disponible, pero el resto de métricas funcionarán.")
                 self.available = False
         except Exception:
             self.available = False
@@ -190,7 +207,9 @@ def main():
                 # A. CHUNKING
                 start_split = time.time()
                 splitter = RecursiveCharacterTextSplitter(
-                    chunk_size=chunk_size, chunk_overlap=overlap, separators=["\n\n", "\n", ".", " ", ""]
+                    chunk_size=chunk_size, 
+                    chunk_overlap=overlap, 
+                    separators=["\n\n", "\n", ".", " ", ""]
                 )
                 chunks = splitter.split_text(full_text)
                 split_time = time.time() - start_split
