@@ -21,9 +21,12 @@ const themeIcons = {
   midnight: Moon,
 };
 
+import { useAuth } from '@/contexts/AuthContext';
+
 export default function Header() {
   const pathname = usePathname();
   const { theme, cycleTheme, themeLabel } = useTheme();
+  const { isAuthenticated, logout } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const ThemeIcon = themeIcons[theme];
@@ -126,13 +129,30 @@ export default function Header() {
 
           {/* Auth buttons */}
           <div className="desktop-nav" style={{ display: 'flex', gap: '8px' }}>
-            <Link href="/auth" className="btn-ghost" style={{ textDecoration: 'none', fontSize: 14 }}>
-              Iniciar Sesión
-            </Link>
-            <Link href="/auth" className="btn-primary" style={{ textDecoration: 'none', padding: '10px 22px', fontSize: 14 }}>
-              Comenzar
-              <ChevronRight size={16} />
-            </Link>
+            {isAuthenticated ? (
+              <>
+                <Link href="/dashboard" className="btn-ghost" style={{ textDecoration: 'none', fontSize: 14 }}>
+                  Dashboard
+                </Link>
+                <button 
+                  onClick={() => logout()} 
+                  className="btn-primary" 
+                  style={{ textDecoration: 'none', padding: '10px 22px', fontSize: 14, cursor: 'pointer', border: 'none' }}
+                >
+                  Cerrar Sesión
+                </button>
+              </>
+            ) : (
+              <>
+                <Link href="/auth" className="btn-ghost" style={{ textDecoration: 'none', fontSize: 14 }}>
+                  Iniciar Sesión
+                </Link>
+                <Link href="/auth" className="btn-primary" style={{ textDecoration: 'none', padding: '10px 22px', fontSize: 14 }}>
+                  Comenzar
+                  <ChevronRight size={16} />
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile menu toggle */}
