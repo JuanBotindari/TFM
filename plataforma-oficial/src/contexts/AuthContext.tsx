@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { useUser, useClerk } from '@clerk/nextjs';
 import { mockOrganizations, mockUsers, type User, type Organization } from '@/lib/mockData';
+import { supabase } from '@/lib/supabase';
 
 export type AuthMode = 'company' | 'user' | 'guest' | null;
 
@@ -33,13 +34,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Sync Clerk user with our AuthContext
   useEffect(() => {
     if (isLoaded && isSignedIn && user) {
+      const role = (user.publicMetadata?.role as any) || 'viewer';
+      const orgId = (user.publicMetadata?.orgId as string) || 'org-banco';
+
+      // 🔄 Sync with Supabase user_profiles table
+      supabase
+        .from('user_profiles')
+        .upsert({ 
+          id: user.id, 
+          org_id: orgId, 
+          role: role 
+        })
+        .then(({ error }) => {
+          if (error) console.error('Error syncing user profile to Supabase:', error);
+        });
+
       // For now, map Clerk user to our structure
       const syncUser: User = {
         id: user.id,
         name: user.fullName || user.username || 'Usuario',
         email: user.primaryEmailAddress?.emailAddress || '',
-        role: (user.publicMetadata?.role as any) || 'viewer',
-        orgId: (user.publicMetadata?.orgId as string) || 'org-001',
+        role: role,
+        orgId: orgId,
         avatar: user.imageUrl,
         joinedAt: user.createdAt?.toISOString() || new Date().toISOString(),
       };
