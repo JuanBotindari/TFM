@@ -10,8 +10,10 @@ const isPublicRoute = createRouteMatcher([
 ]);
 
 export default clerkMiddleware(async (auth, request) => {
-  if (!isPublicRoute(request)) {
-    (await auth()).protect();
+  const isGuest = request.cookies.get("tfm_guest_mode")?.value === "true";
+
+  if (!isPublicRoute(request) && !isGuest) {
+    await auth.protect();
   }
 });
 

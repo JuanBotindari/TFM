@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { useUser, useClerk } from '@clerk/nextjs';
 import { mockOrganizations, mockUsers, type User, type Organization } from '@/lib/mockData';
+import { supabase } from '@/lib/supabase';
 
 export type AuthMode = 'company' | 'user' | 'guest' | null;
 
@@ -11,7 +12,7 @@ interface AuthContextType {
   currentUser: User | null;
   currentOrg: Organization | null;
   authMode: AuthMode;
-  login: (email: string, password: string, mode: AuthMode) => boolean;
+
   loginAsGuest: () => void;
   logout: () => void;
   isAdmin: boolean;
@@ -33,13 +34,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Sync Clerk user with our AuthContext
   useEffect(() => {
     if (isLoaded && isSignedIn && user) {
-      // For now, map Clerk user to our mock user structure or create a dynamic one
+      const role = (user.publicMetadata?.role as any) || 'viewer';
+      const orgId = (user.publicMetadata?.orgId as string) || 'org-banco';
+
+      // 🔄 Sync with Supabase user_profiles table
+      supabase
+        .from('user_profiles')
+        .upsert({ 
+          id: user.id, 
+          org_id: orgId, 
+          role: role 
+        })
+        .then(({ error }) => {
+          if (error) console.error('Error syncing user profile to Supabase:', error);
+        });
+
+      // For now, map Clerk user to our structure
       const syncUser: User = {
         id: user.id,
         name: user.fullName || user.username || 'Usuario',
         email: user.primaryEmailAddress?.emailAddress || '',
-        role: (user.publicMetadata?.role as any) || 'viewer', // Read role from Clerk metadata
-        orgId: (user.publicMetadata?.orgId as string) || 'org-001',
+        role: role,
+        orgId: orgId,
         avatar: user.imageUrl,
         joinedAt: user.createdAt?.toISOString() || new Date().toISOString(),
       };
@@ -55,18 +71,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [user, isLoaded, isSignedIn, authMode]);
 
-  const login = (email: string, _password: string, mode: AuthMode): boolean => {
-    const user = mockUsers.find((u) => u.email === email);
-    if (user) {
-      setCurrentUser(user);
-      const org = mockOrganizations.find((o) => o.id === user.orgId) || null;
-      setCurrentOrg(org);
-      setAuthMode(mode);
-      return true;
-    }
-    return false;
-  };
-
   const loginAsGuest = () => {
     const guestUser: User = {
       id: 'guest-001',
@@ -77,16 +81,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       avatar: '',
       joinedAt: new Date().toISOString(),
     };
+    
+    // Set cookie for middleware to allow access
+    document.cookie = "tfm_guest_mode=true; path=/; max-age=3600"; // 1 hour
+    
     setCurrentUser(guestUser);
     setCurrentOrg(mockOrganizations[0]);
     setAuthMode('guest');
   };
 
   const logout = async () => {
+    // Clear guest cookie if exists
+    document.cookie = "tfm_guest_mode=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
     await signOut();
-    setCurrentUser(null);
-    setCurrentOrg(null);
-    setAuthMode(null);
   };
 
   const isAuthenticated = currentUser !== null;
@@ -102,7 +109,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         currentUser,
         currentOrg,
         authMode,
-        login,
+
         loginAsGuest,
         logout,
         isAdmin,

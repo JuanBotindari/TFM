@@ -13,28 +13,63 @@ type LoginMode = 'company' | 'user';
 
 const themeIcons = { light: Sun, grey: Monitor, midnight: Moon };
 
+import { useSignIn, useSignUp } from '@clerk/nextjs';
+
 export default function AuthPage() {
   const router = useRouter();
-  const { login, loginAsGuest } = useAuth();
+  const { isLoaded: isSignInLoaded, signIn, setActive: setSignInActive } = useSignIn();
+  const { isLoaded: isSignUpLoaded, signUp, setActive: setSignUpActive } = useSignUp();
+  
+  const { loginAsGuest } = useAuth();
   const { theme, cycleTheme, themeLabel } = useTheme();
   const [tab, setTab] = useState<AuthTab>('login');
   const [loginMode, setLoginMode] = useState<LoginMode>('user');
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const ThemeIcon = themeIcons[theme];
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    const success = login(email, password, loginMode);
-    if (success) {
+  // If already signed in, redirect to dashboard
+  React.useEffect(() => {
+    if (isSignInLoaded && signIn?.status === 'complete') {
       router.push('/dashboard');
-    } else {
-      setError('Credenciales incorrectas. Probá con: admin@banco.com');
+    }
+  }, [isSignInLoaded, signIn?.status, router]);
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!isSignInLoaded) return;
+    
+    setLoading(true);
+    setError('');
+    
+    try {
+      const result = await signIn.create({
+        identifier: email, // This can be email or username in Clerk
+        password,
+      });
+
+      if (result.status === 'complete') {
+        await setSignInActive({ session: result.createdSessionId });
+        router.push('/dashboard');
+      } else {
+        console.log(result);
+        setError('Se requiere verificación adicional o la cuenta no está completa.');
+      }
+    } catch (err: any) {
+      console.error(err);
+      if (err.errors?.[0]?.code === 'session_already_exists') {
+        router.push('/dashboard');
+        return;
+      }
+      setError(err.errors?.[0]?.message || 'Error al iniciar sesión. Revisa tus credenciales.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -43,18 +78,45 @@ export default function AuthPage() {
     router.push('/dashboard');
   };
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Mock register - just log in with the first admin
-    login('admin@banco.com', 'demo', 'user');
-    router.push('/dashboard');
+    if (!isSignUpLoaded) return;
+
+    setLoading(true);
+    setError('');
+
+    try {
+      const result = await signUp.create({
+        emailAddress: email,
+        username: username,
+        password,
+        firstName: name.split(' ')[0],
+        lastName: name.split(' ').slice(1).join(' '),
+      });
+
+      if (result.status === 'complete') {
+        await setSignUpActive({ session: result.createdSessionId });
+        router.push('/dashboard');
+      } else {
+        // En un flujo real aquí pediríamos el código de verificación de email
+        setError('Cuenta creada, pero requiere verificación de email (revisa tu consola para el siguiente paso).');
+        console.log('SignUp Result:', result);
+      }
+    } catch (err: any) {
+      console.error(err);
+      setError(err.errors?.[0]?.message || 'Error al crear la cuenta.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const demoCredentials = [
-    { label: 'Admin Banco', email: 'admin@banco.com', role: 'admin' },
-    { label: 'Editor Banco', email: 'editor@banco.com', role: 'editor' },
-    { label: 'Viewer Banco', email: 'viewer@banco.com', role: 'viewer' },
-    { label: 'Admin Estudio', email: 'admin@estudio.com', role: 'admin' },
+    //{ label: 'Admin Banco', username: 'admin_banco', role: 'admin', password: 'admin_banco_1' },
+    { label: 'Editor Banco', username: 'edit_banco', role: 'editor', password: 'edit_banco_1' },
+    { label: 'Demo Banco', username: 'viewer_banco', role: 'viewer', password: 'viewer_banco_1' },
+    //{ label: 'Admin Estudio', username: 'admin_estudio', role: 'admin', password: 'admin_estudio_1' },
+    { label: 'Editor Estudio', username: 'edit_estudio', role: 'editor', password: 'edit_estudio_1' },
+    { label: 'Demo Estudio', username: 'viewer_estudio', role: 'viewer', password: 'viewer_estudio_1' },
   ];
 
   return (
@@ -179,8 +241,8 @@ export default function AuthPage() {
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                   <div>
-                    <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>Email</label>
-                    <input className="input" type="email" placeholder="tu@email.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                    <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>Email o Usuario</label>
+                    <input className="input" type="text" placeholder="tu@email.com o usuario" value={email} onChange={(e) => setEmail(e.target.value)} required />
                   </div>
 
                   <div>
@@ -214,9 +276,9 @@ export default function AuthPage() {
                     </p>
                   )}
 
-                  <button type="submit" className="btn-primary" style={{ width: '100%', justifyContent: 'center', padding: '14px' }}>
-                    Iniciar Sesión
-                    <ArrowLeft size={16} style={{ transform: 'rotate(180deg)' }} />
+                  <button type="submit" className="btn-primary" disabled={loading} style={{ width: '100%', justifyContent: 'center', padding: '14px', opacity: loading ? 0.7 : 1 }}>
+                    {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
+                    {!loading && <ArrowLeft size={16} style={{ transform: 'rotate(180deg)' }} />}
                   </button>
                 </div>
 
@@ -248,7 +310,7 @@ export default function AuthPage() {
                       <button
                         key={cred.email}
                         type="button"
-                        onClick={() => { setEmail(cred.email); setPassword('demo123'); }}
+                        onClick={() => { setEmail(cred.username || cred.email); setPassword(cred.password); }}
                         style={{
                           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                           padding: '8px 12px', borderRadius: 8, border: 'none', background: 'var(--bg-input)',
@@ -277,6 +339,10 @@ export default function AuthPage() {
                     <input className="input" placeholder="Tu nombre" value={name} onChange={(e) => setName(e.target.value)} required />
                   </div>
                   <div>
+                    <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>Nombre de usuario</label>
+                    <input className="input" placeholder="usuario123" value={username} onChange={(e) => setUsername(e.target.value)} required />
+                  </div>
+                  <div>
                     <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>Email</label>
                     <input className="input" type="email" placeholder="tu@email.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
                   </div>
@@ -296,9 +362,9 @@ export default function AuthPage() {
                     />
                   </div>
 
-                  <button type="submit" className="btn-primary" style={{ width: '100%', justifyContent: 'center', padding: '14px' }}>
-                    Crear Cuenta
-                    <UserPlus size={16} />
+                  <button type="submit" className="btn-primary" disabled={loading} style={{ width: '100%', justifyContent: 'center', padding: '14px', opacity: loading ? 0.7 : 1 }}>
+                    {loading ? 'Creando cuenta...' : 'Crear Cuenta'}
+                    {!loading && <UserPlus size={16} />}
                   </button>
                 </div>
               </motion.form>
