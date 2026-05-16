@@ -17,6 +17,11 @@ import {
   LogOut,
   Settings,
   Sparkles,
+  FileText,
+  Table,
+  Brain,
+  FolderSearch,
+  BookOpen
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -25,9 +30,11 @@ interface SidebarProps {
 }
 
 const sidebarItems = [
-  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, adminOnly: false },
+  { name: 'Resumen General', href: '/dashboard', icon: LayoutDashboard, adminOnly: false },
   { name: 'Chat IA', href: '/dashboard/chat', icon: MessageSquare, adminOnly: false },
-  { name: 'Base de Conocimiento', href: '/dashboard/knowledge', icon: Database, adminOnly: false },
+  { name: 'Base de Conocimiento', href: '/dashboard/knowledge', icon: Brain, adminOnly: false },
+  { name: 'Explorador de Tablas', href: '/dashboard/tables', icon: Table, adminOnly: false },
+  { name: 'Explorador de Documentos', href: '/dashboard/documents', icon: FileText, adminOnly: false },
   { name: 'Consultas SQL', href: '/dashboard/sql', icon: Terminal, adminOnly: false },
   { name: 'Gestión Usuarios', href: '/dashboard/users', icon: Users, adminOnly: true },
   { name: 'Control de Acceso', href: '/dashboard/access', icon: Shield, adminOnly: true },
