@@ -62,7 +62,14 @@ export default function DocumentsPage() {
 
     setUploading(true);
     const file = files[0];
-    const fileName = `${Date.now()}_${file.name}`;
+    
+    // Sanitize filename: remove spaces, accents and special chars
+    const sanitizedName = file.name
+      .replace(/\s+/g, '_')
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-zA-Z0-9._-]/g, '');
+
+    const fileName = `${Date.now()}_${sanitizedName}`;
     const storagePath = `${currentOrg.id}/${fileName}`;
 
     try {

@@ -23,7 +23,9 @@ def upload_and_process(file_path):
 
     # A. Subir al Storage
     with open(file_path, 'rb') as f:
-        storage_path = f"{ORG_ID}/{file_name}"
+        # Limpiar nombre para evitar errores de caracteres especiales (espacios, tildes)
+        clean_name = file_name.replace(" ", "_").replace("á", "a").replace("é", "e").replace("í", "i").replace("ó", "o").replace("ú", "u").replace("ñ", "n").replace("Á", "A").replace("É", "E").replace("Í", "I").replace("Ó", "O").replace("Ú", "U")
+        storage_path = f"{ORG_ID}/{clean_name}"
         try:
             supabase.storage.from_(BUCKET_NAME).upload(storage_path, f, {"upsert": "true"})
             print(f"1. Subido a Storage: {storage_path}")
@@ -68,3 +70,7 @@ if __name__ == "__main__":
         print("Uso: python upload_docs.py <ruta_del_pdf>")
     else:
         upload_and_process(sys.argv[1])
+
+
+
+

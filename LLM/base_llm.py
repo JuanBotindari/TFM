@@ -9,7 +9,7 @@ from abc import ABC, abstractmethod
 if hasattr(sys.stdout, 'reconfigure'):
     sys.stdout.reconfigure(encoding='utf-8')
 
-from langchain_ollama import ChatOllama
+from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
 from langchain_core.prompts import ChatPromptTemplate, HumanMessagePromptTemplate, MessagesPlaceholder
 from langchain_core.messages import SystemMessage, HumanMessage, ToolMessage
 from dotenv import load_dotenv
@@ -40,17 +40,19 @@ class BaseModel(ABC):
         
         # IA Components
         self.llm = self._inicializar_llm()
-        # Cambiamos a un modelo multilingüe, ya que los textos están en español
-        modelo_embeddings = self.config_tech.get("modelo_embeddings", "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
-        self.embeddings = HuggingFaceEmbeddings(model_name=modelo_embeddings)
+        # Cambiamos a embeddings de Google para no depender de librerías locales pesadas
+        self.embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
         self.vector_store = None
         self.chat_prompt = None
         self.archivos_reporte = []
 
     def _inicializar_llm(self):
-        model = self.config_tech.get("modelo", "phi3")
-        url = self.config_tech.get("url_llm", "http://localhost:11434")
-        return ChatOllama(model=model, base_url=url, temperature=0)
+        # Usamos Gemini Pro con tu API Key cargada desde .env
+        return ChatGoogleGenerativeAI(
+            model="gemini-1.5-pro", 
+            temperature=0,
+            convert_system_message_to_human=True # Por compatibilidad con algunos modelos de Google
+        )
 
     ################################################################################
     # 1. Metodos de utilidad y Telemetría
