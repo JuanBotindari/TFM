@@ -1,5 +1,5 @@
 {
-  "modelo": "llama3.2",
-  "url_llm": "http://localhost:11434",
-  "modelo_embeddings": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+  "modelo": "gemini-2.0-flash",
+  "url_llm": "",
+  "modelo_embeddings": "models/gemini-embedding-001"
 }
