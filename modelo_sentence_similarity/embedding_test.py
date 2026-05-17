@@ -52,7 +52,11 @@ OVERLAPS = [50, 150, 300]
 MODELS = [
     "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
     "intfloat/multilingual-e5-small",
-    "sentence-transformers/distiluse-base-multilingual-cased-v1"
+    "intfloat/multilingual-e5-base",
+    "sentence-transformers/distiluse-base-multilingual-cased-v1",
+    "jinaai/jina-embeddings-v3",
+    "jinaai/jina-embeddings-v2-base-es",
+    "sentence-transformers/LaBSE"
 ]
 TOP_K = 3 
 
