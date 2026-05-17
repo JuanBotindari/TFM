@@ -89,7 +89,7 @@ export default function DocumentsPage() {
           file_type: file.type.split('/')[1] || 'unknown',
           size_bytes: file.size,
           org_id: currentOrg.id,
-          status: 'processing' // The backend (or a future edge function) will change this to 'indexed'
+          status: 'indexed' // Guardado directamente como indexado. El backend de Python lo procesará dinámicamente al chatear.
         });
 
       if (dbError) throw dbError;
