@@ -145,7 +145,7 @@ class LLMJudgeEvaluator:
             api_key = os.getenv("GOOGLE_API_KEY")
             if api_key and HAS_GENAI:
                 self.client = genai.Client(api_key=api_key)
-                self.model_id = 'gemini-1.5-flash'
+                self.model_id = 'gemini-2.5-flash'
                 self.available = True
             else:
                 if not HAS_GENAI and api_key:
@@ -162,10 +162,14 @@ class LLMJudgeEvaluator:
                       f"Consulta: {q}\nContexto: {c}")
             try:
                 response = self.client.models.generate_content(model=self.model_id, contents=prompt)
-                if "SI" in response.text.upper(): correct_count += 1
+                res_text = response.text.upper().replace("Í", "I").strip()
+                if "SI" in res_text or "YES" in res_text:
+                    correct_count += 1
                 time.sleep(0.35)
-            except Exception: pass
+            except Exception as e:
+                logging.warning(f"⚠️ Error al llamar a Gemini ({self.model_id}): {e}")
         return correct_count / len(queries) if queries else 0.0
+
 
 # ============================================================================
 # 4. PIPELINE DE EJECUCIÓN (Main Experiment Loop)
