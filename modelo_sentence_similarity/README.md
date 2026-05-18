@@ -1,25 +1,301 @@
 # Análisis Técnico: `embedding_test.py`
 
-## Configuración y Utilidades
+PONER ACA QUE ESL O QUE QUEREMOS
 
-### 0. Importaciones y Configuración Inicial
-Se puede ignorar, solo configura el loggin y las constantes globales, no es importante para entender el código.
+# 0. Cosine Similarity
 
-### 1. Parámetros Globales (Constantes)
+Tenemos 3 casos a comparar:
+
+Persona A: 32 años, 71.3 kg
+Persona B: 82 años, 95.3 kg
+Persona C: 25 años, 68.2 kg
+
+Queremos saber cuál es más similar a un vector de referencia (por ejemplo, p1)
+
+Aca tengo 3 vectores de 2 dimensiones: edad y peso.
+
+````md
+`p1 = [25, 68.2]`
+`p2 = [82, 95.3]`
+`p3 = [32, 71.3]`
+````
+
+Si los graficamos:
+
+![alt text](imagenes/grafico_similitudes.png)
+
+**¿Como sabemos matematicamente que son similares?**
+
+## ¿Como medimos las similitudes? 
+
+La similitud del coseno NO compara el tamaño del vector.
+
+Compara la **dirección**.
+
+Dos vectores son similares si apuntan hacia el mismo lugar.
+
+$$
+\cos(\theta)=\frac{A \cdot B}{|A||B|}
+$$
+
+### 0.1 Producto punto
+
+El producto punto multiplica cada componente y luego suma.
+
+$$
+{sumatoria A \cdot B}
+$$
+
+En este caso, seria hacer lo siguiente:
+
+$$
+ P_1.edad\cdot P_2.edad + P_1.peso\cdot P_2.peso
+$$
+
+
+Esto mide cuánto “apuntan” en la misma dirección.
+
+* Valor grande → muy similares
+* Valor pequeño → poco similares
+
+---
+
+### 0.2. Magnitud (`|A| * |B|`)
+
+La magnitud es el tamaño del vector.
+
+$$
+\sqrt{P_1.edad^2+P_1.peso^2} \cdot \sqrt{P_2.edad^2+P_2.peso^2}
+
+$$
+
+Esto sirve para normalizar el resultado y evitar que el tamaño afecte la comparación.
+
+---
+
+### 0.3. Aplicacion final
+
+Ahora vamos a aplicarlo a cada uno de nuestros ejemplos:
+
+````md
+`p1 = [25, 68.2]`
+`p2 = [82, 95.3]`
+`p3 = [32, 71.3]`
+````
+
+
+#### `p1` vs `p2`
+
+| Paso           | Cálculo                               | Resultado |
+| -------------- | ------------------------------------- | --------- |
+| Producto punto | $(25 \times 82) + (68.2 \times 95.3)$ | $8548.46$ |
+| Magnitud `p1`  | $\sqrt{25^2 + 68.2^2}$                | $72.64$   |
+| Magnitud `p2`  | $\sqrt{82^2 + 95.3^2}$                | $125.72$  |
+| Coseno         | $\frac{8548.46}{72.64 \times 125.72}$ | $0.936$   |
+
+
+#### `p1` vs `p3`
+
+| Paso           | Cálculo                               | Resultado |
+| -------------- | ------------------------------------- | --------- |
+| Producto punto | $(25 \times 32) + (68.2 \times 71.3)$ | $5662.66$ |
+| Magnitud `p1`  | $\sqrt{25^2 + 68.2^2}$                | $72.64$   |
+| Magnitud `p3`  | $\sqrt{32^2 + 71.3^2}$                | $78.15$   |
+| Coseno         | $\frac{5662.66}{72.64 \times 78.15}$  | $0.997$   |
+
+
+#### `p2` vs `p3`
+
+| Paso           | Cálculo                               | Resultado |
+| -------------- | ------------------------------------- | --------- |
+| Producto punto | $(82 \times 32) + (95.3 \times 71.3)$ | $9418.89$ |
+| Magnitud `p2`  | $\sqrt{82^2 + 95.3^2}$                | $125.72$  |
+| Magnitud `p3`  | $\sqrt{32^2 + 71.3^2}$                | $78.15$   |
+| Coseno         | $\frac{9418.89}{125.72 \times 78.15}$ | $0.959$   |
+
+
+<br>
+<hr>
+<br>
+
+
+# 1. Parámetros Globales (Constantes)
 * **`CHUNK_SIZES` y `OVERLAPS`**: Listas de tamaños y solapamientos que se probarán de forma combinada (Ej: Chunk 500 con overlap 50, luego 500 con 150, etc.).
 * **`MODELS`**: Los modelos open-source de HuggingFace que se van a evaluar.
 * **`TOP_K = 3`**: Indica que las métricas de evaluación revisarán, como máximo, los primeros 3 resultados devueltos por el motor de búsqueda semántica.
 
 ### 2. Funciones de Utilidad
-* **`cosine_similarity(a, b)`**: Esta función calcula la **Similitud del Coseno** entre dos conjuntos de vectores (la pregunta y los fragmentos de texto). Es la manera en la que se calcula si dos vectores son similares.
-  * Normaliza la longitud de los vectores y luego realiza el producto punto. Matemáticamente, esto representa qué tan similares son semánticamente (1 muy similar, 0 nada similar).
+* **`cosine_similarity(a, b)`**: Esta función calcula la **Similitud del Coseno** ya.
 * **`load_documents(directory)`**: Usa LangChain para leer todos los PDFs y concatena todo su texto.
 * **`get_word_counts(chunks)`**: Calcula estadísticas simples de número mínimo, máximo y promedio de palabras de los fragmentos.
-* **`generate_test_queries(text, num_queries=10)`**: Genera el **"Ground Truth"** separando el PDF por puntos, filtrando oraciones cortas y eligiendo 10 al azar para probar.
+* **`generate_test_queries(text, num_queries=10)`**: Genera el **"Ground Truth"** separando el PDF por puntos, filtrando oraciones cortas y eligiendo 10 al azar para probar y evaluar.
 
 ---
 
-## 3. Clases de Evaluación
+# 3. Clases de Evaluación
+
+
+## 3.1. Clase: Medición Actual (MRR)
+
+La métrica **Mean Reciprocal Rank (MRR)** evalúa qué tan arriba aparece el resultado correcto dentro de un ranking generado por el modelo de embeddings.
+
+Su objetivo es medir si el sistema devuelve rápidamente el fragmento más relevante.
+
+
+**Fórmula** para 
+
+$$
+MRR = \frac{1}{N} \sum_{i=1}^{N} \frac{1}{rank_i}
+$$
+
+
+Donde:
+
+- $N$ = cantidad total de consultas
+- $rank_i$ = posición donde apareció el resultado correcto
+* **$\frac{1}{rank}$** → mide **una sola consulta**
+* **$\sum$** → junta los resultados de **todas las consultas**
+* **$\frac{1}{N}$** → lo convierte en un **promedio del modelo**
+
+**Interpretación**
+
+El MRR utiliza la fórmula para una **unica** consulta:
+
+$$
+\frac{1}{posición}
+$$
+
+Esto significa que mientras más arriba aparezca el resultado correcto, mayor será el puntaje.
+
+| Posición correcta | Cálculo | Valor |
+|---|---|---|
+| 1 | $\frac{1}{1}$ | $1.0$ |
+| 2 | $\frac{1}{2}$ | $0.5$ |
+| 3 | $\frac{1}{3}$ | $0.33$ |
+| 10 | $\frac{1}{10}$ | $0.1$ |
+
+Por ejemplo:
+
+- Si el fragmento correcto aparece primero, el modelo obtiene el máximo puntaje posible (`1.0`).
+- Si aparece en segunda posición, el puntaje baja a `0.5`.
+- Si aparece muy abajo en el ranking, el valor se acerca a `0`.
+
+Esto permite penalizar modelos que obligan al usuario a revisar muchos resultados antes de encontrar la respuesta correcta.
+
+
+**Ordenamiento del ranking**
+
+```python
+ranked_indices = np.argsort(similarities)[::-1] # de mayor a menor
+```
+* `np.argsort()` ordena los índices de menor a mayor.
+
+* El `[::-1]` invierte el orden para dejar primero los fragmentos más similares.
+
+
+**Búsqueda del resultado correcto**
+
+```python
+rank = np.where(ranked_indices == correct_idx)[0][0] + 1
+```
+
+* Se localiza en qué posición quedó el fragmento correcto dentro del ranking.
+* Se suma `+1` porque Python indexa desde `0`.
+
+---
+
+## 4. Cálculo del Reciprocal Rank
+
+```python
+mrr_score += 1.0 / rank
+```
+
+Se calcula:
+
+$$
+\frac{1}{posición}
+$$
+
+Ejemplo:
+
+* Posición 1 → `1.0`
+* Posición 2 → `0.5`
+* Posición 5 → `0.2`
+
+---
+
+## 5. Promedio final
+
+```python
+return mrr_score / len(correct_indices)
+```
+
+Se promedian todos los valores obtenidos entre las consultas evaluadas.
+
+---
+
+# Conclusión
+
+El MRR mide qué tan rápido el usuario encuentra el resultado correcto.
+
+* Un valor cercano a `1` indica que el modelo posiciona correctamente los documentos relevantes en los primeros lugares.
+* Un valor bajo indica que el usuario necesita revisar múltiples resultados antes de encontrar la información correcta.
+
+```
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ### 3.1. Clase: Medición Actual (MRR)
 Evalúa el **Mean Reciprocal Rank (MRR)**.

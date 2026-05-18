@@ -9,7 +9,7 @@ from abc import ABC, abstractmethod
 if hasattr(sys.stdout, 'reconfigure'):
     sys.stdout.reconfigure(encoding='utf-8')
 
-from langchain_ollama import ChatOllama
+from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
 from langchain_core.prompts import ChatPromptTemplate, HumanMessagePromptTemplate, MessagesPlaceholder
 from langchain_core.messages import SystemMessage, HumanMessage, ToolMessage
 from dotenv import load_dotenv
@@ -21,7 +21,8 @@ from langchain_chroma import Chroma
 from langchain_huggingface import HuggingFaceEmbeddings
 from pypdf import PdfReader
 
-load_dotenv()
+# Cargar variables de entorno desde la raíz del repositorio
+load_dotenv(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), '.env'))
 
 class BaseModel(ABC):
     """Clase Madre Agéntica: Optimizada para Tool-Calling por Protocolo de Etiquetas."""
@@ -39,17 +40,21 @@ class BaseModel(ABC):
         
         # IA Components
         self.llm = self._inicializar_llm()
-        # Cambiamos a un modelo multilingüe, ya que los textos están en español
-        modelo_embeddings = self.config_tech.get("modelo_embeddings", "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
-        self.embeddings = HuggingFaceEmbeddings(model_name=modelo_embeddings)
+        # Cargamos el modelo de embeddings desde la configuración (por defecto el de Google)
+        modelo_embeddings = self.config_tech.get("modelo_embeddings", "models/gemini-embedding-001")
+        self.embeddings = GoogleGenerativeAIEmbeddings(model=modelo_embeddings)
         self.vector_store = None
         self.chat_prompt = None
         self.archivos_reporte = []
 
     def _inicializar_llm(self):
-        model = self.config_tech.get("modelo", "phi3")
-        url = self.config_tech.get("url_llm", "http://localhost:11434")
-        return ChatOllama(model=model, base_url=url, temperature=0)
+        # Usamos el modelo configurado en settings.json (por defecto gemini-2.0-flash)
+        model_name = self.config_tech.get("modelo", "gemini-2.0-flash")
+        return ChatGoogleGenerativeAI(
+            model=model_name, 
+            temperature=0,
+            convert_system_message_to_human=True # Por compatibilidad con algunos modelos de Google
+        )
 
     ################################################################################
     # 1. Metodos de utilidad y Telemetría
@@ -114,17 +119,100 @@ class BaseModel(ABC):
         db_path = os.path.join(self.path_cliente, "db/vector_store")
         self._telemetria("auditoria")
         
-        if force_rebuild and os.path.exists(db_path):
-            shutil.rmtree(db_path, ignore_errors=True)
+        # 1. Intentar descargar, fragmentar y generar embeddings dinámicamente desde Supabase Storage (On-the-fly RAG)
+        all_chunks = []
+        try:
+            from supabase import create_client
+            import io
             
-        if not os.path.exists(db_path) or force_rebuild:
-            self._crear_vector_db(db_path)
-        else:
-            self._escanear_archivos_para_reporte()
+            # Cargar credenciales
+            load_dotenv(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'plataforma-oficial', '.env.local'))
+            url = os.getenv("NEXT_PUBLIC_SUPABASE_URL")
+            key = os.getenv("otra_key_supabase") or os.getenv("NEXT_PUBLIC_SUPABASE_ANON_KEY")
+            
+            if url and key:
+                supabase_client = create_client(url, key)
+                org_id = "org-banco" if "banco" in self.nombre_cliente else "org-estudio"
+                
+                print(f"☁️ [Supabase RAG] Descargando y procesando documentos para {org_id}...")
+                
+                # Consultar los documentos cargados por la web de esta organización
+                res_docs = supabase_client.table("documents").select("*").eq("org_id", org_id).execute()
+                docs = res_docs.data
+                
+                if docs:
+                    print(f"📥 Encontrados {len(docs)} documentos en la nube. Extrayendo texto y dividiendo en fragmentos en caliente...")
+                    text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=150)
+                    
+                    for doc in docs:
+                        name = doc.get("name")
+                        storage_path = doc.get("storage_path")
+                        print(f"  📄 Ingestando: {name}...")
+                        
+                        try:
+                            # Descargar PDF desde Supabase Storage
+                            file_bytes = supabase_client.storage.from_("company-documents").download(storage_path)
+                            
+                            # Extraer texto usando pypdf
+                            reader = PdfReader(io.BytesIO(file_bytes))
+                            text = "\n".join([page.extract_text() for page in reader.pages if page.extract_text()])
+                            
+                            if text.strip():
+                                # Fragmentar el texto plano
+                                chunks = text_splitter.split_text(text)
+                                for chunk in chunks:
+                                    all_chunks.append({
+                                        "text": chunk,
+                                        "metadata": {
+                                            "source": name,
+                                            "modulo": "Supabase Cloud"
+                                        }
+                                    })
+                            else:
+                                print(f"  ⚠️ Advertencia: No se extrajo texto legible en {name} (puede ser escaneado o vacío).")
+                        except Exception as e:
+                            print(f"  ❌ Error al procesar {name} desde Storage: {e}")
+            else:
+                print("⚠️ No se encontraron credenciales válidas de Supabase en .env.local.")
+        except Exception as e:
+            print(f"⚠️ Error durante la inicialización de RAG en la nube: {e}")
 
-        self.vector_store = Chroma(persist_directory=db_path, embedding_function=self.embeddings)
+        # 2. Si se encontraron chunks en Supabase, generar embeddings y construir base de vectores
+        if all_chunks:
+            print(f"🔮 [Generación de Embeddings] Generando vectores para {len(all_chunks)} fragmentos y construyendo base RAG en memoria...")
+            texts = [c["text"] for c in all_chunks]
+            metadatas = [c["metadata"] for c in all_chunks]
+            
+            # Limpiar vector store previo e indexar de nuevo con los embeddings de Gemini
+            if os.path.exists(db_path):
+                shutil.rmtree(db_path, ignore_errors=True)
+                
+            self.vector_store = Chroma.from_texts(
+                texts=texts,
+                metadatas=metadatas,
+                embedding=self.embeddings,
+                persist_directory=db_path
+            )
+            
+            # Actualizar reporte de capacidades para la telemetría
+            self.archivos_reporte = []
+            sources_unicos = set(c["metadata"]["source"] for c in all_chunks)
+            for src in sources_unicos:
+                self.archivos_reporte.append([src, "Supabase Cloud", "RAG Vectorial", "Listo (Embeddings calculados) 🔮"])
+        else:
+            # Fallback a archivos locales si no hay documentos en la nube o falló Supabase
+            print("💾 [Fallback RAG] Usando base de datos y archivos locales...")
+            if force_rebuild and os.path.exists(db_path):
+                shutil.rmtree(db_path, ignore_errors=True)
+                
+            if not os.path.exists(db_path) or force_rebuild:
+                self._crear_vector_db(db_path)
+            else:
+                self._escanear_archivos_para_reporte()
+                
+            self.vector_store = Chroma(persist_directory=db_path, embedding_function=self.embeddings)
+
         self._establecer_prompt_dinamico()
-        
         self._telemetria("tabla_conocimiento")
         self._telemetria("listo")
 
