@@ -155,6 +155,50 @@ export default function PitchPage() {
           </div>
         </section>
 
+        {/* Video Demo (TikTok Embed) */}
+        <section className="section" style={{ paddingBottom: 40 }}>
+          <div className="container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <motion.div {...fadeInUp} style={{ textAlign: 'center', marginBottom: 32 }}>
+              <span
+                style={{
+                  display: 'inline-block', fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
+                  letterSpacing: '0.1em', color: 'var(--accent)', marginBottom: 12,
+                  padding: '4px 12px', borderRadius: 6, background: 'var(--accent-light)',
+                }}
+              >
+                Demo en Video
+              </span>
+              <h2 style={{ fontSize: 'clamp(28px, 3vw, 42px)', fontWeight: 800, marginBottom: 16 }}>
+                Descubre cómo funciona en 60 segundos
+              </h2>
+              <p style={{ fontSize: 17, color: 'var(--text-secondary)', maxWidth: 600, margin: '0 auto' }}>
+                Mira nuestro pitch en formato rápido para entender el potencial de la plataforma.
+              </p>
+            </motion.div>
+
+            <motion.div 
+              {...fadeInUp}
+              style={{
+                width: '100%',
+                maxWidth: 340,
+                height: 580,
+                borderRadius: 24,
+                overflow: 'hidden',
+                boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)',
+                border: '4px solid var(--border-primary)',
+                background: 'var(--bg-secondary)',
+              }}
+            >
+              <iframe
+                src="https://www.tiktok.com/embed/v2/7539682233158749496"
+                style={{ width: '100%', height: '100%', border: 'none' }}
+                allowFullScreen
+                allow="encrypted-media; clipboard-write;"
+              />
+            </motion.div>
+          </div>
+        </section>
+
         {/* Problem / Solution / Market Slides */}
         {slides.map((slide, i) => (
           <section key={i} className="section" style={{ background: i % 2 === 0 ? 'var(--bg-secondary)' : 'transparent' }}>
