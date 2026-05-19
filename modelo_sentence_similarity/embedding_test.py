@@ -7,7 +7,6 @@ import pandas as pd
 import psutil
 from typing import List, Dict, Any
 from tabulate import tabulate
-from langchain_community.document_loaders import PyPDFDirectoryLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_huggingface import HuggingFaceEmbeddings
 from transformers import AutoTokenizer
@@ -18,6 +17,7 @@ except ImportError:
     HAS_GENAI = False
 
 from dotenv import load_dotenv
+from supabase_document_loader import SupabaseDocumentLoader
 
 # ============================================================================
 # 1. CONFIGURACIÓN Y CONSTANTES DEL EXPERIMENTO
@@ -44,8 +44,7 @@ for lib in ["urllib3", "httpx", "sentence_transformers", "huggingface_hub", "tra
 
 # --- Constantes Globales ---
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-# Ruta dinámica: busca la carpeta RAG-docs subiendo un nivel desde el script actual
-PDF_DIR = os.path.abspath(os.path.join(BASE_DIR, "..", "RAG-docs", "client-banco", "data", "pdfs"))
+ORG_ID = "org-banco"
 
 CHUNK_SIZES = [500, 1000, 1500]
 OVERLAPS = [50, 150, 300]
@@ -72,15 +71,6 @@ def cosine_similarity(a, b):
     a_norm = a / np.linalg.norm(a, axis=1)[:, np.newaxis]
     b_norm = b / np.linalg.norm(b, axis=1)[:, np.newaxis]
     return np.dot(a_norm, b_norm.T)
-
-def load_documents(directory: str) -> str:
-    """Carga PDFs de un directorio y los concatena en un solo string."""
-    logging.info(f"\nCargando PDFs desde: {directory}")
-    loader = PyPDFDirectoryLoader(directory)
-    docs = loader.load()
-    full_text = "\n".join([doc.page_content for doc in docs])
-    logging.info(f"Se cargaron {len(docs)} páginas.")
-    return full_text
 
 def get_word_counts(chunks: List[str]) -> Dict[str, float]:
     """Estadísticas básicas de palabras por fragmento."""
@@ -194,7 +184,8 @@ def main():
             logging.error(f"Error cargando {model_name}: {e}")
 
     # 4.2. Preparación del Corpus y Ground Truth
-    full_text = load_documents(PDF_DIR)
+    full_text = SupabaseDocumentLoader().load_documents(ORG_ID)
+
     test_queries = generate_test_queries(full_text, num_queries=10)
 
     # 4.3. Evaluación de Combinaciones

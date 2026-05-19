@@ -1,31 +1,160 @@
 'use client';
 
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
 import { mockSqlQueries } from '@/lib/mockData';
-import { Play, Save, History, AlertCircle, Database, Lock } from 'lucide-react';
+import { Play, Save, History, AlertCircle, Database, Lock, Trash2, Clock, CheckCircle2, XCircle } from 'lucide-react';
+
+interface HistoryItem {
+  id: string;
+  query: string;
+  timestamp: string;
+  status: 'success' | 'error';
+  error?: string;
+}
 
 export default function SqlPage() {
   const { isAdmin } = useAuth();
-  const [query, setQuery] = useState('SELECT *\nFROM transacciones\nLIMIT 100;');
+  const [query, setQuery] = useState('SELECT * FROM documents LIMIT 100;');
   const [isRunning, setIsRunning] = useState(false);
   const [results, setResults] = useState<{cols: string[], rows: any[]}|null>(null);
+  const [error, setError] = useState<string | null>(null);
+  
+  // History and Tab states
+  const [activeTab, setActiveTab] = useState<'schema' | 'history' | 'saved'>('schema');
+  const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [schema, setSchema] = useState<Record<string, string[]>>({});
+  const [isLoadingSchema, setIsLoadingSchema] = useState(true);
 
-  const handleRun = () => {
+  // Load history from localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem('tfm-sql-history');
+    if (saved) {
+      try {
+        setHistory(JSON.parse(saved));
+      } catch (e) {
+        console.error('Error loading SQL history:', e);
+      }
+    }
+  }, []);
+
+  // Fetch actual schema from DB on mount
+  useEffect(() => {
+    async function fetchSchema() {
+      try {
+        setIsLoadingSchema(true);
+        const res = await fetch('/api/sql', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            query: `
+              SELECT table_name, column_name, data_type 
+              FROM information_schema.columns 
+              WHERE table_schema = 'public' 
+              ORDER BY table_name, ordinal_position;
+            `
+          })
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          if (data.rows && data.rows.length > 0) {
+            const tempSchema: Record<string, string[]> = {};
+            data.rows.forEach((row: any) => {
+              const tableName = row.table_name;
+              const colInfo = `${row.column_name} (${row.data_type})`;
+              if (!tempSchema[tableName]) {
+                tempSchema[tableName] = [];
+              }
+              tempSchema[tableName].push(colInfo);
+            });
+            setSchema(tempSchema);
+          } else {
+            // Fallback mock schema if tables are empty
+            setSchema({
+              'documents': ['id (uuid)', 'name (text)', 'type (text)', 'size (text)', 'status (text)', 'uploaded_at (timestamptz)', 'org_id (text)'],
+              'users': ['id (uuid)', 'name (text)', 'email (text)', 'role (text)', 'org_id (text)'],
+              'organizations': ['id (text)', 'name (text)', 'slug (text)', 'industry (text)', 'plan (text)']
+            });
+          }
+        } else {
+          throw new Error('No se pudo cargar el esquema.');
+        }
+      } catch (err) {
+        console.error('Error fetching schema:', err);
+        // Fallback mock schema
+        setSchema({
+          'documents': ['id (uuid)', 'name (text)', 'type (text)', 'size (text)', 'status (text)', 'uploaded_at (timestamptz)', 'org_id (text)'],
+          'users': ['id (uuid)', 'name (text)', 'email (text)', 'role (text)', 'org_id (text)'],
+          'organizations': ['id (text)', 'name (text)', 'slug (text)', 'industry (text)', 'plan (text)']
+        });
+      } finally {
+        setIsLoadingSchema(false);
+      }
+    }
+
+    fetchSchema();
+  }, []);
+
+  const saveHistory = (newHistory: HistoryItem[]) => {
+    setHistory(newHistory);
+    localStorage.setItem('tfm-sql-history', JSON.stringify(newHistory));
+  };
+
+  const handleRun = async () => {
     setIsRunning(true);
-    // Simulate query execution
-    setTimeout(() => {
-      setIsRunning(false);
-      setResults({
-        cols: ['id', 'fecha', 'monto', 'tipo', 'cliente'],
-        rows: [
-          { id: 1, fecha: '2024-08-16', monto: 15000, tipo: 'transferencia', cliente: 'Acme Corp' },
-          { id: 2, fecha: '2024-08-16', monto: 3400, tipo: 'depósito', cliente: 'Tech Solutions' },
-          { id: 3, fecha: '2024-08-15', monto: 89000, tipo: 'pago_prov', cliente: 'Global Services' },
-        ]
+    setError(null);
+    setResults(null);
+
+    try {
+      const response = await fetch('/api/sql', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ query }),
       });
-    }, 1000);
+
+      const data = await response.json();
+
+      if (!response.ok || data.error) {
+        throw new Error(data.error || 'Ocurrió un error al ejecutar la consulta.');
+      }
+
+      setResults({
+        cols: data.cols || [],
+        rows: data.rows || [],
+      });
+
+      // Add to history
+      const newHistoryItem: HistoryItem = {
+        id: Date.now().toString(),
+        query,
+        timestamp: new Date().toLocaleTimeString(),
+        status: 'success',
+      };
+      saveHistory([newHistoryItem, ...history]);
+    } catch (err: any) {
+      const errorMessage = err.message || 'Error en la conexión con la base de datos.';
+      setError(errorMessage);
+
+      // Add to history as error
+      const newHistoryItem: HistoryItem = {
+        id: Date.now().toString(),
+        query,
+        timestamp: new Date().toLocaleTimeString(),
+        status: 'error',
+        error: errorMessage,
+      };
+      saveHistory([newHistoryItem, ...history]);
+    } finally {
+      setIsRunning(false);
+    }
+  };
+
+  const clearHistory = () => {
+    saveHistory([]);
   };
 
   return (
@@ -41,7 +170,7 @@ export default function SqlPage() {
               </span>
             )}
           </h1>
-          <p style={{ color: 'var(--text-secondary)' }}>Consulta directamente las tablas de datos indexados (CSVs, bases de datos).</p>
+          <p style={{ color: 'var(--text-secondary)' }}>Ejecuta consultas directamente en la base de datos de producción y explora el esquema del sistema.</p>
         </div>
       </div>
 
@@ -60,11 +189,6 @@ export default function SqlPage() {
                 <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#22C55E' }} />
               </div>
               <div style={{ display: 'flex', gap: 8 }}>
-                {isAdmin && (
-                  <button className="btn-secondary" style={{ padding: '6px 12px', fontSize: 13 }}>
-                    <Save size={14} /> Guardar
-                  </button>
-                )}
                 <button 
                   onClick={handleRun}
                   disabled={isRunning || (!isAdmin && !query.trim().toUpperCase().startsWith('SELECT'))}
@@ -98,25 +222,50 @@ export default function SqlPage() {
 
           {/* Results Area */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="card" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-            <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border-primary)', background: 'var(--bg-tertiary)', fontSize: 14, fontWeight: 600 }}>
-              Resultados
+            <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border-primary)', background: 'var(--bg-tertiary)', fontSize: 14, fontWeight: 600, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span>Resultados</span>
+              {results && (
+                <span style={{ fontSize: 12, color: 'var(--text-tertiary)' }}>
+                  {results.rows.length} filas obtenidas
+                </span>
+              )}
             </div>
+            
             <div style={{ flex: 1, overflow: 'auto', background: 'var(--bg-card)' }}>
-              {results ? (
-                <table className="data-table" style={{ borderCollapse: 'collapse' }}>
-                  <thead>
-                    <tr>
-                      {results.cols.map(c => <th key={c} style={{ position: 'sticky', top: 0, zIndex: 1 }}>{c}</th>)}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {results.rows.map((r, i) => (
-                      <tr key={i}>
-                        {results.cols.map(c => <td key={c} style={{ fontFamily: 'monospace', fontSize: 13 }}>{r[c]}</td>)}
+              {error ? (
+                <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 12, color: 'var(--danger)', background: 'rgba(239, 68, 68, 0.05)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 600 }}>
+                    <AlertCircle size={18} /> Error de SQL
+                  </div>
+                  <pre style={{ whiteSpace: 'pre-wrap', fontFamily: 'monospace', fontSize: 13, background: 'rgba(239, 68, 68, 0.05)', padding: 16, borderRadius: 8, border: '1px solid rgba(239, 68, 68, 0.1)' }}>
+                    {error}
+                  </pre>
+                </div>
+              ) : results ? (
+                results.cols.length > 0 ? (
+                  <table className="data-table" style={{ borderCollapse: 'collapse' }}>
+                    <thead>
+                      <tr>
+                        {results.cols.map(c => <th key={c} style={{ position: 'sticky', top: 0, zIndex: 1 }}>{c}</th>)}
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {results.rows.map((r, i) => (
+                        <tr key={i}>
+                          {results.cols.map(c => (
+                            <td key={c} style={{ fontFamily: 'monospace', fontSize: 13 }}>
+                              {r[c] === null ? <span style={{ color: 'var(--text-tertiary)', fontStyle: 'italic' }}>null</span> : String(r[c])}
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                ) : (
+                  <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-tertiary)' }}>
+                    Consulta ejecutada con éxito. No se devolvieron filas.
+                  </div>
+                )
               ) : (
                 <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-tertiary)' }}>
                   Ejecuta una consulta para ver los resultados
@@ -126,46 +275,158 @@ export default function SqlPage() {
           </motion.div>
         </div>
 
-        {/* Sidebar (Saved Queries / Schema) */}
-        <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }} style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 24, maxWidth: 350 }}>
+        {/* Sidebar (Schema, History, Templates) */}
+        <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }} style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 24, maxWidth: 380 }}>
           
           <div className="card" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-            <div style={{ padding: '16px', borderBottom: '1px solid var(--border-primary)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 8 }}>
-              <History size={16} /> Consultas Guardadas
+            {/* Tab Header Selector */}
+            <div style={{ display: 'flex', borderBottom: '1px solid var(--border-primary)', background: 'var(--bg-tertiary)' }}>
+              <button 
+                onClick={() => setActiveTab('schema')}
+                style={{
+                  flex: 1, padding: '12px 8px', border: 'none', background: 'transparent',
+                  color: activeTab === 'schema' ? 'var(--accent)' : 'var(--text-secondary)',
+                  fontWeight: activeTab === 'schema' ? 700 : 500, fontSize: 13, cursor: 'pointer',
+                  borderBottom: activeTab === 'schema' ? '2px solid var(--accent)' : 'none',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, transition: 'all 0.2s'
+                }}
+              >
+                <Database size={14} /> Esquema
+              </button>
+              <button 
+                onClick={() => setActiveTab('history')}
+                style={{
+                  flex: 1, padding: '12px 8px', border: 'none', background: 'transparent',
+                  color: activeTab === 'history' ? 'var(--accent)' : 'var(--text-secondary)',
+                  fontWeight: activeTab === 'history' ? 700 : 500, fontSize: 13, cursor: 'pointer',
+                  borderBottom: activeTab === 'history' ? '2px solid var(--accent)' : 'none',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, transition: 'all 0.2s'
+                }}
+              >
+                <Clock size={14} /> Historial
+              </button>
+              <button 
+                onClick={() => setActiveTab('saved')}
+                style={{
+                  flex: 1, padding: '12px 8px', border: 'none', background: 'transparent',
+                  color: activeTab === 'saved' ? 'var(--accent)' : 'var(--text-secondary)',
+                  fontWeight: activeTab === 'saved' ? 700 : 500, fontSize: 13, cursor: 'pointer',
+                  borderBottom: activeTab === 'saved' ? '2px solid var(--accent)' : 'none',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, transition: 'all 0.2s'
+                }}
+              >
+                <Save size={14} /> Plantillas
+              </button>
             </div>
-            <div style={{ flex: 1, overflowY: 'auto', padding: 8 }}>
-              {mockSqlQueries.map(q => (
-                <div key={q.id} 
-                  style={{ padding: '12px', borderRadius: 8, cursor: 'pointer', transition: 'background 0.2s' }}
-                  className="hover:bg-[var(--bg-hover)]"
-                  onClick={() => setQuery(q.query)}
-                >
-                  <p style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>{q.name}</p>
-                  <p style={{ fontSize: 12, color: 'var(--text-tertiary)', fontFamily: 'monospace', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {q.query}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
 
-          <div className="card" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-            <div style={{ padding: '16px', borderBottom: '1px solid var(--border-primary)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Database size={16} /> Esquema de Tablas
-            </div>
+            {/* Tab Contents */}
             <div style={{ flex: 1, overflowY: 'auto', padding: 16 }}>
-              <div style={{ marginBottom: 16 }}>
-                <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--accent)', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <Database size={14} /> transacciones
-                </p>
-                <div style={{ paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  {['id (int)', 'fecha (date)', 'monto (numeric)', 'tipo (varchar)', 'cliente (varchar)'].map(col => (
-                    <div key={col} style={{ fontSize: 12, color: 'var(--text-secondary)', fontFamily: 'monospace' }}>
-                      {col}
+              {activeTab === 'schema' && (
+                <div>
+                  {isLoadingSchema ? (
+                    <div style={{ color: 'var(--text-tertiary)', fontSize: 14, textAlign: 'center', padding: 24 }}>
+                      Cargando esquema del sistema...
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                      {Object.keys(schema).map(tableName => (
+                        <div key={tableName}>
+                          <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--accent)', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <Database size={14} /> {tableName}
+                          </p>
+                          <div style={{ paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 6, borderLeft: '1px dashed var(--border-primary)' }}>
+                            {schema[tableName].map(col => (
+                              <div key={col} style={{ fontSize: 12, color: 'var(--text-secondary)', fontFamily: 'monospace' }}>
+                                {col}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {activeTab === 'history' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12, height: '100%' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                    <span style={{ fontSize: 12, color: 'var(--text-tertiary)' }}>Últimas consultas ejecutadas</span>
+                    {history.length > 0 && (
+                      <button 
+                        onClick={clearHistory}
+                        style={{ background: 'transparent', border: 'none', color: 'var(--danger)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontSize: 12 }}
+                      >
+                        <Trash2 size={12} /> Limpiar
+                      </button>
+                    )}
+                  </div>
+                  
+                  {history.length === 0 ? (
+                    <div style={{ color: 'var(--text-tertiary)', fontSize: 14, textAlign: 'center', padding: 24 }}>
+                      Aún no hay consultas en el historial.
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      {history.map(item => (
+                        <div 
+                          key={item.id}
+                          onClick={() => setQuery(item.query)}
+                          style={{
+                            padding: 12, borderRadius: 8, background: 'var(--bg-tertiary)', cursor: 'pointer',
+                            border: '1px solid var(--border-primary)', position: 'relative', overflow: 'hidden',
+                            transition: 'border-color 0.2s'
+                          }}
+                          className="hover:border-[var(--accent)]"
+                        >
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                            <span style={{ fontSize: 11, color: 'var(--text-tertiary)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                              <Clock size={10} /> {item.timestamp}
+                            </span>
+                            {item.status === 'success' ? (
+                              <span style={{ color: 'var(--success)', display: 'flex', alignItems: 'center', gap: 2, fontSize: 11 }}>
+                                <CheckCircle2 size={12} /> OK
+                              </span>
+                            ) : (
+                              <span style={{ color: 'var(--danger)', display: 'flex', alignItems: 'center', gap: 2, fontSize: 11 }}>
+                                <XCircle size={12} /> Error
+                              </span>
+                            )}
+                          </div>
+                          <p style={{
+                            fontSize: 12, fontFamily: 'monospace', color: 'var(--text-primary)',
+                            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'
+                          }}>
+                            {item.query}
+                          </p>
+                          {item.error && (
+                            <p style={{ fontSize: 10, color: 'var(--danger)', marginTop: 4, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                              {item.error}
+                            </p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {activeTab === 'saved' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {mockSqlQueries.map(q => (
+                    <div key={q.id} 
+                      style={{ padding: '12px', borderRadius: 8, cursor: 'pointer', transition: 'background 0.2s', border: '1px solid var(--border-primary)', background: 'var(--bg-tertiary)' }}
+                      className="hover:bg-[var(--bg-hover)]"
+                      onClick={() => setQuery(q.query)}
+                    >
+                      <p style={{ fontSize: 13, fontWeight: 600, marginBottom: 4 }}>{q.name}</p>
+                      <p style={{ fontSize: 11, color: 'var(--text-tertiary)', fontFamily: 'monospace', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {q.query}
+                      </p>
                     </div>
                   ))}
                 </div>
-              </div>
+              )}
             </div>
           </div>
 

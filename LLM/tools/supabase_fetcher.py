@@ -1,6 +1,10 @@
 import os
+import sys
 from dotenv import load_dotenv
 from supabase import create_client
+
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8')
 
 class SupabaseKnowledgeFetcher:
     """
@@ -10,7 +14,7 @@ class SupabaseKnowledgeFetcher:
     
     def __init__(self):
         # Localizamos la raíz del repositorio
-        repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+        repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
         
         # Cargamos credenciales
         load_dotenv(os.path.join(repo_root, 'plataforma-oficial', '.env.local'))
