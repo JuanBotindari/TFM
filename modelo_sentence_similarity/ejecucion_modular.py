@@ -32,11 +32,11 @@ except ImportError as e:
 
 CONFIG = {
     "modelo_seleccionado": MODELS[0],  # Elige: MODELS[0], MODELS[1], MODELS[2]
-    "metrica_objetivo": "all",         # Opciones: "mrr", "accuracy", "llm", "all"
+    "metrica_objetivo": "llm",         # Opciones: "mrr", "accuracy", "llm", "all"
     "imprimir_preparacion": True,      # ¿Mostrar detalles de carga de PDFs y queries?
     "imprimir_matriz": True,           # ¿Mostrar la matriz de similitud (primeras 5x5)?
     "chunk_size": 1000,
-    "overlap": 150,
+    "overlap": 150,                     
     "num_queries": 5                   # Número de consultas para la prueba rápida
 }
 
