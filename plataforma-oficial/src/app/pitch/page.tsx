@@ -180,20 +180,20 @@ export default function PitchPage() {
               {...fadeInUp}
               style={{
                 width: '100%',
-                maxWidth: 340,
-                height: 580,
+                maxWidth: 450,
+                height: 800,
                 borderRadius: 24,
                 overflow: 'hidden',
-                boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)',
-                border: '4px solid var(--border-primary)',
+                boxShadow: '0 20px 50px rgba(0, 0, 0, 0.4)',
+                border: '6px solid var(--border-primary)',
                 background: 'var(--bg-secondary)',
               }}
             >
               <iframe
-                src="https://www.tiktok.com/embed/v2/7539682233158749496"
+                src="https://www.tiktok.com/player/v1/7539682233158749496?autoplay=1"
                 style={{ width: '100%', height: '100%', border: 'none' }}
                 allowFullScreen
-                allow="encrypted-media; clipboard-write;"
+                allow="autoplay; encrypted-media; clipboard-write;"
               />
             </motion.div>
           </div>
