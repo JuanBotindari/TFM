@@ -19,13 +19,16 @@ export async function POST(req: Request) {
     // Construimos la URL de conexión a partir de las variables de entorno
     // db.wwnnrtuoomgjgdryxzks.supabase.co
     const dbPassword = process.env.CONTRA_SUPABASE || 'Puntadeleste4175!';
-    const dbHost = 'db.wwnnrtuoomgjgdryxzks.supabase.co';
-    const connectionString = `postgres://postgres:${encodeURIComponent(dbPassword)}@${dbHost}:5432/postgres?sslmode=require`;
-
+    const dbHost = 'aws-0-eu-west-1.pooler.supabase.com';
+    const dbUser = 'postgres.wwnnrtuoomgjgdryxzks';
     const client = new Client({
-      connectionString,
+      host: dbHost,
+      port: 6543,
+      user: dbUser,
+      password: dbPassword,
+      database: 'postgres',
       ssl: {
-        rejectUnauthorized: false // Supabase requiere SSL pero no necesitamos verificar el certificado de CA localmente
+        rejectUnauthorized: false
       }
     });
 

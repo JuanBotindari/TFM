@@ -1,10 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
-import { mockSqlQueries } from '@/lib/mockData';
-import { Play, Save, History, AlertCircle, Database, Lock, Trash2, Clock, CheckCircle2, XCircle } from 'lucide-react';
+import { Play, Save, AlertCircle, Database, Lock, Trash2, Clock, CheckCircle2, XCircle } from 'lucide-react';
 
 interface HistoryItem {
   id: string;
@@ -14,9 +13,37 @@ interface HistoryItem {
   error?: string;
 }
 
+const businessTemplates = [
+  {
+    id: 'temp-001',
+    name: 'Listar Pólizas Activas',
+    query: "SELECT * FROM poliza LIMIT 10;"
+  },
+  {
+    id: 'temp-002',
+    name: 'Siniestros por Estado',
+    query: "SELECT estado, COUNT(*) as cantidad FROM siniestro GROUP BY estado;"
+  },
+  {
+    id: 'temp-003',
+    name: 'Últimos Pagos Registrados',
+    query: "SELECT * FROM pago ORDER BY id DESC LIMIT 10;"
+  },
+  {
+    id: 'temp-004',
+    name: 'Buscar Personas Aseguradas',
+    query: "SELECT * FROM persona LIMIT 10;"
+  },
+  {
+    id: 'temp-005',
+    name: 'Pólizas con sus Asegurados',
+    query: "SELECT p.numero_poliza, per.nombre, per.email \nFROM poliza p \nJOIN asegurado_poliza ap ON p.id = ap.poliza_id \nJOIN persona per ON ap.persona_id = per.id \nLIMIT 10;"
+  }
+];
+
 export default function SqlPage() {
   const { isAdmin } = useAuth();
-  const [query, setQuery] = useState('SELECT * FROM documents LIMIT 100;');
+  const [query, setQuery] = useState('SELECT * FROM poliza LIMIT 10;');
   const [isRunning, setIsRunning] = useState(false);
   const [results, setResults] = useState<{cols: string[], rows: any[]}|null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -39,7 +66,7 @@ export default function SqlPage() {
     }
   }, []);
 
-  // Fetch actual schema from DB on mount
+  // Fetch actual schema from DB on mount, filtering out system/RAG tables
   useEffect(() => {
     async function fetchSchema() {
       try {
@@ -52,6 +79,7 @@ export default function SqlPage() {
               SELECT table_name, column_name, data_type 
               FROM information_schema.columns 
               WHERE table_schema = 'public' 
+                AND table_name NOT IN ('documents', 'document_chunks', 'user_profiles')
               ORDER BY table_name, ordinal_position;
             `
           })
@@ -71,11 +99,11 @@ export default function SqlPage() {
             });
             setSchema(tempSchema);
           } else {
-            // Fallback mock schema if tables are empty
+            // Fallback business schema
             setSchema({
-              'documents': ['id (uuid)', 'name (text)', 'type (text)', 'size (text)', 'status (text)', 'uploaded_at (timestamptz)', 'org_id (text)'],
-              'users': ['id (uuid)', 'name (text)', 'email (text)', 'role (text)', 'org_id (text)'],
-              'organizations': ['id (text)', 'name (text)', 'slug (text)', 'industry (text)', 'plan (text)']
+              'poliza': ['id (uuid)', 'numero_poliza (text)', 'fecha_inicio (date)', 'fecha_fin (date)', 'estado (text)'],
+              'persona': ['id (uuid)', 'nombre (text)', 'documento (text)', 'email (text)', 'telefono (text)'],
+              'siniestro': ['id (uuid)', 'poliza_id (uuid)', 'fecha_siniestro (date)', 'descripcion (text)', 'estado (text)']
             });
           }
         } else {
@@ -83,11 +111,13 @@ export default function SqlPage() {
         }
       } catch (err) {
         console.error('Error fetching schema:', err);
-        // Fallback mock schema
+        // Fallback business schema
         setSchema({
-          'documents': ['id (uuid)', 'name (text)', 'type (text)', 'size (text)', 'status (text)', 'uploaded_at (timestamptz)', 'org_id (text)'],
-          'users': ['id (uuid)', 'name (text)', 'email (text)', 'role (text)', 'org_id (text)'],
-          'organizations': ['id (text)', 'name (text)', 'slug (text)', 'industry (text)', 'plan (text)']
+          'poliza': ['id (uuid)', 'numero_poliza (text)', 'fecha_inicio (date)', 'fecha_fin (date)', 'estado (text)'],
+          'persona': ['id (uuid)', 'nombre (text)', 'documento (text)', 'email (text)', 'telefono (text)'],
+          'siniestro': ['id (uuid)', 'poliza_id (uuid)', 'fecha_siniestro (date)', 'descripcion (text)', 'estado (text)'],
+          'pago': ['id (uuid)', 'poliza_id (uuid)', 'fecha_pago (date)', 'monto (numeric)', 'metodo_pago (text)'],
+          'recibo': ['id (uuid)', 'poliza_id (uuid)', 'numero_recibo (text)', 'monto (numeric)']
         });
       } finally {
         setIsLoadingSchema(false);
@@ -170,7 +200,7 @@ export default function SqlPage() {
               </span>
             )}
           </h1>
-          <p style={{ color: 'var(--text-secondary)' }}>Ejecuta consultas directamente en la base de datos de producción y explora el esquema del sistema.</p>
+          <p style={{ color: 'var(--text-secondary)' }}>Ejecuta consultas directamente en la base de datos de producción y explora el esquema de negocio de la empresa.</p>
         </div>
       </div>
 
@@ -325,7 +355,7 @@ export default function SqlPage() {
                 <div>
                   {isLoadingSchema ? (
                     <div style={{ color: 'var(--text-tertiary)', fontSize: 14, textAlign: 'center', padding: 24 }}>
-                      Cargando esquema del sistema...
+                      Cargando esquema de la empresa...
                     </div>
                   ) : (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -413,7 +443,7 @@ export default function SqlPage() {
 
               {activeTab === 'saved' && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  {mockSqlQueries.map(q => (
+                  {businessTemplates.map(q => (
                     <div key={q.id} 
                       style={{ padding: '12px', borderRadius: 8, cursor: 'pointer', transition: 'background 0.2s', border: '1px solid var(--border-primary)', background: 'var(--bg-tertiary)' }}
                       className="hover:bg-[var(--bg-hover)]"
