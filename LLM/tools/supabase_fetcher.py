@@ -60,6 +60,8 @@ class SupabaseKnowledgeFetcher:
             print(f"Error al descargar chunks de Supabase para {org_id}: {e}")
             return []
 
+
+'''
 # --- Ejemplo de Uso ---
 if __name__ == "__main__":
     fetcher = SupabaseKnowledgeFetcher()
@@ -70,3 +72,4 @@ if __name__ == "__main__":
         print("\nEjemplo del primer fragmento:")
         print(f"Origen: {chunks[0]['metadata']['source']}")
         print(f"Contenido: {chunks[0]['text'][:150]}...")
+'''
