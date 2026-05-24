@@ -1,27 +1,21 @@
 """
 Handler: DIRECTO
-Responsabilidad: responder preguntas simples que el LLM puede contestar
-por sí mismo sin consultar ninguna fuente de datos externa.
 """
 
 
 class DirectoHandler:
-    """
-    Maneja preguntas que no requieren búsqueda externa.
-    El LLM responde con su conocimiento general, usando el prompt del sistema
-    del agente para mantener el tono y las reglas de negocio.
-    """
 
-    def __init__(self, llm, chat_prompt):
-        self.llm = llm
+    def __init__(self, llm, chat_prompt, tracer=None):
+        self.llm         = llm
         self.chat_prompt = chat_prompt
+        self.tracer      = tracer
 
     def responder(self, pregunta: str):
-        """
-        Genera una respuesta directa haciendo streaming.
-        Yields fragmentos de texto (str).
-        """
-        print("💬 [DIRECTO] Respondiendo con conocimiento general del LLM...")
+        if self.tracer:
+            self.tracer.paso(
+                "DIRECTO — respuesta sin fuentes externas",
+                "El LLM responde solo con su prompt de sistema (streaming).",
+            )
 
         prompt_mensajes = self.chat_prompt.format_messages(
             context="No se necesita contexto externo para esta pregunta.",

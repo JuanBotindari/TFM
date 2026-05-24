@@ -9,8 +9,8 @@ _RAGDOC_BANCO = os.path.abspath(
 class ClienteBanco(BaseModel):
     """Cliente específico: Banco.
     
-    Ahora toda la configuración (prompt, archivos, rol) 
-    se maneja desde RAG-docs/client-banco/config/rag.json
+    Toda la configuración (prompt, archivos, modelos, vectores)
+    está en RAG-docs/client-banco/config/settings.json
     """
 
     def __init__(self):

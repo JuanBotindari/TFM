@@ -17,17 +17,17 @@ class OtroHandler:
     Se implementará en una iteración futura del proyecto.
     """
 
-    def __init__(self, llm, chat_prompt):
+    def __init__(self, llm, chat_prompt, tracer=None):
         self.llm         = llm
         self.chat_prompt = chat_prompt
+        self.tracer      = tracer
 
     def responder(self, pregunta: str):
-        """
-        Yields fragmentos de texto (str).
-        Por ahora responde con el LLM sin contexto externo y registra
-        que la pregunta cayó en la categoría OTRO para análisis posterior.
-        """
-        print("🔧 [OTRO] Acción no categorizada. Respondiendo con LLM general.")
+        if self.tracer:
+            self.tracer.paso(
+                "OTRO — acción especial (placeholder)",
+                "El LLM responde sin herramientas adicionales.",
+            )
 
         aviso = (
             "[Nota interna: Esta pregunta requiere un tipo de acción especial "

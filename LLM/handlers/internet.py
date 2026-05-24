@@ -16,17 +16,17 @@ class InternetHandler:
     Se implementará en una iteración futura del proyecto.
     """
 
-    def __init__(self, llm, chat_prompt):
+    def __init__(self, llm, chat_prompt, tracer=None):
         self.llm         = llm
         self.chat_prompt = chat_prompt
+        self.tracer      = tracer
 
     def responder(self, pregunta: str):
-        """
-        Yields fragmentos de texto (str).
-        Por ahora informa que la búsqueda web no está implementada y
-        responde con el conocimiento general del LLM como fallback.
-        """
-        print("🌐 [INTERNET] Búsqueda web no implementada aún. Usando fallback DIRECTO.")
+        if self.tracer:
+            self.tracer.paso(
+                "INTERNET — no implementado",
+                "Fallback: el LLM responde sin búsqueda web real.",
+            )
 
         aviso = (
             "[Nota interna: La búsqueda en internet no está disponible aún. "

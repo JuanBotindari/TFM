@@ -9,7 +9,7 @@ _RAGDOC_ESTUDIO = os.path.abspath(
 class ClienteEstudioContable(BaseModel):
     """Cliente específico: Estudio Contable.
     
-    Gestiona su propia base de conocimiento y reglas desde su carpeta config/
+    Configuración unificada en RAG-docs/client-contable/config/settings.json
     """
 
     def __init__(self):

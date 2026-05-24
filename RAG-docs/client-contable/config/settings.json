@@ -1,5 +1,97 @@
 {
-  "modelo": "gemini-2.0-flash",
-  "url_llm": "",
-  "modelo_embeddings": "models/gemini-embedding-001"
+  "cliente": {
+    "nombre": "Estudio Contable",
+    "sector": "Contabilidad y Fiscalidad",
+    "org_id": "org-estudio"
+  },
+  "LLM": {
+    "modelo": "gemini-2.0-flash",
+    "rol_llm_personalizado": "Consultor Fiscal Experto en Argentina",
+    "url_llm": "",
+    "temperature": 0
+  },
+  "embeddings": {
+    "modelo": "models/gemini-embedding-001",
+    "vector_db_name": "database_vector_estudiocontable",
+    "vector_match_fn": "match_database_vector_estudiocontable"
+  },
+  "instrucciones_sistema": {
+    "prompt_maestro": "Eres un experto en normativa fiscal y contable para el Estudio Contable ubicado en Argentina. Tu objetivo es asistir de forma directa y técnica. Cita siempre el documento fuente. Si no encuentras la información, indícalo claramente.",
+    "objetivo_principal": "Asistir en consultas sobre normativa contable, impuestos y procedimientos fiscales de Argentina.",
+    "estilo_respuesta": "Técnico, preciso, citando leyes y artículos específicos. No te extiendas. Ve directo al grano para que no haya mucho texto",
+    "reglas_oro": [
+      "Citar siempre el documento de origen.",
+      "No inventes información.",
+      "No busques informacion en internet o fuera de los documentos provistos a menos que el usuario lo solicite expresamente.",
+      "En caso de que la info no este, pregunta al usuario si desea que busque en internet o fuera de los documentos provistos.",
+      "Si hay ambigüedad normativa, sugerir consulta con un socio del estudio.",
+      "Priorizar la normativa vigente en casos de conflicto."
+    ]
+  },
+  "indice_conocimiento": {
+    "modulos": [
+      {
+        "id": "Informacion general del estudio",
+        "nombre": "Informacion general del estudio",
+        "tipo": "pdf",
+        "directorio": "data/pdfs/"
+      },
+      {
+        "id": "LIQUIDACIONES",
+        "nombre": "Tablas de Liquidación",
+        "tipo": "tablas",
+        "directorio": "data/tablas/"
+      },
+      {
+        "id": "SCRAPING",
+        "nombre": "Actualidad AFIP/Web",
+        "tipo": "web",
+        "directorio": "data/web/"
+      },
+      {
+        "id": "GRAFICOS, Diagramas e Imágenes",
+        "nombre": "Organigramas e Imágenes",
+        "tipo": "imagenes",
+        "directorio": "data/imagenes/"
+      }
+    ],
+    "relaciones_tematicas": [
+      {
+        "tema": "Organización y Tareas",
+        "descripcion": "Cómo se distribuye el trabajo y quién hace qué.",
+        "recursos_vinculados": [
+          {
+            "archivo": "Manual Operativo Gestion Archivos.pdf",
+            "rol": "Manual operativo para la gestión de archivos. Responde preguntas sobre como gestionar los archivos del estudio. Tambien informacion de como estan organizados los archivos del estudio."
+          },
+          {
+            "archivo": "oraganizacion_mails_alias.jpeg",
+            "rol": "Esquema visual de la jerarquía del estudio. Responde preguntas sobre que alias hay en el estudio y a que personas corresponden."
+          },
+          {
+            "archivo": "oraganizacion_mails_respuesta.jpeg",
+            "rol": "Esquema visual de la jerarquía del estudio. Responde preguntas sobre como estan organizados los correos del estudio y que tareas cumplen."
+          },
+          {
+            "archivo": "INSTRUCTIVO - FACTURACIÓN MONOTRIBUTISTAS VARIOS.pdf",
+            "rol": "Instructivo para la facturación de monotributistas. Responde preguntas sobre como facturar a monotributistas/clientes."
+          },
+          {
+            "archivo": "Manual Compras Ventas x Cliente.pdf",
+            "rol": "Manual de compras y ventas por cliente. Responde preguntas sobre como gestionar las compras y ventas de los clientes."
+          }
+        ]
+      },
+      {
+        "tema": "Portal de Noticias",
+        "descripcion": "Noticias de actualidad AFIP/Web.",
+        "recursos_vinculados": [
+          {
+            "archivo": "link.md",
+            "rol": "Links de portales de noticias de actualidad AFIP/Web. Responde preguntas sobre noticias de actualidad AFIP/Web."
+          }
+        ]
+      }
+    ]
+  }
 }

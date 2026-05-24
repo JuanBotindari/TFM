@@ -8,18 +8,16 @@ Cada carpeta de cliente (ej: `client-banco`) debe tener esta estructura:
 ```text
 nombre-cliente/
 ├── config/                  # Metadatos e Identidad
-│   ├── rag.json             # Manifiesto (Indice y Reglas)
-│   ├── settings.json        # Configuración técnica (modelo, URL)
+│   ├── settings.json        # Configuración unificada (cliente, LLM, índice, reglas)
 │   └── info_cliente.pdf     # Documento maestro (Identidad Core)
 ├── data/                    # Archivos Crudos
 │   ├── pdfs/                # PDFs organizados por subtemas
 │   ├── tablas/              # Excels/CSVs
 │   └── web/                 # Scrappings
-└── db/                      # Persistencia
-    └── vector_store/        # Base de datos de vectores (ChromaDB/FAISS)
+└── db/                      # (opcional / legado) — la base vectorial vive en Supabase
 ```
 
-## 2. El Manifiesto (`config/rag.json`)
+## 2. Configuración del cliente (`config/settings.json`)
 Es el "cerebro" del cliente. Define:
 *   **Identidad**: Nombre, sector y el rol que debe adoptar el LLM.
 *   **Reglas de Oro**: Comportamientos obligatorios (ej: "siempre citar fuente").
@@ -29,12 +27,12 @@ Es el "cerebro" del cliente. Define:
 Para que un archivo sea "leído" por el sistema, debe seguir este proceso:
 
 1.  **Carga**: Se coloca el archivo en `data/pdfs/[subtema]/`.
-2.  **Registro**: Se asegura que el subtema esté declarado en el `rag.json`.
-3.  **Procesamiento**: Al iniciar el sistema, el código detecta archivos nuevos, los divide en **Chunks** (trozos), genera **Embeddings** y los guarda en `db/vector_store/`.
+2.  **Registro**: Se asegura que el subtema esté declarado en `settings.json` → `indice_conocimiento`.
+3.  **Procesamiento**: Al iniciar el LLM se conecta a la tabla Supabase `database_vector_<cliente>`. Si tiene vectores para el `org_id`, los reutiliza; si no, indexa desde `document_chunks` (o PDFs locales) y escribe en Supabase. Crear/comprobar tablas: `LLM/tools/sql/setup_vector_tables.sql` y `verify_vector_setup.sql` (SQL Editor de Supabase).
 
 ## 4. Cómo dar de alta un Nuevo Cliente
 1.  Copia la carpeta `client-banco` y cámbiale el nombre.
 2.  Limpia las carpetas de `data/` y `db/`.
-3.  Actualiza el `config/rag.json` con la nueva identidad y reglas.
+3.  Actualiza `config/settings.json` con la nueva identidad y reglas.
 4.  Coloca el PDF de información general en `config/info_cliente.pdf`.
 5.  ¡Listo! El sistema orquestador reconocerá al nuevo cliente automáticamente.
