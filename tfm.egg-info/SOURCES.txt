@@ -6,6 +6,15 @@ LLM/base_llm.py
 LLM/clientes/__init__.py
 LLM/clientes/banco.py
 LLM/clientes/estudio_contable.py
+LLM/handlers/__init__.py
+LLM/handlers/directo.py
+LLM/handlers/internet.py
+LLM/handlers/otro.py
+LLM/handlers/tablas.py
+LLM/handlers/vector_store.py
+LLM/tools/__init__.py
+LLM/tools/indexer.py
+LLM/tools/supabase_fetcher.py
 tfm.egg-info/PKG-INFO
 tfm.egg-info/SOURCES.txt
 tfm.egg-info/dependency_links.txt
