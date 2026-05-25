@@ -28,7 +28,7 @@ Para que un archivo sea "leído" por el sistema, debe seguir este proceso:
 
 1.  **Carga**: Se coloca el archivo en `data/pdfs/[subtema]/`.
 2.  **Registro**: Se asegura que el subtema esté declarado en `settings.json` → `indice_conocimiento`.
-3.  **Procesamiento**: Al iniciar el LLM se conecta a la tabla Supabase `database_vector_<cliente>`. Si tiene vectores para el `org_id`, los reutiliza; si no, indexa desde `document_chunks` (o PDFs locales) y escribe en Supabase. Crear/comprobar tablas: `LLM/tools/sql/setup_vector_tables.sql` y `verify_vector_setup.sql` (SQL Editor de Supabase).
+3.  **Procesamiento**: Al iniciar el LLM se conecta a la tabla Supabase `database_vector_<cliente>`. Si tiene vectores para el `org_id`, los reutiliza; si no, indexa desde `document_chunks` (o PDFs locales) y escribe en Supabase. Modelo: `gemini-embedding-2` con 1536 dimensiones. Crear/comprobar tablas: `LLM/tools/sql/setup_vector_tables.sql`, `verify_vector_setup.sql`, o `python LLM/tools/sql/run_vector_setup.py`.
 
 ## 4. Cómo dar de alta un Nuevo Cliente
 1.  Copia la carpeta `client-banco` y cámbiale el nombre.

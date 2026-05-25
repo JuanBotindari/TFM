@@ -46,8 +46,10 @@ class BaseModel(ABC):
             "org_id": cliente.get("org_id") or config.get("org_id", ""),
             "modelo": llm.get("modelo") or config.get("modelo", "gemini-2.0-flash"),
             "modelo_embeddings": emb.get("modelo") or config.get(
-                "modelo_embeddings", "models/gemini-embedding-001"
+                "modelo_embeddings", "models/gemini-embedding-2"
             ),
+            "dimensiones_embeddings": emb.get("dimensiones")
+            or config.get("dimensiones_embeddings", 1536),
             "vector_db_name": emb.get("vector_db_name") or config.get("vector_db_name"),
             "vector_match_fn": emb.get("vector_match_fn") or config.get("vector_match_fn"),
             "url_llm": llm.get("url_llm") or config.get("url_llm", ""),
@@ -88,7 +90,11 @@ class BaseModel(ABC):
         )
 
     def _inicializar_embeddings(self) -> GoogleGenerativeAIEmbeddings:
-        return GoogleGenerativeAIEmbeddings(model=self.modelo_embeddings)
+        dim = self.tech.get("dimensiones_embeddings")
+        kwargs: dict = {"model": self.modelo_embeddings}
+        if dim:
+            kwargs["output_dimensionality"] = int(dim)
+        return GoogleGenerativeAIEmbeddings(**kwargs)
 
     def _inicializar_handlers(self):
         tablas = TablasHandler(
