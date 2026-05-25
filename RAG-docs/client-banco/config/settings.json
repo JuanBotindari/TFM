@@ -11,7 +11,8 @@
     "temperature": 0
   },
   "embeddings": {
-    "modelo": "models/gemini-embedding-001",
+    "modelo": "models/gemini-embedding-2",
+    "dimensiones": 1536,
     "vector_db_name": "database_vector_banco",
     "vector_match_fn": "match_database_vector_banco"
   },
