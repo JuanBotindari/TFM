@@ -1,12 +1,14 @@
-# flexi-rag-platform
-# Datos pesados de modelos de IA
+flexi-rag-platform
+Datos pesados de modelos de IA
 docker-infra/ollama_data/
-# Archivos de sistema
+Archivos de sistema
 .DS_Store
 *.log
 .env
 __pycache__/
-*.pyc
+./
+.pyc
+*/__pycache__/
 
-# Bases de datos de clientes (vector stores)
-RAG-docs/*/db/
+Bases de datos de clientes (vector stores)
+RAG-docs//db/
