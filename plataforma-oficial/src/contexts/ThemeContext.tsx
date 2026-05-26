@@ -20,13 +20,15 @@ const themeLabels: Record<ThemeName, string> = {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<ThemeName>('light');
+  const [theme, setThemeState] = useState<ThemeName>('grey');
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem('tfm-theme') as ThemeName | null;
     if (saved && ['light', 'grey', 'midnight'].includes(saved)) {
       setThemeState(saved);
+    } else {
+      setThemeState('grey');
     }
     setMounted(true);
   }, []);
