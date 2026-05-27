@@ -1,0 +1,12 @@
+BEGIN:VCARD
+VERSION:4.0
+EMAIL;PREF=1:contable@prodermic.com.ar
+FN:Adrian Giubilato
+ORG:Prodermic;Administracion
+TITLE:Encargado
+N:Giubilato;Adrian;;;
+ADR:;;Avda. Independencia 2845;CABA;;1225;Argentina
+TEL;VALUE=TEXT:40597000
+URL;VALUE=URL:https://prodermic.com.ar/
+UID:61c17a9b-c541-4e58-bb2a-abda032c7493
+END:VCARD
