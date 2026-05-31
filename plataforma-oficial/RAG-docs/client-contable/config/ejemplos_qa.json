@@ -1,0 +1,12 @@
+[
+    {
+        "pregunta": "Cual es la estructura general de archivos?",
+        "fichero_fuente": "Manual Operativo Gestion Archivos.pdf",
+        "respuesta_modelo": "BLOQUE 2: Estructura General de Archivos\nESTRUCTURA RAÍZ: Al ingresar a la unidad, encontrarán estas 6 carpetas principales.\n● 01. EMPRESAS: Sociedades (SA, SRL, SAS).\n● 02. PERSONAS FÍSICAS: Monotributistas y Responsables Inscriptos individuales.\n● 03. ADMINISTRACION ESTUDIO: Planillas Administrativas generales, Planillas de Facturación, Carpetas personales del Estudio, Instructivos y etc.\n● 04. SUELDOS: Todo lo relacionado a sueldos está en esta carpeta.\n● 05. CONSORCIO URIBURU: Documentación del consorcio, recibos, expensas.\n● 06. VENCIMIENTOS: Planillas de Vencimientos"
+    },
+    {
+        "pregunta": "Que tareas hace el mail SUELDOS?",
+        "fichero_fuente": "oraganizacion_mails_respuesta.jpeg",
+        "respuesta_modelo": "Centraliza las consultas de sueldo, luego Gestiona respuestas sobre sueldos y Realiza envios relacionados con sueldos."
+    }
+]

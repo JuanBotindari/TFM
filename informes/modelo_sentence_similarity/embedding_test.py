@@ -17,7 +17,7 @@ except ImportError:
     HAS_GENAI = False
 
 from dotenv import load_dotenv
-from supabase_document_loader import SupabaseDocumentLoader
+from LLM.tools.knowledge_store import KnowledgeIndexer
 
 # ============================================================================
 # 1. CONFIGURACIÓN Y CONSTANTES DEL EXPERIMENTO
@@ -132,21 +132,23 @@ class ChunkAccuracyEvaluator:
             f"Acc_Top_{self.k}": correct_in_top_k / len(correct_indices)
         }
 
+import requests
+
 class LLMJudgeEvaluator:
-    """Evaluación cualitativa usando un LLM (Gemini) como Juez."""
+    """Evaluación cualitativa usando un LLM local (Ollama) como Juez."""
     def __init__(self):
+        self.model_id = 'llama3.2:latest'
+        self.api_url = "http://localhost:11434/api/generate"
+        self.available = True
         try:
-            api_key = os.getenv("GOOGLE_API_KEY")
-            if api_key and HAS_GENAI:
-                self.client = genai.Client(api_key=api_key)
-                self.model_id = 'gemini-2.5-flash'
-                self.available = True
-            else:
-                if not HAS_GENAI and api_key:
-                    logging.warning("⚠️ La librería 'google-genai' no está instalada. El LLM Judge no estará disponible, pero el resto de métricas funcionarán.")
+            # Check if Ollama is running
+            response = requests.get("http://localhost:11434/")
+            if response.status_code != 200:
                 self.available = False
+                logging.warning("⚠️ Ollama no responde correctamente en localhost:11434")
         except Exception:
             self.available = False
+            logging.warning("⚠️ No se pudo conectar a Ollama localmente.")
 
     def evaluate(self, queries: List[str], top_chunks: List[str]) -> float:
         if not self.available: return 0.0
@@ -155,13 +157,18 @@ class LLMJudgeEvaluator:
             prompt = (f"¿Contiene el 'Contexto' la información de la 'Consulta'? Responde solo SI o NO.\n\n"
                       f"Consulta: {q}\nContexto: {c}")
             try:
-                response = self.client.models.generate_content(model=self.model_id, contents=prompt)
-                res_text = response.text.upper().replace("Í", "I").strip()
+                payload = {
+                    "model": self.model_id,
+                    "prompt": prompt,
+                    "stream": False
+                }
+                response = requests.post(self.api_url, json=payload)
+                response.raise_for_status()
+                res_text = response.json().get("response", "").upper().replace("Í", "I").strip()
                 if "SI" in res_text or "YES" in res_text:
                     correct_count += 1
-                time.sleep(0.35)
             except Exception as e:
-                logging.warning(f"⚠️ Error al llamar a Gemini ({self.model_id}): {e}")
+                logging.warning(f"⚠️ Error al llamar a Ollama ({self.model_id}): {e}")
         return correct_count / len(queries) if queries else 0.0
 
 
@@ -188,7 +195,9 @@ def main():
             logging.error(f"Error cargando {model_name}: {e}")
 
     # 4.2. Preparación del Corpus y Ground Truth
-    full_text = SupabaseDocumentLoader().load_documents(ORG_ID)
+    _client = KnowledgeIndexer.crear_cliente()
+    _indexer = KnowledgeIndexer(path_cliente="", config={}, embeddings=None, client=_client)
+    full_text = "\n\n".join(f["text"] for f in _indexer.get_document_chunks(ORG_ID))
 
     test_queries = generate_test_queries(full_text, num_queries=10)
 
