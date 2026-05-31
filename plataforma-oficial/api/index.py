@@ -29,17 +29,20 @@ def obtener_cliente(org_id: str):
         clientes_instanciados[org_id] = cli
     return clientes_instanciados[org_id]
 
+from typing import List, Dict, Any, Optional
+
 class QueryRequest(BaseModel):
-    pregunta: str
+    message: str
+    history: Optional[List[Dict[str, Any]]] = []
     org_id: str = "org-banco"
 
 @app.post("/api/chat")
 async def chat_endpoint(request: QueryRequest):
     cliente = obtener_cliente(request.org_id)
     
-    # Función generadora para Streaming (si usas Next.js server-side y quieres stream)
-    def stream_generator():
-        for chunk in cliente.responder(request.pregunta):
-            yield chunk
+    # Recolectar la respuesta completa
+    respuesta_completa = ""
+    for chunk in cliente.responder(request.message):
+        respuesta_completa += chunk
 
-    return StreamingResponse(stream_generator(), media_type="text/event-stream")
+    return {"content": respuesta_completa, "sources": []}
