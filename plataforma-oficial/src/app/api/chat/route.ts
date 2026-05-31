@@ -13,7 +13,7 @@ export async function POST(req: Request) {
 
     // URL de tu servicio Python (FastAPI/Flask) que corre Ollama/RAG
     // Por defecto usamos localhost si estás corriendo el backend localmente
-    const PYTHON_BACKEND_URL = process.env.PYTHON_BACKEND_URL || 'http://localhost:8000/chat';
+    const PYTHON_BACKEND_URL = process.env.PYTHON_BACKEND_URL || 'http://127.0.0.1:8000/api/chat';
 
     try {
       const response = await fetch(PYTHON_BACKEND_URL, {
@@ -22,7 +22,7 @@ export async function POST(req: Request) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          user_id: userId,
+          org_id: "org-banco",
           message: message,
           history: history,
         }),

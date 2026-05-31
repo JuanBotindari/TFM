@@ -9,8 +9,10 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
 sys.path.append(parent_dir)
 
+from dotenv import load_dotenv
+load_dotenv(os.path.join(parent_dir, '.env.local'))
+
 from BaseModelLLM.clientes.banco import ClienteBanco
-# Si tienes más clientes, impórtalos aquí:
 # from BaseModelLLM.clientes.estudio import ClienteEstudio
 
 app = FastAPI(docs_url="/api/docs", openapi_url="/api/openapi.json")
