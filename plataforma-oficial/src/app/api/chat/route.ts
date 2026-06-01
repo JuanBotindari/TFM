@@ -49,11 +49,23 @@ export async function POST(req: Request) {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => null);
-        const errorMsg = errorData?.detail || errorData?.message || 'Error interno en el servidor de IA (Python).';
+        let rawBody = '';
+        let errorMsg = '';
+        try {
+          rawBody = await response.text();
+          const parsed = JSON.parse(rawBody);
+          errorMsg = parsed?.detail || parsed?.message || '';
+        } catch {
+          // No es un JSON o falló la lectura
+        }
+
+        const displayMsg = errorMsg 
+          ? errorMsg 
+          : `El servidor Python [${PYTHON_BACKEND_URL}] respondió con código ${response.status} (${response.statusText}). Cuerpo: ${rawBody.substring(0, 300) || '(vacío)'}`;
+
         return NextResponse.json({
           role: 'assistant',
-          content: `Error del motor de IA: ${errorMsg}`,
+          content: `Error del motor de IA: ${displayMsg}`,
           sources: []
         }, { status: response.status });
       }

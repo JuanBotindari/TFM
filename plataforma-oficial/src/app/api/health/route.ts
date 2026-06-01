@@ -35,9 +35,17 @@ export async function GET() {
     });
 
     if (!response.ok) {
+      const rawBody = await response.text().catch(() => '');
+      let errorMsg = '';
+      try {
+        const parsed = JSON.parse(rawBody);
+        errorMsg = parsed?.detail || parsed?.message || '';
+      } catch {}
+
       return NextResponse.json({
         status: 'unhealthy',
-        error: `Error en la respuesta del backend de Python: ${response.statusText}`
+        error: `Error en la respuesta del backend de Python (${response.status}): ${response.statusText}`,
+        details: errorMsg || rawBody.substring(0, 300) || 'Sin respuesta'
       }, { status: response.status });
     }
 
