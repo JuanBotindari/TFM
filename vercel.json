@@ -1,8 +1,18 @@
 {
+  "builds": [
+    {
+      "src": "plataforma-oficial/package.json",
+      "use": "@vercel/next"
+    },
+    {
+      "src": "plataforma-oficial/api/index.py",
+      "use": "@vercel/python"
+    }
+  ],
   "rewrites": [
     {
       "source": "/pyapi/(.*)",
-      "destination": "/plataforma-oficial/api"
+      "destination": "plataforma-oficial/api/index.py"
     }
   ]
 }

@@ -11,14 +11,15 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: true,
   },
   async rewrites() {
-    return [
-      {
-        source: '/pyapi/:path*',
-        destination: process.env.NODE_ENV === 'development'
-          ? 'http://127.0.0.1:8000/pyapi/:path*'
-          : '/api',
-      },
-    ];
+    if (process.env.NODE_ENV === 'development') {
+      return [
+        {
+          source: '/pyapi/:path*',
+          destination: 'http://127.0.0.1:8000/pyapi/:path*',
+        },
+      ];
+    }
+    return [];
   },
 };
 
