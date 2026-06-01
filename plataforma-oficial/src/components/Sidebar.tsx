@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -45,6 +45,53 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const { currentUser, currentOrg, isAdmin, isGuest, logout } = useAuth();
 
   const visibleItems = sidebarItems.filter((item) => !item.adminOnly || isAdmin);
+
+  const [health, setHealth] = useState<{
+    status: 'healthy' | 'unhealthy' | 'checking' | 'error';
+    error?: string;
+    interpreted?: string;
+    model?: string;
+  }>({ status: 'checking' });
+
+  useEffect(() => {
+    const checkHealth = async () => {
+      try {
+        const res = await fetch('/api/health');
+        if (!res.ok) {
+          const data = await res.json().catch(() => null);
+          setHealth({
+            status: 'unhealthy',
+            error: data?.error || 'Error de conexión',
+            interpreted: data?.diagnostics?.error?.interpreted || 'El motor de IA está reportando fallos de conexión.'
+          });
+          return;
+        }
+        const data = await res.json();
+        if (data.status === 'healthy') {
+          setHealth({
+            status: 'healthy',
+            model: data.diagnostics?.llm?.model_configured || 'gemini'
+          });
+        } else {
+          setHealth({
+            status: 'unhealthy',
+            error: data.diagnostics?.error?.raw || 'Error de diagnóstico',
+            interpreted: data.diagnostics?.error?.interpreted || 'Error al conectar al LLM.'
+          });
+        }
+      } catch (err: any) {
+        setHealth({
+          status: 'error',
+          error: err.message,
+          interpreted: 'No se pudo conectar con el backend de Python.'
+        });
+      }
+    };
+
+    checkHealth();
+    const interval = setInterval(checkHealth, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <motion.aside
@@ -261,6 +308,96 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
           </motion.div>
         )}
       </nav>
+
+      {/* IA Status Indicator */}
+      <div style={{ flexShrink: 0 }}>
+        {!collapsed ? (
+          <div style={{
+            margin: '10px 12px',
+            padding: '12px',
+            borderRadius: '12px',
+            background: health.status === 'healthy' ? 'rgba(16, 185, 129, 0.06)' : 'rgba(239, 68, 68, 0.06)',
+            border: `1px solid ${health.status === 'healthy' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)'}`,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '6px',
+            transition: 'all 0.3s ease'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <motion.span
+                animate={{
+                  scale: health.status === 'checking' ? [1, 1.2, 1] : 1,
+                  opacity: health.status === 'checking' ? [0.6, 1, 0.6] : 1
+                }}
+                transition={{
+                  duration: 1.5,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+                style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: '50%',
+                  background: health.status === 'healthy' ? '#10b981' : health.status === 'checking' ? '#f59e0b' : '#ef4444',
+                  boxShadow: health.status === 'healthy' ? '0 0 8px #10b981' : health.status === 'checking' ? '0 0 8px #f59e0b' : '0 0 8px #ef4444',
+                  display: 'inline-block'
+                }}
+              />
+              <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>
+                {health.status === 'healthy' ? 'Motor IA Activo' : health.status === 'checking' ? 'Verificando IA...' : 'Motor IA Inactivo'}
+              </span>
+            </div>
+            {health.status === 'healthy' && (
+              <span style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>
+                Modelo: {health.model}
+              </span>
+            )}
+            {health.status !== 'healthy' && health.status !== 'checking' && (
+              <span style={{ 
+                fontSize: 10, 
+                color: 'var(--danger, #ef4444)', 
+                lineHeight: 1.4,
+                wordBreak: 'break-word',
+                maxHeight: '60px',
+                overflowY: 'auto' 
+              }}>
+                {health.interpreted || 'Error de conexión con el LLM.'}
+              </span>
+            )}
+          </div>
+        ) : (
+          <div 
+            className="tooltip" 
+            data-tooltip={health.status === 'healthy' ? `Motor IA Activo (${health.model})` : `Error IA: ${health.interpreted || 'Inactivo'}`}
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              margin: '12px auto',
+              cursor: 'pointer'
+            }}
+          >
+            <motion.span
+              animate={{
+                scale: health.status === 'checking' ? [1, 1.2, 1] : 1,
+                opacity: health.status === 'checking' ? [0.6, 1, 0.6] : 1
+              }}
+              transition={{
+                duration: 1.5,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+              style={{
+                width: 10,
+                height: 10,
+                borderRadius: '50%',
+                background: health.status === 'healthy' ? '#10b981' : health.status === 'checking' ? '#f59e0b' : '#ef4444',
+                boxShadow: health.status === 'healthy' ? '0 0 8px #10b981' : health.status === 'checking' ? '0 0 8px #f59e0b' : '0 0 8px #ef4444',
+                display: 'inline-block'
+              }}
+            />
+          </div>
+        )}
+      </div>
 
       {/* User section */}
       <div
