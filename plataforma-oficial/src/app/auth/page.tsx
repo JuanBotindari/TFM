@@ -143,6 +143,12 @@ export default function AuthPage() {
           <ArrowLeft size={16} />
           Volver al inicio
         </Link>
+        {/* Dashboard shortcut when authenticated */}
+        {isSignInLoaded && signIn?.status === 'complete' && (
+          <Link href="/dashboard" style={{ marginLeft: 12, padding: '8px 14px', borderRadius: 8, background: 'var(--accent-light)', color: 'var(--accent)', fontSize: 14, textDecoration: 'none' }}>
+            Dashboard
+          </Link>
+        )}
         <button
           onClick={cycleTheme}
           title={themeLabel}
