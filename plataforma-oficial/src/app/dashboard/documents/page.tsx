@@ -96,6 +96,13 @@ export default function DocumentsPage() {
 
       // 3. Refresh list
       await fetchDocuments();
+
+      // 4. Trigger embeddings recompute for all documents
+      try {
+        await fetch('/api/embeddings/recompute', { method: 'POST' });
+      } catch (recomputeErr) {
+        console.error('Error triggering embeddings recompute:', recomputeErr);
+      }
       
       // Simulate processing for the demo
       setTimeout(() => {
