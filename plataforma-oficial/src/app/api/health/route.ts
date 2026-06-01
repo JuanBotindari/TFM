@@ -1,9 +1,29 @@
 import { NextResponse } from 'next/server';
 
+/**
+ * Construye la URL del health endpoint del backend Python según el entorno.
+ */
+function getPythonHealthUrl(): string {
+  // 1. Si el usuario definió explícitamente la URL, derivar el health desde ahí
+  if (process.env.PYTHON_BACKEND_URL) {
+    return process.env.PYTHON_BACKEND_URL.replace(/\/pyapi\/chat$/, '/pyapi/health')
+                                          .replace(/\/api\/chat$/, '/pyapi/health');
+  }
+
+  // 2. En Vercel: usar la URL del deployment
+  if (process.env.VERCEL_URL) {
+    const protocol = process.env.VERCEL_URL.startsWith('localhost') ? 'http' : 'https';
+    return `${protocol}://${process.env.VERCEL_URL}/pyapi/health`;
+  }
+
+  // 3. Fallback local
+  return 'http://127.0.0.1:8000/pyapi/health';
+}
+
 export async function GET() {
   try {
-    const PYTHON_BACKEND_URL = process.env.PYTHON_BACKEND_URL || 'http://127.0.0.1:8000/api/chat';
-    const HEALTH_URL = PYTHON_BACKEND_URL.replace('/api/chat', '/api/health');
+    const HEALTH_URL = getPythonHealthUrl();
+    console.log(`[Health Route] Checking Python backend: ${HEALTH_URL}`);
 
     const response = await fetch(HEALTH_URL, {
       method: 'GET',
@@ -27,7 +47,7 @@ export async function GET() {
     console.error('Health check API Error:', error);
     return NextResponse.json({
       status: 'unhealthy',
-      error: 'No se pudo conectar con el motor de IA (Python) en el puerto 8000.',
+      error: 'No se pudo conectar con el motor de IA (Python).',
       details: error.message
     }, { status: 503 });
   }
