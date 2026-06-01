@@ -17,6 +17,24 @@ from .tools.telemetry import AgenteTracer, imprimir_modelos, imprimir_estado_vec
 
 load_dotenv(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), '.env'))
 
+def analizar_error_conexion(e: Exception) -> str:
+    """Analiza una excepción de conexión con Google Gemini y devuelve un mensaje en español comprensible."""
+    err_msg = str(e)
+    err_lower = err_msg.lower()
+    
+    if "api_key_invalid" in err_lower or "api key not valid" in err_lower or "invalid api key" in err_lower or "key is invalid" in err_lower:
+        return "La clave API provista es inválida (API_KEY_INVALID). Verifica que la clave en tus archivos .env o .env.local sea correcta."
+    elif "resource_exhausted" in err_lower or "quota" in err_lower or "429" in err_lower or "rate limit" in err_lower:
+        return "Se ha agotado la cuota de la API de Gemini (RESOURCE_EXHAUSTED). Si estás utilizando el plan gratuito, recuerda que el límite es de 15 RPM o has alcanzado el límite diario. Espera un momento antes de reintentar."
+    elif "location" in err_lower or "blocked" in err_lower or "user_location_blocked" in err_lower:
+        return "El acceso a la API de Gemini está bloqueado desde tu ubicación geográfica actual (USER_LOCATION_BLOCKED)."
+    elif "not_found" in err_lower or "model" in err_lower and "not found" in err_lower or "404" in err_lower:
+        return "El modelo especificado no existe o no está disponible en la API de Gemini (MODEL_NOT_FOUND). Verifica la configuración en settings.json."
+    elif "conn" in err_lower or "timeout" in err_lower or "dns" in err_lower or "socket" in err_lower or "resolved" in err_lower or "unreachable" in err_lower:
+        return "No se pudo establecer conexión de red con el servidor de la API de Gemini. Comprueba tu conexión a internet o de red."
+    else:
+        return f"Error de conexión con la API de Gemini: {err_msg}"
+
 _ROUTER_PROMPT = """\
 Cuando recibas una pregunta del usuario, evalúa estrictamente en este orden:
 1. ¿Requiero buscar en documentos textuales (PDFs, políticas, manuales)?
@@ -75,6 +93,11 @@ class BaseModel(ABC):
 
         self.llm        = self._inicializar_llm()
         self.embeddings = self._inicializar_embeddings()
+
+        # Validación de conexiones y manejo de cuotas
+        self.validar_conexion_ia()
+        self.validar_conexion_embeddings()
+
         self.tracer     = AgenteTracer()
 
         self.vector_store     = None
@@ -95,6 +118,77 @@ class BaseModel(ABC):
         if dim:
             kwargs["output_dimensionality"] = int(dim)
         return GoogleGenerativeAIEmbeddings(**kwargs)
+
+    def validar_conexion_ia(self):
+        """Valida la clave API de Gemini y la conexión con el LLM.
+        Si el modelo configurado no tiene cuota o falla, intenta con modelos de fallback.
+        """
+        api_key = os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY")
+        if not api_key:
+            error_msg = "No se detectó GOOGLE_API_KEY ni GEMINI_API_KEY en las variables de entorno."
+            print(f"❌ ERROR: {error_msg}")
+            raise ValueError(
+                f"{error_msg} Asegúrate de configurar GOOGLE_API_KEY en tu archivo .env o .env.local"
+            )
+
+        modelos_a_probar = [self.modelo_llm]
+        fallbacks = ["gemini-2.5-flash", "gemini-1.5-flash", "gemini-flash-latest"]
+        for fb in fallbacks:
+            if fb != self.modelo_llm:
+                modelos_a_probar.append(fb)
+
+        ultimo_error_msg = None
+        ultimo_error = None
+        for mod in modelos_a_probar:
+            print(f"🔄 Probando conexión con LLM ({mod})...")
+            try:
+                test_llm = ChatGoogleGenerativeAI(
+                    model=mod,
+                    temperature=0,
+                    convert_system_message_to_human=True,
+                )
+                # Intento de invocación rápida para probar conectividad y cuota
+                test_llm.invoke("Responder únicamente 'OK'")
+                
+                # Si llegamos aquí, la llamada fue exitosa
+                if mod != self.modelo_llm:
+                    print(f"⚠️  ADVERTENCIA: El modelo configurado '{self.modelo_llm}' falló por cuota/límites. "
+                          f"Se seleccionó automáticamente el fallback '{mod}' que está activo.")
+                    self.modelo_llm = mod
+                    self.llm = test_llm
+                else:
+                    print(f"✅ Conexión con LLM ({mod}) exitosa.")
+                return
+            except Exception as e:
+                err_msg = str(e)
+                error_categorizado = analizar_error_conexion(e)
+                print(f"❌ Error con el modelo {mod}: {error_categorizado}")
+                ultimo_error_msg = error_categorizado
+                ultimo_error = e
+                # Si la API key es inválida, levantamos el error inmediatamente sin seguir probando otros modelos
+                if "API_KEY_INVALID" in err_msg or "Invalid API Key" in err_msg or "key is invalid" in err_msg.lower():
+                    print("❌ ERROR CRÍTICO: La clave API de Gemini provista es inválida.")
+                    raise ValueError(error_categorizado) from e
+
+        # Si todos los modelos fallaron
+        print(f"❌ ERROR CRÍTICO: Ningún modelo de Gemini pudo establecer conexión. Último error: {ultimo_error_msg}")
+        raise RuntimeError(
+            f"No se pudo conectar a la API de Gemini (posiblemente sin cuota o límites excedidos). "
+            f"Detalle: {ultimo_error_msg}"
+        ) from ultimo_error
+
+    def validar_conexion_embeddings(self):
+        """Valida que el servicio de Embeddings funcione correctamente."""
+        print(f"🔄 Probando conexión con Embeddings ({self.modelo_embeddings})...")
+        try:
+            self.embeddings.embed_query("Test connection")
+            print(f"✅ Conexión con Embeddings ({self.modelo_embeddings}) exitosa.")
+        except Exception as e:
+            error_categorizado = analizar_error_conexion(e)
+            print(f"❌ Error con Embeddings ({self.modelo_embeddings}): {error_categorizado}")
+            raise RuntimeError(
+                f"Fallo al conectar con el servicio de Embeddings de Gemini: {error_categorizado}"
+            ) from e
 
     def _inicializar_handlers(self):
         tablas = TablasHandler(

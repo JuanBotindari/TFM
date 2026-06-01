@@ -29,7 +29,13 @@ export async function POST(req: Request) {
       });
 
       if (!response.ok) {
-        throw new Error('Python Backend failed');
+        const errorData = await response.json().catch(() => null);
+        const errorMsg = errorData?.detail || errorData?.message || 'Error interno en el servidor de IA (Python).';
+        return NextResponse.json({
+          role: 'assistant',
+          content: `Error del motor de IA: ${errorMsg}`,
+          sources: []
+        }, { status: response.status });
       }
 
       const data = await response.json();
@@ -38,7 +44,7 @@ export async function POST(req: Request) {
       console.error('Error connecting to Python backend:', fetchError);
       return NextResponse.json({
         role: 'assistant',
-        content: 'Error: No se pudo conectar con el motor de IA (Python). Asegúrate de que el servicio esté corriendo.',
+        content: 'Error: No se pudo conectar con el motor de IA (Python). Asegúrate de que el servicio esté corriendo en el puerto 8000.',
         sources: []
       }, { status: 503 });
     }

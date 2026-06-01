@@ -29,6 +29,78 @@ from .telemetry import metricas_supabase
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 
+
+class SafeSupabaseVectorStore(SupabaseVectorStore):
+    """
+    Subclase de SupabaseVectorStore que evita el error 'SyncRPCFilterRequestBuilder object has no attribute params'
+    al realizar la búsqueda de similitud, realizando la llamada RPC directamente.
+    """
+
+    def similarity_search_by_vector(
+        self,
+        embedding: list[float],
+        k: int = 4,
+        filter: dict | None = None,
+        **kwargs
+    ) -> list[Document]:
+        rpc_params = {
+            "query_embedding": embedding,
+            "filter": filter or {}
+        }
+        res = self._client.rpc(self.query_name, rpc_params).execute()
+        
+        docs = []
+        data = res.data or []
+        for row in data[:k]:
+            content = row.get("content", "")
+            metadata = row.get("metadata", {})
+            if isinstance(metadata, str):
+                import ast
+                try:
+                    metadata = ast.literal_eval(metadata)
+                except Exception:
+                    try:
+                        import json
+                        metadata = json.loads(metadata)
+                    except Exception:
+                        metadata = {}
+            docs.append(Document(page_content=content, metadata=metadata))
+        return docs
+
+    def similarity_search_with_score(
+        self,
+        query: str,
+        k: int = 4,
+        filter: dict | None = None,
+        **kwargs
+    ) -> list[tuple[Document, float]]:
+        embedding = self._embedding_service.embed_query(query)
+        rpc_params = {
+            "query_embedding": embedding,
+            "filter": filter or {}
+        }
+        res = self._client.rpc(self.query_name, rpc_params).execute()
+        
+        results = []
+        data = res.data or []
+        for row in data[:k]:
+            content = row.get("content", "")
+            metadata = row.get("metadata", {})
+            if isinstance(metadata, str):
+                import ast
+                try:
+                    metadata = ast.literal_eval(metadata)
+                except Exception:
+                    try:
+                        import json
+                        metadata = json.loads(metadata)
+                    except Exception:
+                        metadata = {}
+            similarity = float(row.get("similarity", 0.0))
+            doc = Document(page_content=content, metadata=metadata)
+            results.append((doc, similarity))
+        return results
+
 # ── Constantes ───────────────────────────────────────────────────────────────
 
 _BUCKET = "company-documents"
@@ -171,6 +243,20 @@ class KnowledgeIndexer:
         except Exception:
             return 0
 
+    def obtener_muestras(self, tabla: str, org_id: str, limite: int = 80) -> list[dict]:
+        try:
+            r = (
+                self.supabase.table(tabla)
+                .select("content, metadata")
+                .eq("org_id", org_id)
+                .limit(limite)
+                .execute()
+            )
+            return r.data or []
+        except Exception as e:
+            print(f"Error al obtener muestras de {tabla}: {e}")
+            return []
+
     def build(self, force_rebuild: bool = False):
         """API de compatibilidad — construye o reutiliza el vector store."""
         if force_rebuild:
@@ -306,7 +392,7 @@ class KnowledgeIndexer:
 
         def _insert_to_vector_table(self, chunks: list[Document]) -> None:
             """Genera embeddings e inserta en la tabla vectorial."""
-            SupabaseVectorStore.from_documents(
+            SafeSupabaseVectorStore.from_documents(
                 chunks,
                 self._ki.embeddings,
                 client=self._ki.supabase,
@@ -326,11 +412,11 @@ class KnowledgeIndexer:
 
         def __init__(self, indexer: "KnowledgeIndexer"):
             self._ki = indexer
-            self._store: SupabaseVectorStore | None = None
+            self._store: SafeSupabaseVectorStore | None = None
 
-        def _get_store(self) -> SupabaseVectorStore:
+        def _get_store(self) -> SafeSupabaseVectorStore:
             if self._store is None:
-                self._store = SupabaseVectorStore(
+                self._store = SafeSupabaseVectorStore(
                     client=self._ki.supabase,
                     embedding=self._ki.embeddings,
                     table_name=self._ki.tabla,
@@ -338,7 +424,7 @@ class KnowledgeIndexer:
                 )
             return self._store
 
-        def as_langchain_store(self) -> SupabaseVectorStore:
+        def as_langchain_store(self) -> SafeSupabaseVectorStore:
             """Devuelve el SupabaseVectorStore listo para LangChain."""
             return self._get_store()
 
