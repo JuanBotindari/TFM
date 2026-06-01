@@ -46,7 +46,10 @@ export default function ChatPage() {
         })
       });
 
-      if (!response.ok) throw new Error('Failed to get response');
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(`Error ${response.status}: ${errText}`);
+      }
 
       const data = await response.json();
       
@@ -57,12 +60,12 @@ export default function ChatPage() {
         sources: data.sources || [],
         timestamp: new Date().toISOString()
       }]);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Chat error:', err);
       setMessages(prev => [...prev, {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: 'Lo siento, hubo un error al conectar con el servidor de IA.',
+        content: `Lo siento, hubo un error al conectar con el servidor de IA. \n\n**Detalle técnico:** \`${err.message}\``,
         timestamp: new Date().toISOString()
       }]);
     } finally {

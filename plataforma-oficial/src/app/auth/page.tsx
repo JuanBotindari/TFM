@@ -41,8 +41,8 @@ export default function AuthPage() {
     }
   }, [isSignInLoaded, signIn?.status, router]);
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleLogin = async (e?: React.FormEvent, overrideEmail?: string, overridePassword?: string) => {
+    if (e) e.preventDefault();
     if (!isSignInLoaded) return;
     
     setLoading(true);
@@ -50,8 +50,8 @@ export default function AuthPage() {
     
     try {
       const result = await signIn.create({
-        identifier: email, // This can be email or username in Clerk
-        password,
+        identifier: overrideEmail || email, // This can be email or username in Clerk
+        password: overridePassword || password,
       });
 
       if (result.status === 'complete') {
@@ -308,9 +308,13 @@ export default function AuthPage() {
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                     {demoCredentials.map((cred) => (
                       <button
-                        key={cred.email}
+                        key={cred.username}
                         type="button"
-                        onClick={() => { setEmail(cred.username || cred.email); setPassword(cred.password); }}
+                        onClick={() => { 
+                          setEmail(cred.username); 
+                          setPassword(cred.password); 
+                          handleLogin(undefined, cred.username, cred.password);
+                        }}
                         style={{
                           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                           padding: '8px 12px', borderRadius: 8, border: 'none', background: 'var(--bg-input)',
