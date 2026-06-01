@@ -6,18 +6,17 @@ import { NextResponse } from 'next/server';
 function getPythonHealthUrl(): string {
   // 1. Si el usuario definió explícitamente la URL, derivar el health desde ahí
   if (process.env.PYTHON_BACKEND_URL) {
-    return process.env.PYTHON_BACKEND_URL.replace(/\/pyapi\/chat$/, '/pyapi/health')
-                                          .replace(/\/api\/chat$/, '/pyapi/health');
+    return process.env.PYTHON_BACKEND_URL.replace(/\/api\/chat$/, '/api/health');
   }
 
   // 2. En Vercel: usar la URL del deployment
   if (process.env.VERCEL_URL) {
     const protocol = process.env.VERCEL_URL.startsWith('localhost') ? 'http' : 'https';
-    return `${protocol}://${process.env.VERCEL_URL}/pyapi/health`;
+    return `${protocol}://${process.env.VERCEL_URL}/api/health`;
   }
 
   // 3. Fallback local
-  return 'http://127.0.0.1:8000/pyapi/health';
+  return 'http://127.0.0.1:8000/api/health';
 }
 
 export async function GET() {

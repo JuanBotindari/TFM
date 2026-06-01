@@ -16,7 +16,7 @@ from BaseModelLLM.clientes.banco import ClienteBanco
 from BaseModelLLM.base_llm import analizar_error_conexion
 # from BaseModelLLM.clientes.estudio import ClienteEstudio
 
-app = FastAPI(docs_url="/pyapi/docs", openapi_url="/pyapi/openapi.json")
+app = FastAPI(docs_url="/api/docs", openapi_url="/api/openapi.json")
 
 # Instancias en memoria para no reconstruir la base en cada petición
 clientes_instanciados = {}
@@ -39,7 +39,7 @@ class QueryRequest(BaseModel):
     history: Optional[List[Dict[str, Any]]] = []
     org_id: str = "org-banco"
 
-@app.get("/pyapi/health")
+@app.get("/api/health")
 async def health_endpoint():
     """Diagnóstico detallado de conectividad con LLM, Embeddings y Variables de Entorno."""
     reporte = {
@@ -90,7 +90,7 @@ async def health_endpoint():
         
     return reporte
 
-@app.post("/pyapi/chat")
+@app.post("/api/chat")
 async def chat_endpoint(request: QueryRequest):
     try:
         cliente = obtener_cliente(request.org_id)

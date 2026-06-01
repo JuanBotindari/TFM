@@ -56,7 +56,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
   useEffect(() => {
     const checkHealth = async () => {
       try {
-        const res = await fetch('/api/health');
+        const res = await fetch('/nextapi/health');
         if (!res.ok) {
           const data = await res.json().catch(() => null);
           setHealth({

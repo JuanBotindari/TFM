@@ -10,17 +10,6 @@ const nextConfig: NextConfig = {
     // Ignora los errores de TypeScript durante el despliegue
     ignoreBuildErrors: true,
   },
-  async rewrites() {
-    if (process.env.NODE_ENV === 'development') {
-      return [
-        {
-          source: '/pyapi/:path*',
-          destination: 'http://127.0.0.1:8000/pyapi/:path*',
-        },
-      ];
-    }
-    return [];
-  },
-};
+} as any;
 
 export default nextConfig;

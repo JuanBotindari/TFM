@@ -15,11 +15,11 @@ function getPythonBackendUrl(): string {
   // 2. En Vercel: usar la URL del deployment (VERCEL_URL se setea automáticamente)
   if (process.env.VERCEL_URL) {
     const protocol = process.env.VERCEL_URL.startsWith('localhost') ? 'http' : 'https';
-    return `${protocol}://${process.env.VERCEL_URL}/pyapi/chat`;
+    return `${protocol}://${process.env.VERCEL_URL}/api/chat`;
   }
 
   // 3. Fallback local
-  return 'http://127.0.0.1:8000/pyapi/chat';
+  return 'http://127.0.0.1:8000/api/chat';
 }
 
 export async function POST(req: Request) {
