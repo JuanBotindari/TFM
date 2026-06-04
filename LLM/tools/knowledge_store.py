@@ -1,14 +1,19 @@
 """
-KnowledgeIndexer — Supabase + pgvector + indexación RAG en una sola clase.
+KnowledgeIndexer — Supabase + pgvector + indexación RAG.
 
-Flujo build():
-  1. Contar vectores del org_id en la tabla vectorial
-  2. Si hay datos → abrir SupabaseVectorStore
-  3. Si no → cargar desde document_chunks o PDFs locales → indexar
+Estructura:
+  KnowledgeIndexer
+  ├── DocumentProcessor  → Storage (PDFs) → chunks → embeddings → database_vector_*
+  └── VectorStore        → conecta a la tabla vectorial y recupera por similitud
+
+Tabla vectorial por org_id:
+  org-banco    → database_vector_banco
+  org-estudio  → database_vector_estudiocontable
 """
 
 from __future__ import annotations
 
+import io
 import os
 import sys
 
@@ -24,77 +29,79 @@ from .telemetry import metricas_supabase
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 
+# ── Constantes ───────────────────────────────────────────────────────────────
+
+_BUCKET = "company-documents"
+
+_TABLA_POR_ORG: dict[str, str] = {
+    "org-banco":   "database_vector_banco",
+    "org-estudio": "database_vector_estudiocontable",
+}
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# CLASE PRINCIPAL
+# ════════════════════════════════════════════════════════════════════════════
 
 class KnowledgeIndexer:
-    """Cliente Supabase unificado: chunks de texto, vectores e indexación."""
+    """
+    Orquestador RAG.
 
-    CHUNK_SIZE = 1000
-    CHUNK_OVERLAP = 150
+    Uso básico:
+        ki = KnowledgeIndexer(org_id="org-banco", embeddings=my_embeddings)
+        ki.processor.process_and_index()          # carga PDFs y vectoriza
+        docs = ki.store.similarity_search(query)  # búsqueda semántica
+    """
 
-    # ── Inicialización ───────────────────────────────────────────────────────
+    # ── Constructor ──────────────────────────────────────────────────────────
 
     def __init__(
         self,
-        path_cliente: str,
-        config: dict,
-        embeddings,
-        tech: dict | None = None,
+        org_id: str = "org-banco",
+        embeddings=None,
+        chunk_size: int = 1000,
+        chunk_overlap: int = 150,
         client: Client | None = None,
+        # Parámetros de compatibilidad con la API anterior
+        path_cliente: str = "",
+        config: dict | None = None,
+        tech: dict | None = None,
     ):
-        self.path_cliente = path_cliente
-        self.config = config if isinstance(config, dict) else {}
-        self.tech = tech if isinstance(tech, dict) else {}
+        self.org_id = org_id
         self.embeddings = embeddings
-        self.vector_db_name = self._resolver_vector_db_name()
-        self.org_id = self.tech.get("org_id", "")
-        self.last_stats: dict = {}
+        self.chunk_size = chunk_size
+        self.chunk_overlap = chunk_overlap
         self._client = client
+        self.last_stats: dict = {}
+        # compat
+        self.path_cliente = path_cliente
+        self.config = config or {}
+        self.tech = tech or {}
 
-    def build(self, force_rebuild: bool = False):
-        """Devuelve (vector_store, estadísticas)."""
-        if not self.org_id:
-            raise ValueError(
-                f"Falta org_id en config/settings.json para {self.path_cliente}"
-            )
+    # ── Tabla vectorial ──────────────────────────────────────────────────────
 
-        tabla = self.vector_db_name
-        count = self.contar_vectores(tabla, self.org_id)
+    @property
+    def tabla(self) -> str:
+        """Nombre de la tabla vectorial según el org_id."""
+        nombre = self.tech.get("vector_db_name") if self.tech else None
+        if nombre:
+            return nombre
+        return _TABLA_POR_ORG.get(
+            self.org_id,
+            f"database_vector_{self.org_id.replace('org-', '')}",
+        )
 
-        if force_rebuild and count > 0:
-            print(f"🗑️  Limpiando tabla Supabase [{tabla}] para {self.org_id}...")
-            self.eliminar_vectores_org(tabla, self.org_id)
-            count = 0
+    # ── Sub-clases lazy ──────────────────────────────────────────────────────
 
-        if count > 0 and not force_rebuild:
-            print(f"☁️  [Supabase] Base [{tabla}] con {count} vectores — conectando...")
-            vs = self.abrir_vector_store(tabla)
-            self.last_stats = metricas_supabase(
-                self, tabla, self.org_id, modo="cargada",
-            )
-            self.last_stats["vector_db_name"] = tabla
-            return vs, self.last_stats
+    @property
+    def processor(self) -> "KnowledgeIndexer.DocumentProcessor":
+        """Sub-clase encargada de cargar PDFs y generar vectores."""
+        return KnowledgeIndexer.DocumentProcessor(self)
 
-        print(f"☁️  [Supabase] Tabla [{tabla}] vacía — creando índice...")
-        chunks, fuente = self._obtener_chunks_para_indexar()
-
-        if chunks:
-            print(f"🔮 Indexando {len(chunks)} fragmentos en Supabase [{tabla}]...")
-            vs = self.indexar_chunks(chunks, tabla)
-            self.last_stats = metricas_supabase(
-                self, tabla, self.org_id, modo="creada",
-                fragmentos_indexados=len(chunks),
-                fuente=fuente,
-            )
-        else:
-            print("⚠️  Sin documentos en Supabase ni locales. Base vectorial vacía.")
-            vs = self.abrir_vector_store(tabla)
-            self.last_stats = metricas_supabase(
-                self, tabla, self.org_id, modo="vacia",
-                fragmentos_indexados=0,
-            )
-
-        self.last_stats["vector_db_name"] = tabla
-        return vs, self.last_stats
+    @property
+    def store(self) -> "KnowledgeIndexer.VectorStore":
+        """Sub-clase encargada de la búsqueda semántica."""
+        return KnowledgeIndexer.VectorStore(self)
 
     # ── Conexión Supabase ────────────────────────────────────────────────────
 
@@ -111,10 +118,8 @@ class KnowledgeIndexer:
         )
         load_dotenv(os.path.join(repo_root, ".env"))
         load_dotenv(os.path.join(repo_root, "plataforma-oficial", ".env.local"))
-
         url = os.getenv("NEXT_PUBLIC_SUPABASE_URL")
         key = os.getenv("otra_key_supabase") or os.getenv("NEXT_PUBLIC_SUPABASE_ANON_KEY")
-
         if not url or not key:
             raise ValueError(
                 "Faltan credenciales de Supabase. "
@@ -122,38 +127,37 @@ class KnowledgeIndexer:
             )
         return create_client(url, key)
 
-    # ── document_chunks (texto fuente) ───────────────────────────────────────
+    # ── API de compatibilidad ─────────────────────────────────────────────────
 
     def get_document_chunks(self, org_id: str) -> list[dict]:
+        """Lee chunks crudos de la tabla `document_chunks` (sin vectores)."""
         try:
-            respuesta = (
+            r = (
                 self.supabase.table("document_chunks")
                 .select("content, documents(name)")
                 .eq("org_id", org_id)
                 .execute()
             )
-            fragmentos = []
-            for row in respuesta.data or []:
+            result = []
+            for row in r.data or []:
                 docs = row.get("documents") or {}
-                source_name = (
+                source = (
                     docs.get("name", "Documento_Nube")
                     if isinstance(docs, dict)
                     else "Documento_Nube"
                 )
-                fragmentos.append({
+                result.append({
                     "text": row["content"],
                     "metadata": {
-                        "source": source_name,
+                        "source": source,
                         "modulo": "Supabase",
                         "org_id": org_id,
                     },
                 })
-            return fragmentos
+            return result
         except Exception as e:
             print(f"Error al descargar document_chunks para {org_id}: {e}")
             return []
-
-    # ── Tablas vectoriales (lectura / escritura) ─────────────────────────────
 
     def contar_vectores(self, tabla: str, org_id: str) -> int:
         try:
@@ -167,128 +171,190 @@ class KnowledgeIndexer:
         except Exception:
             return 0
 
-    def obtener_muestras(self, tabla: str, org_id: str, limite: int = 80) -> list[dict]:
-        try:
-            r = (
-                self.supabase.table(tabla)
-                .select("content, metadata")
-                .eq("org_id", org_id)
-                .limit(limite)
-                .execute()
+    def build(self, force_rebuild: bool = False):
+        """API de compatibilidad — construye o reutiliza el vector store."""
+        if force_rebuild:
+            self.processor.limpiar_vectores()
+
+        count = self.contar_vectores(self.tabla, self.org_id)
+        if count > 0 and not force_rebuild:
+            print(f"☁️  [{self.tabla}] {count} vectores — conectando...")
+            vs = self.store.as_langchain_store()
+            self.last_stats = metricas_supabase(
+                self, self.tabla, self.org_id, modo="cargada"
             )
-            return r.data or []
-        except Exception:
-            return []
+            self.last_stats["vector_db_name"] = self.tabla
+            return vs, self.last_stats
 
-    def eliminar_vectores_org(self, tabla: str, org_id: str) -> None:
-        self.supabase.table(tabla).delete().eq("org_id", org_id).execute()
-
-    def _match_fn(self, tabla: str) -> str:
-        return self.tech.get("vector_match_fn") or f"match_{tabla}"
-
-    def abrir_vector_store(self, tabla: str) -> SupabaseVectorStore:
-        return SupabaseVectorStore(
-            client=self.supabase,
-            embedding=self.embeddings,
-            table_name=tabla,
-            query_name=self._match_fn(tabla),
+        print(f"☁️  [{self.tabla}] vacía — indexando desde Storage...")
+        n = self.processor.process_and_index()
+        vs = self.store.as_langchain_store()
+        self.last_stats = metricas_supabase(
+            self, self.tabla, self.org_id, modo="creada",
+            fragmentos_indexados=n,
         )
+        self.last_stats["vector_db_name"] = self.tabla
+        return vs, self.last_stats
 
-    def indexar_chunks(self, chunks: list[dict], tabla: str) -> SupabaseVectorStore:
-        documentos = [
-            Document(
-                page_content=c["text"],
-                metadata={**c["metadata"], "org_id": self.org_id},
+    # ════════════════════════════════════════════════════════════════════════
+    # SUB-CLASE 1: DocumentProcessor
+    # ════════════════════════════════════════════════════════════════════════
+
+    class DocumentProcessor:
+        """
+        Descarga PDFs del Storage de Supabase, los divide en chunks
+        según los hiperparámetros y genera embeddings en la tabla vectorial.
+
+        Se invoca desde el botón "Cargar documentos" del frontend.
+
+        Flujo:
+            Storage (org-banco/) → texto → chunks → embeddings → database_vector_banco
+        """
+
+        def __init__(self, indexer: "KnowledgeIndexer"):
+            self._ki = indexer
+
+        # ── API pública ──────────────────────────────────────────────────────
+
+        def process_and_index(self) -> int:
+            """
+            Descarga todos los PDFs del Storage para el org_id,
+            genera chunks con embeddings y los inserta en la tabla vectorial.
+
+            Returns:
+                Número de chunks indexados.
+            """
+            print(f"📥 Descargando PDFs de Storage [{self._ki.org_id}]...")
+            documentos = self._download_pdfs_from_storage()
+
+            if not documentos:
+                print("⚠️  No hay PDFs en el Storage para este org_id.")
+                return 0
+
+            chunks = self._split_documents(documentos)
+            print(
+                f"✂️  {len(chunks)} chunks generados "
+                f"(size={self._ki.chunk_size}, overlap={self._ki.chunk_overlap})"
             )
-            for c in chunks
-        ]
-        return SupabaseVectorStore.from_documents(
-            documentos,
-            self.embeddings,
-            client=self.supabase,
-            table_name=tabla,
-            query_name=self._match_fn(tabla),
-        )
 
-    # ── Orquestación de fuentes ──────────────────────────────────────────────
+            self._insert_to_vector_table(chunks)
+            print(f"✅ {len(chunks)} chunks indexados en [{self._ki.tabla}]")
+            return len(chunks)
 
-    def _obtener_chunks_para_indexar(self) -> tuple[list, str | None]:
-        print(f"☁️  Descargando document_chunks para {self.org_id}...")
-        chunks = self.get_document_chunks(self.org_id)
-        if chunks:
-            print(f"📥 {len(chunks)} fragmentos desde document_chunks.")
-            return chunks, "Supabase (document_chunks)"
+        def limpiar_vectores(self) -> None:
+            """Elimina todos los vectores del org_id de la tabla vectorial."""
+            self._ki.supabase.table(self._ki.tabla) \
+                .delete().eq("org_id", self._ki.org_id).execute()
+            print(
+                f"🗑️  Vectores de [{self._ki.org_id}] eliminados "
+                f"de [{self._ki.tabla}]"
+            )
 
-        print("💾 Sin chunks en document_chunks — leyendo PDFs locales...")
-        chunks = self._obtener_chunks_locales()
-        if chunks:
-            return chunks, "archivos locales (PDF/web) → Supabase"
-        return [], None
+        # ── Pasos internos ───────────────────────────────────────────────────
 
-    def _resolver_vector_db_name(self) -> str:
-        nombre = self.tech.get("vector_db_name")
-        if nombre:
-            return nombre
-        slug = os.path.basename(self.path_cliente).lower()
-        if "banco" in slug:
-            return "database_vector_banco"
-        if "contable" in slug or "estudio" in slug:
-            return "database_vector_estudiocontable"
-        return f"database_vector_{slug.replace('client-', '')}"
-
-    # ── Fuentes locales (PDF / web) ──────────────────────────────────────────
-
-    def _obtener_chunks_locales(self) -> list:
-        all_chunks = []
-        for modulo in self.config.get("indice_conocimiento", {}).get("modulos", []):
-            dir_path = os.path.join(self.path_cliente, modulo.get("directorio", ""))
-            tipo = modulo.get("tipo", "pdf").lower()
-            if not os.path.exists(dir_path):
-                continue
-            if tipo == "pdf":
-                all_chunks.extend(self._leer_pdfs(dir_path, modulo))
-            elif tipo == "web":
-                all_chunks.extend(self._leer_web(dir_path, modulo))
-        return all_chunks
-
-    def _leer_pdfs(self, path: str, modulo: dict) -> list:
-        chunks = []
-        splitter = RecursiveCharacterTextSplitter(
-            chunk_size=self.CHUNK_SIZE, chunk_overlap=self.CHUNK_OVERLAP
-        )
-        for file in os.listdir(path):
-            if not file.endswith(".pdf"):
-                continue
+        def _download_pdfs_from_storage(self) -> list[dict]:
+            """
+            Lista el bucket `company-documents` bajo el prefijo org_id/
+            y descarga cada PDF. Retorna lista de {name, text}.
+            """
+            bucket = self._ki.supabase.storage.from_(_BUCKET)
             try:
-                reader = PdfReader(os.path.join(path, file))
-                text = "\n".join(
-                    p.extract_text() for p in reader.pages if p.extract_text()
-                )
-                for chunk in splitter.split_text(text):
-                    chunks.append({
-                        "text": chunk,
-                        "metadata": {
-                            "source": file,
-                            "modulo": modulo["nombre"],
-                            "org_id": self.org_id,
-                        },
-                    })
-            except Exception:
-                pass
-        return chunks
+                files = bucket.list(self._ki.org_id)
+            except Exception as e:
+                print(f"Error listando Storage: {e}")
+                return []
 
-    def _leer_web(self, path: str, modulo: dict) -> list:
-        chunks = []
-        for file in os.listdir(path):
-            if file.endswith((".txt", ".html", ".json")):
-                with open(os.path.join(path, file), "r", encoding="utf-8") as f:
-                    text = f.read()
-                chunks.append({
-                    "text": text,
-                    "metadata": {
-                        "source": file,
-                        "modulo": modulo["nombre"],
-                        "org_id": self.org_id,
-                    },
-                })
-        return chunks
+            documentos = []
+            for file_info in files:
+                name = file_info.get("name", "")
+                if not name.lower().endswith(".pdf"):
+                    continue
+                path = f"{self._ki.org_id}/{name}"
+                try:
+                    raw = bucket.download(path)
+                    reader = PdfReader(io.BytesIO(raw))
+                    text = "\n".join(
+                        p.extract_text() for p in reader.pages if p.extract_text()
+                    )
+                    if text.strip():
+                        documentos.append({"name": name, "text": text})
+                        print(f"  📄 {name} ({len(reader.pages)} páginas)")
+                except Exception as e:
+                    print(f"  ⚠️  Error con {name}: {e}")
+
+            return documentos
+
+        def _split_documents(self, documentos: list[dict]) -> list[Document]:
+            """Divide cada documento en chunks con RecursiveCharacterTextSplitter."""
+            splitter = RecursiveCharacterTextSplitter(
+                chunk_size=self._ki.chunk_size,
+                chunk_overlap=self._ki.chunk_overlap,
+                separators=["\n\n", "\n", ".", " ", ""],
+            )
+            chunks = []
+            for doc in documentos:
+                for i, chunk_text in enumerate(splitter.split_text(doc["text"])):
+                    chunks.append(Document(
+                        page_content=chunk_text,
+                        metadata={
+                            "source": doc["name"],
+                            "org_id": self._ki.org_id,
+                            "chunk_index": i,
+                        },
+                    ))
+            return chunks
+
+        def _insert_to_vector_table(self, chunks: list[Document]) -> None:
+            """Genera embeddings e inserta en la tabla vectorial."""
+            SupabaseVectorStore.from_documents(
+                chunks,
+                self._ki.embeddings,
+                client=self._ki.supabase,
+                table_name=self._ki.tabla,
+                query_name=f"match_{self._ki.tabla}",
+            )
+
+    # ════════════════════════════════════════════════════════════════════════
+    # SUB-CLASE 2: VectorStore
+    # ════════════════════════════════════════════════════════════════════════
+
+    class VectorStore:
+        """
+        Conecta con la tabla vectorial del org_id y permite
+        búsqueda semántica por similitud de coseno (pgvector).
+        """
+
+        def __init__(self, indexer: "KnowledgeIndexer"):
+            self._ki = indexer
+            self._store: SupabaseVectorStore | None = None
+
+        def _get_store(self) -> SupabaseVectorStore:
+            if self._store is None:
+                self._store = SupabaseVectorStore(
+                    client=self._ki.supabase,
+                    embedding=self._ki.embeddings,
+                    table_name=self._ki.tabla,
+                    query_name=f"match_{self._ki.tabla}",
+                )
+            return self._store
+
+        def as_langchain_store(self) -> SupabaseVectorStore:
+            """Devuelve el SupabaseVectorStore listo para LangChain."""
+            return self._get_store()
+
+        def similarity_search(self, query: str, k: int = 5) -> list[Document]:
+            """
+            Busca los k documentos más similares a la query.
+
+            Args:
+                query: Texto de búsqueda.
+                k:     Número de resultados.
+
+            Returns:
+                Lista de Documents con page_content y metadata.
+            """
+            return self._get_store().similarity_search(query, k=k)
+
+        def as_retriever(self, k: int = 5):
+            """Devuelve un retriever compatible con LangChain chains."""
+            return self._get_store().as_retriever(search_kwargs={"k": k})

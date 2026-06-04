@@ -157,7 +157,7 @@ class BaseModel(ABC):
 
         imprimir_estado_vectorial(
             self.vector_db_stats,
-            self.vector_db_stats.get("vector_db_name", indexer.vector_db_name),
+            self.vector_db_stats.get("vector_db_name", indexer.tabla),
         )
 
         self._establecer_prompt_dinamico()

@@ -13,7 +13,7 @@ export async function POST(req: Request) {
 
     // URL de tu servicio Python (FastAPI/Flask) que corre Ollama/RAG
     // Por defecto usamos localhost si estás corriendo el backend localmente
-    const PYTHON_BACKEND_URL = process.env.PYTHON_BACKEND_URL || 'http://localhost:8000/chat';
+    const PYTHON_BACKEND_URL = process.env.PYTHON_BACKEND_URL || 'http://127.0.0.1:8000/api/chat';
 
     try {
       const response = await fetch(PYTHON_BACKEND_URL, {
@@ -22,14 +22,20 @@ export async function POST(req: Request) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          user_id: userId,
+          org_id: "org-banco",
           message: message,
           history: history,
         }),
       });
 
       if (!response.ok) {
-        throw new Error('Python Backend failed');
+        const errorData = await response.json().catch(() => null);
+        const errorMsg = errorData?.detail || errorData?.message || 'Error interno en el servidor de IA (Python).';
+        return NextResponse.json({
+          role: 'assistant',
+          content: `Error del motor de IA: ${errorMsg}`,
+          sources: []
+        }, { status: response.status });
       }
 
       const data = await response.json();
@@ -38,7 +44,7 @@ export async function POST(req: Request) {
       console.error('Error connecting to Python backend:', fetchError);
       return NextResponse.json({
         role: 'assistant',
-        content: 'Error: No se pudo conectar con el motor de IA (Python). Asegúrate de que el servicio esté corriendo.',
+        content: 'Error: No se pudo conectar con el motor de IA (Python). Asegúrate de que el servicio esté corriendo en el puerto 8000.',
         sources: []
       }, { status: 503 });
     }
