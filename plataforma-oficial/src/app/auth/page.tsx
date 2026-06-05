@@ -45,6 +45,12 @@ export default function AuthPage() {
     if (e) e.preventDefault();
     if (!isSignInLoaded) return;
     
+    // Si ya hay una sesión activa, simplemente redirigimos sin intentar crear otra
+    if (signIn.status === 'complete') {
+      router.push('/dashboard');
+      return;
+    }
+    
     setLoading(true);
     setError('');
     
@@ -63,11 +69,16 @@ export default function AuthPage() {
       }
     } catch (err: any) {
       console.error(err);
-      if (err.errors?.[0]?.code === 'session_already_exists') {
+      if (
+        err.errors?.[0]?.code === 'session_already_exists' || 
+        err.errors?.[0]?.message?.includes('already signed in') || 
+        err.message?.includes('already signed in') ||
+        err.errors?.[0]?.code === 'identifier_already_signed_in'
+      ) {
         router.push('/dashboard');
         return;
       }
-      setError(err.errors?.[0]?.message || 'Error al iniciar sesión. Revisa tus credenciales.');
+      setError(err.errors?.[0]?.message || err.message || 'Error al iniciar sesión. Revisa tus credenciales.');
     } finally {
       setLoading(false);
     }

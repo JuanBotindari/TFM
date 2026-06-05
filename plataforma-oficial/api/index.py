@@ -114,3 +114,24 @@ async def chat_endpoint(request: QueryRequest):
             status_code=500, 
             detail=f"Error durante la generación de respuesta: {interpreted_err}"
         )
+
+@app.post("/api/embeddings/recompute")
+async def embeddings_recompute(request: Request):
+    """Trigger vector index rebuild"""
+    try:
+        data = await request.json()
+        org_id = data.get("org_id", "org-banco")
+    except Exception:
+        org_id = "org-banco"
+        
+    try:
+        cliente = obtener_cliente(org_id)
+        cliente.configurar_conocimiento(force_rebuild=True)
+        return {"success": True, "message": "Embeddings recomputed successfully"}
+    except Exception as e:
+        interpreted_err = analizar_error_conexion(e)
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Error al recomputar embeddings: {interpreted_err}"
+        )
+

@@ -29,16 +29,26 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Query must be a non‑empty string' }, { status: 400 });
     }
     // Very basic safety: only allow SELECT statements
-    const trimmed = query.trim().toUpperCase();
-    if (!trimmed.startsWith('SELECT')) {
+    const trimmedQuery = query.trim();
+    const upperTrimmed = trimmedQuery.toUpperCase();
+    if (!upperTrimmed.startsWith('SELECT')) {
       return NextResponse.json({ error: 'Only SELECT queries are allowed' }, { status: 403 });
     }
+    
+    // Remove trailing semicolon if present to avoid syntax errors in the RPC wrapper
+    const finalQuery = trimmedQuery.endsWith(';') ? trimmedQuery.slice(0, -1) : trimmedQuery;
+
     // Use Supabase RPC to run raw SQL (requires a Postgres function).
     // For the demo we will use a simple wrapper that returns an empty result set.
     // In a real implementation you would create a Postgres function like `execute_sql`.
-    const { data, error } = await supabase.rpc('execute_sql', { sql: query });
+    const { data, error } = await supabase.rpc('execute_sql', { sql: finalQuery });
     if (error) throw error;
-    return NextResponse.json({ rows: data || [], cols: [] }, { status: 200 });
+    
+    // Extract column names dynamically from the first row of data
+    const rows = Array.isArray(data) ? data : [];
+    const cols = rows.length > 0 && typeof rows[0] === 'object' ? Object.keys(rows[0]) : [];
+
+    return NextResponse.json({ rows, cols }, { status: 200 });
   } catch (e) {
     console.error('Error executing query:', e);
     return NextResponse.json({ error: 'Failed to execute query' }, { status: 500 });
