@@ -224,7 +224,7 @@ export default function LandingPage() {
                 Comenzar Ahora
                 <ArrowRight size={18} />
               </Link>
-              <Link href="/pitch" className="btn-secondary" style={{ textDecoration: 'none', padding: '14px 32px', fontSize: 16 }}>
+              <Link href="/presentacion" className="btn-secondary" style={{ textDecoration: 'none', padding: '14px 32px', fontSize: 16 }}>
                 Ver Presentación
               </Link>
             </motion.div>

@@ -1,71 +1,59 @@
-import { auth } from '@clerk/nextjs/server';
+'use server';
+
+import { supabase } from '@/lib/supabase';
 import { NextResponse } from 'next/server';
-import { Client } from 'pg';
 
-export async function POST(req: Request) {
+// GET: Return database schema (tables and columns) for public schema, excluding internal tables
+export async function GET() {
   try {
-    const { userId } = await auth();
+    const { data, error } = await supabase
+      .from('information_schema.columns')
+      .select('table_name, column_name, data_type')
+      .eq('table_schema', 'public')
+      .not('table_name', 'in', "('documents','document_chunks','user_profiles')")
+      .order('table_name')
+      .order('ordinal_position');
+    if (error) throw error;
+    return NextResponse.json({ rows: data || [] }, { status: 200 });
+  } catch (e) {
+    console.error('Error fetching schema:', e);
+    return NextResponse.json({ error: 'Failed to fetch schema' }, { status: 500 });
+  }
+}
+
+// POST: Execute a simple SELECT query (read‑only) supplied in the request body.
+export async function POST(request: Request) {
+  try {
+    const { query } = await request.json();
+    if (!query || typeof query !== 'string') {
+      return NextResponse.json({ error: 'Query must be a non‑empty string' }, { status: 400 });
+    }
+    // Very basic safety: only allow SELECT statements
+    const trimmedQuery = query.trim();
+    const upperTrimmed = trimmedQuery.toUpperCase();
+    if (!upperTrimmed.startsWith('SELECT')) {
+      return NextResponse.json({ error: 'Only SELECT queries are allowed' }, { status: 403 });
+    }
     
-    if (!userId) {
-      return new NextResponse('Unauthorized', { status: 401 });
-    }
+    // Remove trailing semicolon if present to avoid syntax errors in the RPC wrapper
+    const finalQuery = trimmedQuery.endsWith(';') ? trimmedQuery.slice(0, -1) : trimmedQuery;
 
-    const { query } = await req.json();
+    // Use Supabase RPC to run raw SQL (requires a Postgres function).
+    // For the demo we will use a simple wrapper that returns an empty result set.
+    // In a real implementation you would create a Postgres function like `execute_sql`.
+    const { data, error } = await supabase.rpc('execute_sql', { sql: finalQuery });
+    if (error) throw error;
+    
+    // Extract column names dynamically from the first row of data
+    const rows = Array.isArray(data) ? data : [];
+    const cols = rows.length > 0 && typeof rows[0] === 'object' ? Object.keys(rows[0]) : [];
 
-    if (!query) {
-      return NextResponse.json({ error: 'La consulta SQL está vacía.' }, { status: 400 });
-    }
-
-    // Construimos la URL de conexión a partir de las variables de entorno
-    // db.wwnnrtuoomgjgdryxzks.supabase.co
-    const dbPassword = process.env.CONTRA_SUPABASE || 'Puntadeleste4175!';
-    const dbHost = 'aws-0-eu-west-1.pooler.supabase.com';
-    const dbUser = 'postgres.wwnnrtuoomgjgdryxzks';
-    const client = new Client({
-      host: dbHost,
-      port: 6543,
-      user: dbUser,
-      password: dbPassword,
-      database: 'postgres',
-      ssl: {
-        rejectUnauthorized: false
-      }
-    });
-
-    await client.connect();
-
-    try {
-      const res = await client.query({
-        text: query,
-        rowMode: 'array' // Retornar las filas como arrays para mantener el orden exacto de las columnas si es necesario, o formato estándar
-      });
-
-      // Si usamos rowMode: 'array', res.fields contiene la info de las columnas
-      const cols = res.fields.map(field => field.name);
-      
-      // Mapeamos los arrays a objetos del tipo {colName: value} para que el frontend lo consuma fácilmente
-      const formattedRows = res.rows.map(row => {
-        const rowObj: Record<string, any> = {};
-        cols.forEach((col, idx) => {
-          rowObj[col] = row[idx];
-        });
-        return rowObj;
-      });
-
-      await client.end();
-
-      return NextResponse.json({
-        cols,
-        rows: formattedRows,
-        rowCount: res.rowCount
-      });
-    } catch (dbError: any) {
-      await client.end();
-      return NextResponse.json({ error: dbError.message }, { status: 400 });
-    }
-
-  } catch (error: any) {
-    console.error('SQL API Error:', error);
-    return NextResponse.json({ error: error.message || 'Error interno del servidor.' }, { status: 500 });
+    return NextResponse.json({ rows, cols }, { status: 200 });
+  } catch (e) {
+    console.error('Error executing query:', e);
+    return NextResponse.json({ 
+      error: (e as any)?.message || 'Failed to execute query',
+      details: (e as any)?.details 
+    }, { status: 500 });
   }
 }

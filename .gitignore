@@ -13,3 +13,4 @@ __pycache__/
 Bases de datos de clientes (vector stores)
 RAG-docs//db/
 *.7z
+~$Tareas.xlsx

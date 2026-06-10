@@ -33,6 +33,7 @@ const sidebarItems = [
   { name: 'Resumen General', href: '/dashboard', icon: LayoutDashboard, adminOnly: false },
   { name: 'Chat IA', href: '/dashboard/chat', icon: MessageSquare, adminOnly: false },
   { name: 'Base de Conocimiento', href: '/dashboard/knowledge', icon: Brain, adminOnly: false },
+  { name: 'Documentación', href: '/dashboard/documentation', icon: BookOpen, adminOnly: false },
   { name: 'Explorador de Tablas', href: '/dashboard/tables', icon: Table, adminOnly: false },
   { name: 'Explorador de Documentos', href: '/dashboard/documents', icon: FileText, adminOnly: false },
   { name: 'Consultas SQL', href: '/dashboard/sql', icon: Terminal, adminOnly: false },
@@ -56,7 +57,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
   useEffect(() => {
     const checkHealth = async () => {
       try {
-        const res = await fetch('/api/health');
+        const res = await fetch('/nextapi/health');
         if (!res.ok) {
           const data = await res.json().catch(() => null);
           setHealth({
