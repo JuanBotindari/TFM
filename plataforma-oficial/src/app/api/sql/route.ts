@@ -51,6 +51,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ rows, cols }, { status: 200 });
   } catch (e) {
     console.error('Error executing query:', e);
-    return NextResponse.json({ error: 'Failed to execute query' }, { status: 500 });
+    return NextResponse.json({ 
+      error: (e as any)?.message || 'Failed to execute query',
+      details: (e as any)?.details 
+    }, { status: 500 });
   }
 }

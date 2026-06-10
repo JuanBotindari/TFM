@@ -62,6 +62,14 @@ export default function DocumentsPage() {
 
     setUploading(true);
     const file = files[0];
+
+    // Check for duplicate document names
+    const isDuplicate = documents.some(doc => doc.name === file.name);
+    if (isDuplicate) {
+      alert(`Ya existe un documento con el nombre "${file.name}". Por favor, cámbiale el nombre o elimina el anterior antes de subirlo.`);
+      setUploading(false);
+      return;
+    }
     
     // Sanitize filename: remove spaces, accents and special chars
     const sanitizedName = file.name

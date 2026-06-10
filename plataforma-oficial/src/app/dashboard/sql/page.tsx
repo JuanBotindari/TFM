@@ -149,7 +149,11 @@ export default function SqlPage() {
       const data = await response.json();
 
       if (!response.ok || data.error) {
-        throw new Error(data.error || 'Ocurrió un error al ejecutar la consulta.');
+        let errMsg = data.error || 'Ocurrió un error al ejecutar la consulta.';
+        if (data.details) {
+          errMsg += `\nDetalles: ${data.details}`;
+        }
+        throw new Error(errMsg);
       }
 
       setResults({

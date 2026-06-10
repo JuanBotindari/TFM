@@ -13,12 +13,13 @@ type LoginMode = 'company' | 'user';
 
 const themeIcons = { light: Sun, grey: Monitor, midnight: Moon };
 
-import { useSignIn, useSignUp } from '@clerk/nextjs';
+import { useSignIn, useSignUp, useUser } from '@clerk/nextjs';
 
 export default function AuthPage() {
   const router = useRouter();
   const { isLoaded: isSignInLoaded, signIn, setActive: setSignInActive } = useSignIn();
   const { isLoaded: isSignUpLoaded, signUp, setActive: setSignUpActive } = useSignUp();
+  const { isSignedIn } = useUser();
   
   const { loginAsGuest } = useAuth();
   const { theme, cycleTheme, themeLabel } = useTheme();
@@ -168,12 +169,8 @@ export default function AuthPage() {
   };
 
   const demoCredentials = [
-    { label: 'Admin Banco', username: 'admin_banco', role: 'admin', password: 'admin_banco_1' },
-    { label: 'Editor Banco', username: 'edit_banco', role: 'editor', password: 'edit_banco_1' },
-    { label: 'Demo Banco', username: 'viewer_banco', role: 'viewer', password: 'viewer_banco_1' },
-    { label: 'Admin Estudio', username: 'admin_estudio', role: 'admin', password: 'admin_estudio_1' },
-    { label: 'Editor Estudio', username: 'edit_estudio', role: 'editor', password: 'edit_estudio_1' },
-    { label: 'Demo Estudio', username: 'viewer_estudio', role: 'viewer', password: 'viewer_estudio_1' },
+    { label: 'Probar demo Banco', username: 'viewer_banco', role: 'viewer', password: 'viewer_banco_1' },
+    { label: 'Probar demo Estudio', username: 'viewer_estudio', role: 'viewer', password: 'viewer_estudio_1' },
   ];
 
   return (
@@ -201,9 +198,9 @@ export default function AuthPage() {
           Volver al inicio
         </Link>
         {/* Dashboard shortcut when authenticated */}
-        {isSignInLoaded && signIn?.status === 'complete' && (
-          <Link href="/dashboard" style={{ marginLeft: 12, padding: '8px 14px', borderRadius: 8, background: 'var(--accent-light)', color: 'var(--accent)', fontSize: 14, textDecoration: 'none' }}>
-            Dashboard
+        {isSignedIn && (
+          <Link href="/dashboard" style={{ marginLeft: 'auto', marginRight: 16, padding: '8px 14px', borderRadius: 8, background: 'var(--accent)', color: 'white', fontSize: 14, textDecoration: 'none', fontWeight: 600 }}>
+            Ir al Dashboard →
           </Link>
         )}
         <button
@@ -425,44 +422,24 @@ export default function AuthPage() {
                       <div style={{ flex: 1, height: 1, background: 'var(--border-primary)' }} />
                     </div>
 
-                    {/* Guest Login */}
-                    <button
-                      type="button"
-                      onClick={handleGuest}
-                      className="btn-secondary"
-                      style={{ width: '100%', justifyContent: 'center', padding: '12px' }}
-                    >
-                      <Sparkles size={16} />
-                      Probar Demo como Invitado
-                    </button>
-
                     {/* Demo credentials */}
-                    <div style={{ marginTop: 20, padding: 16, borderRadius: 12, background: 'var(--bg-tertiary)', border: '1px solid var(--border-primary)' }}>
-                      <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-tertiary)', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                        Credenciales Demo
-                      </p>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                        {demoCredentials.map((cred) => (
-                          <button
-                            key={cred.username}
-                            type="button"
-                            onClick={() => { 
-                              setEmail(cred.username); 
-                              setPassword(cred.password); 
-                              handleLogin(undefined, cred.username, cred.password);
-                            }}
-                            style={{
-                              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                              padding: '8px 12px', borderRadius: 8, border: 'none', background: 'var(--bg-input)',
-                              cursor: 'pointer', transition: 'all 0.15s', fontSize: 13,
-                              color: 'var(--text-secondary)',
-                            }}
-                          >
-                            <span style={{ fontWeight: 500 }}>{cred.label}</span>
-                            <span className={`badge ${cred.role === 'admin' ? 'badge-info' : cred.role === 'editor' ? 'badge-success' : 'badge-warning'}`} style={{ fontSize: 11 }}>{cred.role}</span>
-                          </button>
-                        ))}
-                      </div>
+                    <div style={{ marginTop: 20, display: 'flex', flexDirection: 'column', gap: 12 }}>
+                      {demoCredentials.map((cred) => (
+                        <button
+                          key={cred.username}
+                          type="button"
+                          onClick={() => { 
+                            setEmail(cred.username); 
+                            setPassword(cred.password); 
+                            handleLogin(undefined, cred.username, cred.password);
+                          }}
+                          className="btn-secondary"
+                          style={{ width: '100%', justifyContent: 'center', padding: '12px', background: 'var(--bg-tertiary)' }}
+                        >
+                          <Sparkles size={16} style={{ color: 'var(--accent)' }} />
+                          {cred.label}
+                        </button>
+                      ))}
                     </div>
                   </motion.form>
                 ) : (

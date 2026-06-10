@@ -94,6 +94,14 @@ export default function DocumentationPage() {
     setTablesDocs(newTablesDocs);
   };
 
+  const formatSize = (bytes: number) => {
+    if (!bytes || bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
   if (loading) {
     return <div style={{ padding: 40, textAlign: 'center' }}>Cargando documentación...</div>;
   }
@@ -180,6 +188,8 @@ export default function DocumentationPage() {
             <thead>
               <tr style={{ borderBottom: '2px solid var(--border-primary)' }}>
                 <th style={{ padding: '12px 16px', color: 'var(--text-tertiary)' }}>Nombre del Documento</th>
+                <th style={{ padding: '12px 16px', color: 'var(--text-tertiary)' }}>Tamaño</th>
+                <th style={{ padding: '12px 16px', color: 'var(--text-tertiary)' }}>Subido el</th>
                 <th style={{ padding: '12px 16px', color: 'var(--text-tertiary)' }}>Breve Descripción</th>
               </tr>
             </thead>
@@ -187,6 +197,8 @@ export default function DocumentationPage() {
               {documents.length > 0 ? documents.map((doc) => (
                 <tr key={doc.id} style={{ borderBottom: '1px solid var(--border-primary)' }}>
                   <td style={{ padding: '12px 16px', fontWeight: 500 }}>{doc.name}</td>
+                  <td style={{ padding: '12px 16px', fontSize: 13, color: 'var(--text-secondary)' }}>{formatSize(doc.size_bytes)}</td>
+                  <td style={{ padding: '12px 16px', fontSize: 13, color: 'var(--text-secondary)' }}>{new Date(doc.uploaded_at).toLocaleString()}</td>
                   <td style={{ padding: '12px 16px' }}>
                     {isAdmin ? (
                       <input 
@@ -212,7 +224,7 @@ export default function DocumentationPage() {
                 </tr>
               )) : (
                 <tr>
-                  <td colSpan={2} style={{ padding: 24, textAlign: 'center', color: 'var(--text-tertiary)' }}>
+                  <td colSpan={4} style={{ padding: 24, textAlign: 'center', color: 'var(--text-tertiary)' }}>
                     No hay documentos subidos en esta organización.
                   </td>
                 </tr>
