@@ -6,10 +6,22 @@ from abc import ABC
 if hasattr(sys.stdout, 'reconfigure'):
     sys.stdout.reconfigure(encoding='utf-8')
 
-from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
 from langchain_core.prompts import ChatPromptTemplate, HumanMessagePromptTemplate, MessagesPlaceholder
 from langchain_core.messages import SystemMessage, HumanMessage
 from dotenv import load_dotenv
+
+# Imports condicionales: se cargan según el backend elegido
+try:
+    from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
+    _GOOGLE_AVAILABLE = True
+except ImportError:
+    _GOOGLE_AVAILABLE = False
+
+try:
+    from langchain_ollama import ChatOllama, OllamaEmbeddings
+    _OLLAMA_AVAILABLE = True
+except ImportError:
+    _OLLAMA_AVAILABLE = False
 
 from .tools import KnowledgeIndexer
 from .handlers import DirectoHandler, VectorStoreHandler, TablasHandler, InternetHandler, OtroHandler
@@ -82,19 +94,56 @@ class BaseModel(ABC):
         self._handlers        = None
         self.vector_db_stats  = {}
 
-    def _inicializar_llm(self) -> ChatGoogleGenerativeAI:
-        return ChatGoogleGenerativeAI(
-            model=self.modelo_llm,
-            temperature=self.tech.get("temperature", 0),
-            convert_system_message_to_human=True,
-        )
+    def _es_local(self) -> bool:
+        """Devuelve True si hay una URL de LLM local configurada (modo Ollama)."""
+        return bool(self.tech.get("url_llm", "").strip())
 
-    def _inicializar_embeddings(self) -> GoogleGenerativeAIEmbeddings:
-        dim = self.tech.get("dimensiones_embeddings")
-        kwargs: dict = {"model": self.modelo_embeddings}
-        if dim:
-            kwargs["output_dimensionality"] = int(dim)
-        return GoogleGenerativeAIEmbeddings(**kwargs)
+    def _inicializar_llm(self):
+        if self._es_local():
+            if not _OLLAMA_AVAILABLE:
+                raise ImportError(
+                    "langchain-ollama no está instalado. Ejecuta: pip install langchain-ollama"
+                )
+            url = self.tech["url_llm"].rstrip("/")
+            print(f"🏠 Modo LOCAL activo — Ollama en {url}")
+            return ChatOllama(
+                model=self.modelo_llm,
+                base_url=url,
+                temperature=self.tech.get("temperature", 0),
+            )
+        else:
+            if not _GOOGLE_AVAILABLE:
+                raise ImportError(
+                    "langchain-google-genai no está instalado. Ejecuta: pip install langchain-google-genai"
+                )
+            print(f"☁️  Modo CLOUD activo — Google Gemini")
+            return ChatGoogleGenerativeAI(
+                model=self.modelo_llm,
+                temperature=self.tech.get("temperature", 0),
+                convert_system_message_to_human=True,
+            )
+
+    def _inicializar_embeddings(self):
+        if self._es_local():
+            if not _OLLAMA_AVAILABLE:
+                raise ImportError(
+                    "langchain-ollama no está instalado. Ejecuta: pip install langchain-ollama"
+                )
+            url = self.tech["url_llm"].rstrip("/")
+            return OllamaEmbeddings(
+                model=self.modelo_embeddings,
+                base_url=url,
+            )
+        else:
+            if not _GOOGLE_AVAILABLE:
+                raise ImportError(
+                    "langchain-google-genai no está instalado. Ejecuta: pip install langchain-google-genai"
+                )
+            dim = self.tech.get("dimensiones_embeddings")
+            kwargs: dict = {"model": self.modelo_embeddings}
+            if dim:
+                kwargs["output_dimensionality"] = int(dim)
+            return GoogleGenerativeAIEmbeddings(**kwargs)
 
     def _inicializar_handlers(self):
         tablas = TablasHandler(

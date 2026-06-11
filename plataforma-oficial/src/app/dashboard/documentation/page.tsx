@@ -50,11 +50,12 @@ export default function DocumentationPage() {
         const { data: docsData } = await query;
         if (docsData) {
           setDocuments(docsData);
+          const initialDesc: Record<string, string> = {};
+          docsData.forEach((d: any) => {
+            if (d.description) initialDesc[d.id] = d.description;
+          });
+          setDocDescriptions(initialDesc);
         }
-
-        // Load descriptions from localStorage (since we might not have them in DB schema yet)
-        const savedDocDesc = localStorage.getItem(`tfm_doc_desc_${currentOrg?.id}`);
-        if (savedDocDesc) setDocDescriptions(JSON.parse(savedDocDesc));
 
         const savedTablesDocs = localStorage.getItem(`tfm_tables_docs_${currentOrg?.id}`);
         if (savedTablesDocs) setTablesDocs(JSON.parse(savedTablesDocs));
@@ -69,19 +70,24 @@ export default function DocumentationPage() {
     fetchData();
   }, [currentOrg]);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     setSaving(true);
     try {
-      localStorage.setItem(`tfm_doc_desc_${currentOrg?.id}`, JSON.stringify(docDescriptions));
       localStorage.setItem(`tfm_tables_docs_${currentOrg?.id}`, JSON.stringify(tablesDocs));
-      // In a real scenario, we'd save this to Supabase
-      setTimeout(() => {
-        setSaving(false);
-        alert('Documentación guardada exitosamente.');
-      }, 500);
+      
+      // Guardar las descripciones directamente en Supabase
+      const updatePromises = Object.entries(docDescriptions).map(([id, desc]) => 
+        supabase.from('documents').update({ description: desc }).eq('id', id)
+      );
+      
+      await Promise.all(updatePromises);
+
+      setSaving(false);
+      alert('Documentación guardada exitosamente.');
     } catch (e) {
       console.error(e);
       setSaving(false);
+      alert('Hubo un error al guardar los cambios.');
     }
   };
 

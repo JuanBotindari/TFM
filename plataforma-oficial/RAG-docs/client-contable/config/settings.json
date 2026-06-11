@@ -5,14 +5,14 @@
     "org_id": "org-estudio"
   },
   "LLM": {
-    "modelo": "gemini-2.0-flash",
+    "modelo": "llama3.2:latest",
     "rol_llm_personalizado": "Consultor Fiscal Experto en Argentina",
-    "url_llm": "",
+    "url_llm": "http://localhost:11434",
     "temperature": 0
   },
   "embeddings": {
-    "modelo": "models/gemini-embedding-2",
-    "dimensiones": 1536,
+    "modelo": "nomic-embed-text",
+    "dimensiones": 768,
     "vector_db_name": "database_vector_estudiocontable",
     "vector_match_fn": "match_database_vector_estudiocontable"
   },
@@ -92,6 +92,48 @@
             "rol": "Links de portales de noticias de actualidad AFIP/Web. Responde preguntas sobre noticias de actualidad AFIP/Web."
           }
         ]
+      }
+    ]
+  },
+  "sql_config": {
+    "schema_fallback": {
+      "cliente": ["id (uuid)", "nombre (text)", "cuit (text)", "email (text)", "telefono (text)", "activo (boolean)"],
+      "comprobante": ["id (uuid)", "cliente_id (uuid)", "tipo (text)", "numero (text)", "fecha (date)", "monto_total (numeric)"],
+      "declaracion_jurada": ["id (uuid)", "cliente_id (uuid)", "tipo (text)", "periodo (text)", "estado (text)", "fecha_presentacion (date)"],
+      "movimiento": ["id (uuid)", "cliente_id (uuid)", "tipo (text)", "monto (numeric)", "concepto (text)", "fecha (date)"],
+      "factura": ["id (uuid)", "cliente_id (uuid)", "numero (text)", "fecha_vencimiento (date)", "monto_total (numeric)", "estado (text)"],
+      "honorario": ["id (uuid)", "cliente_id (uuid)", "descripcion (text)", "monto (numeric)", "fecha (date)"]
+    },
+    "templates": [
+      {
+        "id": "e-001",
+        "name": "Listar Clientes Activos",
+        "query": "SELECT id, nombre, cuit, email, telefono FROM cliente WHERE activo = true ORDER BY nombre LIMIT 20;"
+      },
+      {
+        "id": "e-002",
+        "name": "Comprobantes por Tipo",
+        "query": "SELECT tipo, COUNT(*) as cantidad, SUM(monto_total) as total\nFROM comprobante\nGROUP BY tipo\nORDER BY total DESC;"
+      },
+      {
+        "id": "e-003",
+        "name": "\u00daltimas Declaraciones Juradas",
+        "query": "SELECT dj.id, c.nombre as cliente, dj.tipo, dj.periodo, dj.estado, dj.fecha_presentacion\nFROM declaracion_jurada dj\nJOIN cliente c ON dj.cliente_id = c.id\nORDER BY dj.fecha_presentacion DESC\nLIMIT 10;"
+      },
+      {
+        "id": "e-004",
+        "name": "Balance de Cuentas por Cliente",
+        "query": "SELECT c.nombre,\n       SUM(CASE WHEN m.tipo = 'debe' THEN m.monto ELSE 0 END) as total_debe,\n       SUM(CASE WHEN m.tipo = 'haber' THEN m.monto ELSE 0 END) as total_haber\nFROM movimiento m\nJOIN cliente c ON m.cliente_id = c.id\nGROUP BY c.nombre\nORDER BY c.nombre;"
+      },
+      {
+        "id": "e-005",
+        "name": "Facturas Vencidas sin Cobrar",
+        "query": "SELECT f.numero, c.nombre as cliente, f.fecha_vencimiento, f.monto_total\nFROM factura f\nJOIN cliente c ON f.cliente_id = c.id\nWHERE f.estado = 'pendiente' AND f.fecha_vencimiento < CURRENT_DATE\nORDER BY f.fecha_vencimiento ASC;"
+      },
+      {
+        "id": "e-006",
+        "name": "Honorarios por Per\u00edodo",
+        "query": "SELECT DATE_TRUNC('month', fecha) as mes, COUNT(*) as servicios, SUM(monto) as total_honorarios\nFROM honorario\nGROUP BY mes\nORDER BY mes DESC\nLIMIT 12;"
       }
     ]
   }
