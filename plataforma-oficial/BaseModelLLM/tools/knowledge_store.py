@@ -232,11 +232,11 @@ class KnowledgeIndexer:
             return []
 
     def contar_vectores(self, tabla: str, org_id: str) -> int:
+        """Cuenta los vectores en la tabla (cada tabla es por cliente, no filtra org_id)."""
         try:
             r = (
                 self.supabase.table(tabla)
                 .select("id", count="exact", head=True)
-                .eq("org_id", org_id)
                 .execute()
             )
             return r.count or 0
@@ -248,7 +248,6 @@ class KnowledgeIndexer:
             r = (
                 self.supabase.table(tabla)
                 .select("content, metadata")
-                .eq("org_id", org_id)
                 .limit(limite)
                 .execute()
             )
@@ -328,12 +327,10 @@ class KnowledgeIndexer:
             return len(chunks)
 
         def limpiar_vectores(self) -> None:
-            """Elimina todos los vectores del org_id de la tabla vectorial."""
-            self._ki.supabase.table(self._ki.tabla) \
-                .delete().eq("org_id", self._ki.org_id).execute()
+            """Elimina todos los vectores de la tabla vectorial del cliente."""
+            self._ki.supabase.table(self._ki.tabla).delete().neq("id", "00000000-0000-0000-0000-000000000000").execute()
             print(
-                f"🗑️  Vectores de [{self._ki.org_id}] eliminados "
-                f"de [{self._ki.tabla}]"
+                f"🗑️  Tabla [{self._ki.tabla}] vaciada"
             )
 
         # ── Pasos internos ───────────────────────────────────────────────────
