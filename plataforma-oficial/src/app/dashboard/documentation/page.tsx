@@ -6,25 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { BookOpen, Save, FileText, Table as TableIcon, Edit2, ShieldAlert, Check, X } from 'lucide-react';
 
-// Default schema for tables if no saved data is found
-const DEFAULT_TABLES_DOCS = [
-  {
-    tableName: 'poliza',
-    columns: [
-      { name: 'id', type: 'uuid', description: 'Identificador único de la póliza', isPk: true, isSensitive: false },
-      { name: 'numero', type: 'varchar', description: 'Número de póliza', isPk: false, isSensitive: false },
-      { name: 'fecha_inicio', type: 'date', description: 'Fecha de inicio', isPk: false, isSensitive: false },
-    ]
-  },
-  {
-    tableName: 'persona',
-    columns: [
-      { name: 'id', type: 'uuid', description: 'Identificador de persona', isPk: true, isSensitive: false },
-      { name: 'nombre', type: 'varchar', description: 'Nombre completo', isPk: false, isSensitive: true },
-      { name: 'documento', type: 'varchar', description: 'DNI o pasaporte', isPk: false, isSensitive: true },
-    ]
-  }
-];
+import { getDefaultTableDocs } from '@/lib/tableSchemas';
 
 export default function DocumentationPage() {
   const { currentOrg, isAdmin } = useAuth();
@@ -32,7 +14,7 @@ export default function DocumentationPage() {
   // States
   const [documents, setDocuments] = useState<any[]>([]);
   const [docDescriptions, setDocDescriptions] = useState<Record<string, string>>({});
-  const [tablesDocs, setTablesDocs] = useState<any[]>(DEFAULT_TABLES_DOCS);
+  const [tablesDocs, setTablesDocs] = useState<any[]>([]);
   
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -58,7 +40,11 @@ export default function DocumentationPage() {
         }
 
         const savedTablesDocs = localStorage.getItem(`tfm_tables_docs_${currentOrg?.id}`);
-        if (savedTablesDocs) setTablesDocs(JSON.parse(savedTablesDocs));
+        if (savedTablesDocs) {
+          setTablesDocs(JSON.parse(savedTablesDocs));
+        } else {
+          setTablesDocs(getDefaultTableDocs(currentOrg?.id));
+        }
 
       } catch (err) {
         console.error('Error fetching documentation data', err);
