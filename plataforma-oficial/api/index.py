@@ -53,18 +53,19 @@ async def health_endpoint():
         },
         "diagnostics": {}
     }
-    
-    # 1. Comprobar presencia de credenciales de LLM
-    if not (os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY")):
-        reporte["status"] = "unhealthy"
-        reporte["diagnostics"]["llm_error"] = "No se detectó GOOGLE_API_KEY ni GEMINI_API_KEY en las variables de entorno (.env.local)."
-        return reporte
 
-    # 2. Comprobar conectividad instanciando el cliente y probando llamadas
+    # Comprobar si el cliente está en modo local (Ollama) o cloud (Gemini)
     try:
-        # Esto valida LLM, Embeddings y base de conocimiento (Supabase)
         cliente = obtener_cliente("org-banco")
-        
+        es_local = bool(cliente.tech.get("url_llm", "").strip())
+        reporte["modo_llm"] = "local (Ollama)" if es_local else "cloud (Google Gemini)"
+
+        # Solo verificar credenciales Google si NO es modo local
+        if not es_local and not (os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY")):
+            reporte["status"] = "unhealthy"
+            reporte["diagnostics"]["llm_error"] = "No se detectó GOOGLE_API_KEY ni GEMINI_API_KEY (requerido en modo cloud)."
+            return reporte
+
         reporte["diagnostics"]["llm"] = {
             "status": "connected",
             "model_configured": cliente.modelo_llm,
@@ -73,8 +74,7 @@ async def health_endpoint():
             "status": "connected",
             "model_configured": cliente.modelo_embeddings,
         }
-        
-        # Si tiene estadísticas vectoriales
+
         if hasattr(cliente, "vector_db_stats") and cliente.vector_db_stats:
             reporte["diagnostics"]["database"] = {
                 "status": "connected",
@@ -82,12 +82,13 @@ async def health_endpoint():
             }
     except Exception as e:
         reporte["status"] = "unhealthy"
+        from BaseModelLLM.base_llm import analizar_error_conexion
         interpreted_err = analizar_error_conexion(e)
         reporte["diagnostics"]["error"] = {
             "raw": str(e),
             "interpreted": interpreted_err
         }
-        
+
     return reporte
 
 @app.post("/api/chat")

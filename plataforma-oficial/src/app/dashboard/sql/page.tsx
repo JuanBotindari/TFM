@@ -13,36 +13,103 @@ interface HistoryItem {
   error?: string;
 }
 
-const businessTemplates = [
-  {
-    id: 'temp-001',
-    name: 'Listar Pólizas Activas',
-    query: "SELECT * FROM poliza LIMIT 10;"
+const templatesByOrg: Record<string, { id: string; name: string; query: string }[]> = {
+  'org-banco': [
+    {
+      id: 'b-001',
+      name: 'Listar Pólizas Activas',
+      query: "SELECT * FROM poliza WHERE estado = 'activa' LIMIT 10;"
+    },
+    {
+      id: 'b-002',
+      name: 'Siniestros por Estado',
+      query: "SELECT estado, COUNT(*) as cantidad FROM siniestro GROUP BY estado ORDER BY cantidad DESC;"
+    },
+    {
+      id: 'b-003',
+      name: 'Úlumos Pagos Registrados',
+      query: "SELECT id, poliza_id, fecha_pago, monto, metodo_pago FROM pago ORDER BY fecha_pago DESC LIMIT 10;"
+    },
+    {
+      id: 'b-004',
+      name: 'Personas Aseguradas',
+      query: "SELECT id, nombre, documento, email, telefono FROM persona LIMIT 20;"
+    },
+    {
+      id: 'b-005',
+      name: 'Pólizas con sus Asegurados',
+      query: "SELECT p.numero_poliza, p.estado, per.nombre, per.email\nFROM poliza p\nJOIN asegurado_poliza ap ON p.id = ap.poliza_id\nJOIN persona per ON ap.persona_id = per.id\nLIMIT 10;"
+    },
+    {
+      id: 'b-006',
+      name: 'Resumen de Siniestros por Póliza',
+      query: "SELECT p.numero_poliza, COUNT(s.id) as total_siniestros, SUM(s.monto_reclamado) as total_reclamado\nFROM poliza p\nLEFT JOIN siniestro s ON p.id = s.poliza_id\nGROUP BY p.numero_poliza\nORDER BY total_reclamado DESC NULLS LAST\nLIMIT 15;"
+    },
+    {
+      id: 'b-007',
+      name: 'Recibos Pendientes de Cobro',
+      query: "SELECT r.numero_recibo, p.numero_poliza, r.monto, r.fecha_vencimiento\nFROM recibo r\nJOIN poliza p ON r.poliza_id = p.id\nWHERE r.estado = 'pendiente'\nORDER BY r.fecha_vencimiento ASC;"
+    }
+  ],
+  'org-estudio': [
+    {
+      id: 'e-001',
+      name: 'Listar Clientes Activos',
+      query: "SELECT id, nombre, cuit, email, telefono FROM cliente WHERE activo = true ORDER BY nombre LIMIT 20;"
+    },
+    {
+      id: 'e-002',
+      name: 'Comprobantes por Tipo',
+      query: "SELECT tipo, COUNT(*) as cantidad, SUM(monto_total) as total\nFROM comprobante\nGROUP BY tipo\nORDER BY total DESC;"
+    },
+    {
+      id: 'e-003',
+      name: 'Últimas Declaraciones Juradas',
+      query: "SELECT dj.id, c.nombre as cliente, dj.tipo, dj.periodo, dj.estado, dj.fecha_presentacion\nFROM declaracion_jurada dj\nJOIN cliente c ON dj.cliente_id = c.id\nORDER BY dj.fecha_presentacion DESC\nLIMIT 10;"
+    },
+    {
+      id: 'e-004',
+      name: 'Balance de Cuentas por Cliente',
+      query: "SELECT c.nombre, SUM(CASE WHEN m.tipo = 'debe' THEN m.monto ELSE 0 END) as total_debe,\n       SUM(CASE WHEN m.tipo = 'haber' THEN m.monto ELSE 0 END) as total_haber\nFROM movimiento m\nJOIN cliente c ON m.cliente_id = c.id\nGROUP BY c.nombre\nORDER BY c.nombre;"
+    },
+    {
+      id: 'e-005',
+      name: 'Facturas Vencidas sin Cobrar',
+      query: "SELECT f.numero, c.nombre as cliente, f.fecha_vencimiento, f.monto_total\nFROM factura f\nJOIN cliente c ON f.cliente_id = c.id\nWHERE f.estado = 'pendiente' AND f.fecha_vencimiento < CURRENT_DATE\nORDER BY f.fecha_vencimiento ASC;"
+    },
+    {
+      id: 'e-006',
+      name: 'Honorarios por Período',
+      query: "SELECT DATE_TRUNC('month', fecha) as mes, COUNT(*) as servicios, SUM(monto) as total_honorarios\nFROM honorario\nGROUP BY mes\nORDER BY mes DESC\nLIMIT 12;"
+    }
+  ]
+};
+
+const fallbackSchemaByOrg: Record<string, Record<string, string[]>> = {
+  'org-banco': {
+    'poliza': ['id (uuid)', 'numero_poliza (text)', 'fecha_inicio (date)', 'fecha_fin (date)', 'estado (text)', 'tipo_poliza (text)'],
+    'persona': ['id (uuid)', 'nombre (text)', 'documento (text)', 'email (text)', 'telefono (text)'],
+    'siniestro': ['id (uuid)', 'poliza_id (uuid)', 'fecha_siniestro (date)', 'descripcion (text)', 'estado (text)', 'monto_reclamado (numeric)'],
+    'pago': ['id (uuid)', 'poliza_id (uuid)', 'fecha_pago (date)', 'monto (numeric)', 'metodo_pago (text)'],
+    'recibo': ['id (uuid)', 'poliza_id (uuid)', 'numero_recibo (text)', 'monto (numeric)', 'estado (text)', 'fecha_vencimiento (date)'],
+    'asegurado_poliza': ['id (uuid)', 'poliza_id (uuid)', 'persona_id (uuid)']
   },
-  {
-    id: 'temp-002',
-    name: 'Siniestros por Estado',
-    query: "SELECT estado, COUNT(*) as cantidad FROM siniestro GROUP BY estado;"
-  },
-  {
-    id: 'temp-003',
-    name: 'Últimos Pagos Registrados',
-    query: "SELECT * FROM pago ORDER BY id DESC LIMIT 10;"
-  },
-  {
-    id: 'temp-004',
-    name: 'Buscar Personas Aseguradas',
-    query: "SELECT * FROM persona LIMIT 10;"
-  },
-  {
-    id: 'temp-005',
-    name: 'Pólizas con sus Asegurados',
-    query: "SELECT p.numero_poliza, per.nombre, per.email \nFROM poliza p \nJOIN asegurado_poliza ap ON p.id = ap.poliza_id \nJOIN persona per ON ap.persona_id = per.id \nLIMIT 10;"
+  'org-estudio': {
+    'cliente': ['id (uuid)', 'nombre (text)', 'cuit (text)', 'email (text)', 'telefono (text)', 'activo (boolean)'],
+    'comprobante': ['id (uuid)', 'cliente_id (uuid)', 'tipo (text)', 'numero (text)', 'fecha (date)', 'monto_total (numeric)'],
+    'declaracion_jurada': ['id (uuid)', 'cliente_id (uuid)', 'tipo (text)', 'periodo (text)', 'estado (text)', 'fecha_presentacion (date)'],
+    'movimiento': ['id (uuid)', 'cliente_id (uuid)', 'tipo (text)', 'monto (numeric)', 'concepto (text)', 'fecha (date)'],
+    'factura': ['id (uuid)', 'cliente_id (uuid)', 'numero (text)', 'fecha_vencimiento (date)', 'monto_total (numeric)', 'estado (text)'],
+    'honorario': ['id (uuid)', 'cliente_id (uuid)', 'descripcion (text)', 'monto (numeric)', 'fecha (date)']
   }
-];
+};
+
 
 export default function SqlPage() {
-  const { isAdmin } = useAuth();
+  const { isAdmin, currentOrg } = useAuth();
+  const orgId = currentOrg?.id || 'org-banco';
+  const [businessTemplates, setBusinessTemplates] = useState<{ id: string; name: string; query: string }[]>([]);
+  const [fallbackSchema, setFallbackSchema] = useState<Record<string, string[]>>({});
   const [query, setQuery] = useState('SELECT * FROM poliza LIMIT 10;');
   const [isRunning, setIsRunning] = useState(false);
   const [results, setResults] = useState<{cols: string[], rows: any[]}|null>(null);
@@ -65,6 +132,28 @@ export default function SqlPage() {
       }
     }
   }, []);
+
+  // Load templates and fallback schema from client settings.json via API
+  useEffect(() => {
+    async function loadClientConfig() {
+      try {
+        const res = await fetch(`/api/client-config?orgId=${orgId}`);
+        if (!res.ok) throw new Error('Failed to load client config');
+        const data = await res.json();
+        const cfg = data.sql_config;
+        if (cfg?.templates?.length) {
+          setBusinessTemplates(cfg.templates);
+          setQuery(cfg.templates[0].query);
+        }
+        if (cfg?.schema_fallback && Object.keys(cfg.schema_fallback).length) {
+          setFallbackSchema(cfg.schema_fallback);
+        }
+      } catch (err) {
+        console.error('Error loading client config:', err);
+      }
+    }
+    loadClientConfig();
+  }, [orgId]);
 
   // Fetch actual schema from DB on mount, filtering out system/RAG tables
   useEffect(() => {
@@ -99,33 +188,22 @@ export default function SqlPage() {
             });
             setSchema(tempSchema);
           } else {
-            // Fallback business schema
-            setSchema({
-              'poliza': ['id (uuid)', 'numero_poliza (text)', 'fecha_inicio (date)', 'fecha_fin (date)', 'estado (text)'],
-              'persona': ['id (uuid)', 'nombre (text)', 'documento (text)', 'email (text)', 'telefono (text)'],
-              'siniestro': ['id (uuid)', 'poliza_id (uuid)', 'fecha_siniestro (date)', 'descripcion (text)', 'estado (text)']
-            });
+            // Fallback: use org-specific schema
+            setSchema(fallbackSchema);
           }
         } else {
           throw new Error('No se pudo cargar el esquema.');
         }
       } catch (err) {
         console.error('Error fetching schema:', err);
-        // Fallback business schema
-        setSchema({
-          'poliza': ['id (uuid)', 'numero_poliza (text)', 'fecha_inicio (date)', 'fecha_fin (date)', 'estado (text)'],
-          'persona': ['id (uuid)', 'nombre (text)', 'documento (text)', 'email (text)', 'telefono (text)'],
-          'siniestro': ['id (uuid)', 'poliza_id (uuid)', 'fecha_siniestro (date)', 'descripcion (text)', 'estado (text)'],
-          'pago': ['id (uuid)', 'poliza_id (uuid)', 'fecha_pago (date)', 'monto (numeric)', 'metodo_pago (text)'],
-          'recibo': ['id (uuid)', 'poliza_id (uuid)', 'numero_recibo (text)', 'monto (numeric)']
-        });
+        setSchema(fallbackSchema);
       } finally {
         setIsLoadingSchema(false);
       }
     }
 
     fetchSchema();
-  }, []);
+  }, [orgId, fallbackSchema]);
 
   const saveHistory = (newHistory: HistoryItem[]) => {
     setHistory(newHistory);
