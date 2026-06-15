@@ -104,36 +104,36 @@
       "factura": ["id (uuid)", "cliente_id (uuid)", "numero (text)", "fecha_vencimiento (date)", "monto_total (numeric)", "estado (text)"],
       "honorario": ["id (uuid)", "cliente_id (uuid)", "descripcion (text)", "monto (numeric)", "fecha (date)"]
     },
-    "templates": [
+"templates": [
       {
         "id": "e-001",
-        "name": "Listar Clientes Activos",
-        "query": "SELECT id, nombre, cuit, email, telefono FROM cliente WHERE activo = true ORDER BY nombre LIMIT 20;"
+        "name": "P\u00f3lizas Activas con Tomador",
+        "query": "SELECT p.num_poliza, p.producto, per.nombre || ' ' || per.apellido AS tomador, p.fecha_vencimiento\nFROM POLIZA p\nJOIN PERSONA per ON p.dni_tomador = per.dni\nWHERE p.estado = 'ACTIVO'\nORDER BY p.fecha_vencimiento ASC\nLIMIT 20;"
       },
       {
         "id": "e-002",
-        "name": "Comprobantes por Tipo",
-        "query": "SELECT tipo, COUNT(*) as cantidad, SUM(monto_total) as total\nFROM comprobante\nGROUP BY tipo\nORDER BY total DESC;"
+        "name": "Siniestros por Tipo y Estado",
+        "query": "SELECT tipo_siniestro, estado_siniestro, COUNT(*) as cantidad\nFROM SINIESTRO\nGROUP BY tipo_siniestro, estado_siniestro\nORDER BY cantidad DESC;"
       },
       {
         "id": "e-003",
-        "name": "\u00daltimas Declaraciones Juradas",
-        "query": "SELECT dj.id, c.nombre as cliente, dj.tipo, dj.periodo, dj.estado, dj.fecha_presentacion\nFROM declaracion_jurada dj\nJOIN cliente c ON dj.cliente_id = c.id\nORDER BY dj.fecha_presentacion DESC\nLIMIT 10;"
+        "name": "\u00daltimos Pagos de Siniestros",
+        "query": "SELECT pa.num_pago, s.num_siniestro, s.producto, pa.importe, pa.fecha_pago\nFROM PAGO pa\nJOIN SINIESTRO s ON pa.num_siniestro = s.num_siniestro\nORDER BY pa.fecha_pago DESC\nLIMIT 10;"
       },
       {
         "id": "e-004",
-        "name": "Balance de Cuentas por Cliente",
-        "query": "SELECT c.nombre,\n       SUM(CASE WHEN m.tipo = 'debe' THEN m.monto ELSE 0 END) as total_debe,\n       SUM(CASE WHEN m.tipo = 'haber' THEN m.monto ELSE 0 END) as total_haber\nFROM movimiento m\nJOIN cliente c ON m.cliente_id = c.id\nGROUP BY c.nombre\nORDER BY c.nombre;"
+        "name": "Recaudaci\u00f3n Total por Producto",
+        "query": "SELECT producto,\n       SUM(CASE WHEN tipo_recibo = 'I' THEN monto ELSE 0 END) as total_iniciales,\n       SUM(CASE WHEN tipo_recibo = 'R' THEN monto ELSE 0 END) as total_renovaciones,\n       SUM(monto) as recaudacion_total\nFROM RECIBO\nGROUP BY producto\nORDER BY recaudacion_total DESC;"
       },
       {
         "id": "e-005",
-        "name": "Facturas Vencidas sin Cobrar",
-        "query": "SELECT f.numero, c.nombre as cliente, f.fecha_vencimiento, f.monto_total\nFROM factura f\nJOIN cliente c ON f.cliente_id = c.id\nWHERE f.estado = 'pendiente' AND f.fecha_vencimiento < CURRENT_DATE\nORDER BY f.fecha_vencimiento ASC;"
+        "name": "P\u00f3lizas Pr\u00f3ximas a Vencer (30 d\u00edas)",
+        "query": "SELECT p.num_poliza, p.producto, per.nombre || ' ' || per.apellido AS tomador, p.fecha_vencimiento\nFROM POLIZA p\nJOIN PERSONA per ON p.dni_tomador = per.dni\nWHERE p.estado = 'ACTIVO' AND p.fecha_vencimiento >= CURRENT_DATE AND p.fecha_vencimiento <= CURRENT_DATE + INTERVAL '30 days'\nORDER BY p.fecha_vencimiento ASC;"
       },
       {
         "id": "e-006",
-        "name": "Honorarios por Per\u00edodo",
-        "query": "SELECT DATE_TRUNC('month', fecha) as mes, COUNT(*) as servicios, SUM(monto) as total_honorarios\nFROM honorario\nGROUP BY mes\nORDER BY mes DESC\nLIMIT 12;"
+        "name": "Historial de Siniestralidad por Asegurado",
+        "query": "SELECT per.nombre || ' ' || per.apellido AS asegurado, COUNT(s.num_siniestro) as total_siniestros\nFROM PERSONA per\nJOIN ASEGURADO_POLIZA ap ON per.dni = ap.dni_persona\nJOIN SINIESTRO s ON ap.num_poliza = s.num_poliza AND ap.producto = s.producto\nGROUP BY per.dni, per.nombre, per.apellido\nORDER BY total_siniestros DESC\nLIMIT 12;"
       }
     ]
   }
