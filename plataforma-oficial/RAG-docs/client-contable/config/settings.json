@@ -135,6 +135,36 @@
         "name": "Honorarios por Per\u00edodo",
         "query": "SELECT DATE_TRUNC('month', fecha) as mes, COUNT(*) as servicios, SUM(monto) as total_honorarios\nFROM honorario\nGROUP BY mes\nORDER BY mes DESC\nLIMIT 12;"
       }
+      {
+        "id": "e-007",
+        "name": "Beneficio Neto por Ejercicio",
+        "query": "WITH Ingresos AS (\n  SELECT id_ejercicio, SUM(neto_gravado) as total_ingresos\n  FROM Ventas\n  GROUP BY id_ejercicio\n), Gastos AS (\n  SELECT id_ejercicio, SUM(neto_gravado) as total_gastos\n  FROM Compras\n  GROUP BY id_ejercicio\n)\nSELECT e.anio_fiscal, i.total_ingresos, g.total_gastos, (i.total_ingresos - g.total_gastos) AS beneficio_neto\nFROM Ejercicios_Fiscales e\nJOIN Ingresos i ON e.id_ejercicio = i.id_ejercicio\nJOIN Gastos g ON e.id_ejercicio = g.id_ejercicio\nORDER BY e.anio_fiscal;"
+      },
+      {
+        "id": "e-008",
+        "name": "Top 10 Proveedores por Volumen",
+        "query": "SELECT en.razon_social as proveedor, SUM(c.total) AS monto_total\nFROM Compras c\nJOIN Entidades en ON c.cuit_proveedor = en.cuit\nGROUP BY en.razon_social\nORDER BY monto_total DESC\nLIMIT 10;"
+      },
+      {
+        "id": "e-009",
+        "name": "Posición Mensual de IVA Débito",
+        "query": "SELECT EXTRACT(MONTH FROM fecha) AS mes, SUM(iva_21) AS iva_21_total, SUM(iva_105) AS iva_105_total\nFROM Ventas\nWHERE EXTRACT(YEAR FROM fecha) = EXTRACT(YEAR FROM CURRENT_DATE)\nGROUP BY mes\nORDER BY mes ASC;"
+      },
+      {
+        "id": "e-010",
+        "name": "Análisis de Gastos por Categoría",
+        "query": "SELECT tg.descripcion AS rubro, COUNT(*) as cantidad_comprobantes, SUM(c.neto_gravado) AS total_gastado\nFROM Compras c\nJOIN Tipos_Gasto tg ON c.id_tipo_gasto = tg.id_tipo_gasto\nGROUP BY tg.descripcion\nORDER BY total_gastado DESC;"
+      },
+      {
+        "id": "e-011",
+        "name": "Control de Retenciones y Percepciones",
+        "query": "SELECT EXTRACT(YEAR FROM fecha) as anio, SUM(perc_iva) AS total_perc_iva, SUM(perc_iibb) AS total_perc_iibb, SUM(perc_ganancias) AS total_perc_ganancias\nFROM Compras\nGROUP BY anio\nORDER BY anio DESC;"
+      },
+      {
+        "id": "e-012",
+        "name": "Composición de Ventas por Comprobante",
+        "query": "SELECT tc.descripcion AS tipo_comprobante, COUNT(v.id_venta) AS cantidad, SUM(v.total) AS monto_total\nFROM Ventas v\nJOIN Tipos_Comprobante tc ON v.id_tipo_comprobante = tc.id_tipo_comprobante\nGROUP BY tc.descripcion\nORDER BY monto_total DESC;"
+      }
     ]
   }
 }
