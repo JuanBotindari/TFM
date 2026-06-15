@@ -6,10 +6,22 @@ from abc import ABC
 if hasattr(sys.stdout, 'reconfigure'):
     sys.stdout.reconfigure(encoding='utf-8')
 
-from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
 from langchain_core.prompts import ChatPromptTemplate, HumanMessagePromptTemplate, MessagesPlaceholder
 from langchain_core.messages import SystemMessage, HumanMessage
 from dotenv import load_dotenv
+
+# Imports condicionales: se cargan según el backend elegido
+try:
+    from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
+    _GOOGLE_AVAILABLE = True
+except ImportError:
+    _GOOGLE_AVAILABLE = False
+
+try:
+    from langchain_ollama import ChatOllama, OllamaEmbeddings
+    _OLLAMA_AVAILABLE = True
+except ImportError:
+    _OLLAMA_AVAILABLE = False
 
 from .tools import KnowledgeIndexer
 from .handlers import DirectoHandler, VectorStoreHandler, TablasHandler, InternetHandler, OtroHandler
@@ -18,22 +30,29 @@ from .tools.telemetry import AgenteTracer, imprimir_modelos, imprimir_estado_vec
 load_dotenv(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), '.env'))
 
 def analizar_error_conexion(e: Exception) -> str:
-    """Analiza una excepción de conexión con Google Gemini y devuelve un mensaje en español comprensible."""
+    """Analiza una excepción y devuelve un mensaje en español comprensible."""
     err_msg = str(e)
     err_lower = err_msg.lower()
-    
+
+    # Errores Ollama / LLM local
+    if "connection refused" in err_lower or ("connect" in err_lower and "11434" in err_lower):
+        return "No se pudo conectar con Ollama en localhost:11434. Asegúrate de que Ollama esté ejecutándose ('ollama serve')."
+    elif "model" in err_lower and ("not found" in err_lower or "pull" in err_lower):
+        return "El modelo local solicitado no está disponible en Ollama. Ejecuta 'ollama pull <nombre_modelo>' para descargarlo."
+
+    # Errores Google Gemini
     if "api_key_invalid" in err_lower or "api key not valid" in err_lower or "invalid api key" in err_lower or "key is invalid" in err_lower:
         return "La clave API provista es inválida (API_KEY_INVALID). Verifica que la clave en tus archivos .env o .env.local sea correcta."
     elif "resource_exhausted" in err_lower or "quota" in err_lower or "429" in err_lower or "rate limit" in err_lower:
-        return "Se ha agotado la cuota de la API de Gemini (RESOURCE_EXHAUSTED). Si estás utilizando el plan gratuito, recuerda que el límite es de 15 RPM o has alcanzado el límite diario. Espera un momento antes de reintentar."
+        return "Se ha agotado la cuota de la API de Gemini (RESOURCE_EXHAUSTED). Espera un momento antes de reintentar."
     elif "location" in err_lower or "blocked" in err_lower or "user_location_blocked" in err_lower:
         return "El acceso a la API de Gemini está bloqueado desde tu ubicación geográfica actual (USER_LOCATION_BLOCKED)."
     elif "not_found" in err_lower or "model" in err_lower and "not found" in err_lower or "404" in err_lower:
-        return "El modelo especificado no existe o no está disponible en la API de Gemini (MODEL_NOT_FOUND). Verifica la configuración en settings.json."
+        return "El modelo especificado no existe o no está disponible. Verifica la configuración en settings.json."
     elif "conn" in err_lower or "timeout" in err_lower or "dns" in err_lower or "socket" in err_lower or "resolved" in err_lower or "unreachable" in err_lower:
-        return "No se pudo establecer conexión de red con el servidor de la API de Gemini. Comprueba tu conexión a internet o de red."
+        return "No se pudo establecer conexión de red. Comprueba tu conexión a internet o que el servidor local esté activo."
     else:
-        return f"Error de conexión con la API de Gemini: {err_msg}"
+        return f"Error de conexión: {err_msg}"
 
 _ROUTER_PROMPT = """\
 Cuando recibas una pregunta del usuario, evalúa estrictamente en este orden:
@@ -105,24 +124,79 @@ class BaseModel(ABC):
         self._handlers        = None
         self.vector_db_stats  = {}
 
-    def _inicializar_llm(self) -> ChatGoogleGenerativeAI:
-        return ChatGoogleGenerativeAI(
-            model=self.modelo_llm,
-            temperature=self.tech.get("temperature", 0),
-            convert_system_message_to_human=True,
-        )
+    def _es_local(self) -> bool:
+        """Devuelve True si hay una URL de LLM local configurada (modo Ollama)."""
+        return bool(self.tech.get("url_llm", "").strip())
 
-    def _inicializar_embeddings(self) -> GoogleGenerativeAIEmbeddings:
-        dim = self.tech.get("dimensiones_embeddings")
-        kwargs: dict = {"model": self.modelo_embeddings}
-        if dim:
-            kwargs["output_dimensionality"] = int(dim)
-        return GoogleGenerativeAIEmbeddings(**kwargs)
+    def _inicializar_llm(self):
+        if self._es_local():
+            if not _OLLAMA_AVAILABLE:
+                raise ImportError(
+                    "langchain-ollama no está instalado. Ejecuta: pip install langchain-ollama"
+                )
+            url = self.tech["url_llm"].rstrip("/")
+            print(f"🏠 Modo LOCAL activo — Ollama en {url}")
+            return ChatOllama(
+                model=self.modelo_llm,
+                base_url=url,
+                temperature=self.tech.get("temperature", 0),
+            )
+        else:
+            if not _GOOGLE_AVAILABLE:
+                raise ImportError(
+                    "langchain-google-genai no está instalado. Ejecuta: pip install langchain-google-genai"
+                )
+            print(f"☁️  Modo CLOUD activo — Google Gemini")
+            return ChatGoogleGenerativeAI(
+                model=self.modelo_llm,
+                temperature=self.tech.get("temperature", 0),
+                convert_system_message_to_human=True,
+            )
+
+    def _inicializar_embeddings(self):
+        if self._es_local():
+            if not _OLLAMA_AVAILABLE:
+                raise ImportError(
+                    "langchain-ollama no está instalado. Ejecuta: pip install langchain-ollama"
+                )
+            url = self.tech["url_llm"].rstrip("/")
+            return OllamaEmbeddings(
+                model=self.modelo_embeddings,
+                base_url=url,
+            )
+        else:
+            if not _GOOGLE_AVAILABLE:
+                raise ImportError(
+                    "langchain-google-genai no está instalado. Ejecuta: pip install langchain-google-genai"
+                )
+            dim = self.tech.get("dimensiones_embeddings")
+            kwargs: dict = {"model": self.modelo_embeddings}
+            if dim:
+                kwargs["output_dimensionality"] = int(dim)
+            return GoogleGenerativeAIEmbeddings(**kwargs)
 
     def validar_conexion_ia(self):
-        """Valida la clave API de Gemini y la conexión con el LLM.
-        Si el modelo configurado no tiene cuota o falla, intenta con modelos de fallback.
-        """
+        """Valida la conexión con el LLM (local u online)."""
+        if self._es_local():
+            self._validar_conexion_ollama()
+        else:
+            self._validar_conexion_gemini()
+
+    def _validar_conexion_ollama(self):
+        """Prueba la conexión con Ollama local."""
+        print(f"🔄 Probando conexión con Ollama ({self.modelo_llm})...")
+        try:
+            self.llm.invoke("Responder únicamente 'OK'")
+            print(f"✅ Conexión con Ollama ({self.modelo_llm}) exitosa.")
+        except Exception as e:
+            error_categorizado = analizar_error_conexion(e)
+            print(f"❌ Error con Ollama: {error_categorizado}")
+            raise RuntimeError(
+                f"No se pudo conectar con Ollama. {error_categorizado}"
+            ) from e
+
+    def _validar_conexion_gemini(self):
+        """Valida la clave API de Gemini con fallback automático de modelos."""
         api_key = os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY")
         if not api_key:
             error_msg = "No se detectó GOOGLE_API_KEY ni GEMINI_API_KEY en las variables de entorno."
@@ -147,13 +221,10 @@ class BaseModel(ABC):
                     temperature=0,
                     convert_system_message_to_human=True,
                 )
-                # Intento de invocación rápida para probar conectividad y cuota
                 test_llm.invoke("Responder únicamente 'OK'")
-                
-                # Si llegamos aquí, la llamada fue exitosa
                 if mod != self.modelo_llm:
-                    print(f"⚠️  ADVERTENCIA: El modelo configurado '{self.modelo_llm}' falló por cuota/límites. "
-                          f"Se seleccionó automáticamente el fallback '{mod}' que está activo.")
+                    print(f"⚠️  ADVERTENCIA: El modelo configurado '{self.modelo_llm}' falló. "
+                          f"Se seleccionó automáticamente el fallback '{mod}'.")
                     self.modelo_llm = mod
                     self.llm = test_llm
                 else:
@@ -165,21 +236,19 @@ class BaseModel(ABC):
                 print(f"❌ Error con el modelo {mod}: {error_categorizado}")
                 ultimo_error_msg = error_categorizado
                 ultimo_error = e
-                # Si la API key es inválida, levantamos el error inmediatamente sin seguir probando otros modelos
                 if "API_KEY_INVALID" in err_msg or "Invalid API Key" in err_msg or "key is invalid" in err_msg.lower():
                     print("❌ ERROR CRÍTICO: La clave API de Gemini provista es inválida.")
                     raise ValueError(error_categorizado) from e
 
-        # Si todos los modelos fallaron
         print(f"❌ ERROR CRÍTICO: Ningún modelo de Gemini pudo establecer conexión. Último error: {ultimo_error_msg}")
         raise RuntimeError(
-            f"No se pudo conectar a la API de Gemini (posiblemente sin cuota o límites excedidos). "
-            f"Detalle: {ultimo_error_msg}"
+            f"No se pudo conectar a la API de Gemini. Detalle: {ultimo_error_msg}"
         ) from ultimo_error
 
     def validar_conexion_embeddings(self):
         """Valida que el servicio de Embeddings funcione correctamente."""
-        print(f"🔄 Probando conexión con Embeddings ({self.modelo_embeddings})...")
+        backend = "Ollama" if self._es_local() else "Google Gemini"
+        print(f"🔄 Probando conexión con Embeddings ({self.modelo_embeddings}) [{backend}]...")
         try:
             self.embeddings.embed_query("Test connection")
             print(f"✅ Conexión con Embeddings ({self.modelo_embeddings}) exitosa.")
@@ -187,7 +256,7 @@ class BaseModel(ABC):
             error_categorizado = analizar_error_conexion(e)
             print(f"❌ Error con Embeddings ({self.modelo_embeddings}): {error_categorizado}")
             raise RuntimeError(
-                f"Fallo al conectar con el servicio de Embeddings de Gemini: {error_categorizado}"
+                f"Fallo al conectar con el servicio de Embeddings [{backend}]: {error_categorizado}"
             ) from e
 
     def _inicializar_handlers(self):
