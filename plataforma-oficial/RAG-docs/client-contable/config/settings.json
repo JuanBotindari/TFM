@@ -104,7 +104,7 @@
       "factura": ["id (uuid)", "cliente_id (uuid)", "numero (text)", "fecha_vencimiento (date)", "monto_total (numeric)", "estado (text)"],
       "honorario": ["id (uuid)", "cliente_id (uuid)", "descripcion (text)", "monto (numeric)", "fecha (date)"]
     },
-    "templates": [
+"templates": [
       {
         "id": "e-001",
         "name": "Beneficio Neto por Ejercicio Fiscal",
