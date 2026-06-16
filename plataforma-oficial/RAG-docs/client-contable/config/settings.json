@@ -107,33 +107,63 @@
 "templates": [
       {
         "id": "e-001",
-        "name": "P\u00f3lizas Activas con Tomador",
-        "query": "SELECT p.num_poliza, p.producto, per.nombre || ' ' || per.apellido AS tomador, p.fecha_vencimiento\nFROM POLIZA p\nJOIN PERSONA per ON p.dni_tomador = per.dni\nWHERE p.estado = 'ACTIVO'\nORDER BY p.fecha_vencimiento ASC\nLIMIT 20;"
+        "name": "Beneficio Neto por Ejercicio Fiscal",
+        "query": "WITH Ingresos AS (\n  SELECT v.id_ejercicio, SUM(v.neto_gravado * tc.multiplicador_contable) as total_ingresos\n  FROM Ventas v \n  JOIN Tipos_Comprobante tc ON v.id_tipo_comprobante = tc.id_tipo_comprobante\n  GROUP BY v.id_ejercicio\n),\nGastos AS (\n  SELECT c.id_ejercicio, SUM(c.neto_gravado * tc.multiplicador_contable) as total_gastos\n  FROM Compras c \n  JOIN Tipos_Comprobante tc ON c.id_tipo_comprobante = tc.id_tipo_comprobante\n  GROUP BY c.id_ejercicio\n)\nSELECT \n  e.anio_fiscal, \n  COALESCE(i.total_ingresos, 0) AS total_ventas_netas, \n  COALESCE(g.total_gastos, 0) AS total_compras_netas, \n  (COALESCE(i.total_ingresos, 0) - COALESCE(g.total_gastos, 0)) AS beneficio_neto\nFROM Ejercicios_Fiscales e\nLEFT JOIN Ingresos i ON e.id_ejercicio = i.id_ejercicio\nLEFT JOIN Gastos g ON e.id_ejercicio = g.id_ejercicio\nORDER BY e.anio_fiscal;"
       },
       {
         "id": "e-002",
-        "name": "Siniestros por Tipo y Estado",
-        "query": "SELECT tipo_siniestro, estado_siniestro, COUNT(*) as cantidad\nFROM SINIESTRO\nGROUP BY tipo_siniestro, estado_siniestro\nORDER BY cantidad DESC;"
+        "name": "Posición Mensual de IVA Débito Fiscal",
+        "query": "SELECT\n  EXTRACT(YEAR FROM v.fecha) AS anio,\n  EXTRACT(MONTH FROM v.fecha) AS mes,\n  SUM(COALESCE(v.iva_21, 0) * tc.multiplicador_contable) AS iva_21_total,\n  SUM(COALESCE(v.iva_105, 0) * tc.multiplicador_contable) AS iva_105_total,\n  SUM((COALESCE(v.iva_21, 0) + COALESCE(v.iva_105, 0)) * tc.multiplicador_contable) AS total_iva_debito\nFROM Ventas v\nJOIN Tipos_Comprobante tc ON v.id_tipo_comprobante = tc.id_tipo_comprobante\nWHERE EXTRACT(YEAR FROM v.fecha) = 2022\nGROUP BY anio, mes\nORDER BY anio DESC, mes ASC;"
       },
       {
         "id": "e-003",
-        "name": "\u00daltimos Pagos de Siniestros",
-        "query": "SELECT pa.num_pago, s.num_siniestro, s.producto, pa.importe, pa.fecha_pago\nFROM PAGO pa\nJOIN SINIESTRO s ON pa.num_siniestro = s.num_siniestro\nORDER BY pa.fecha_pago DESC\nLIMIT 10;"
+        "name": "Top 10 Clientes con Mayor Volumen de Facturación",
+        "query": "SELECT\n  en.razon_social,\n  v.cuit_cliente,\n  SUM(v.total * tc.multiplicador_contable) AS monto_total_facturado\nFROM Ventas v\nJOIN Entidades en ON v.cuit_cliente = en.cuit\nJOIN Tipos_Comprobante tc ON v.id_tipo_comprobante = tc.id_tipo_comprobante\nGROUP BY en.razon_social, v.cuit_cliente\nORDER BY monto_total_facturado DESC\nLIMIT 10;"
       },
       {
         "id": "e-004",
-        "name": "Recaudaci\u00f3n Total por Producto",
-        "query": "SELECT producto,\n       SUM(CASE WHEN tipo_recibo = 'I' THEN monto ELSE 0 END) as total_iniciales,\n       SUM(CASE WHEN tipo_recibo = 'R' THEN monto ELSE 0 END) as total_renovaciones,\n       SUM(monto) as recaudacion_total\nFROM RECIBO\nGROUP BY producto\nORDER BY recaudacion_total DESC;"
+        "name": "Top 10 Proveedores Principales",
+        "query": "SELECT\n  en.razon_social,\n  c.cuit_proveedor,\n  SUM(c.total * tc.multiplicador_contable) AS monto_total_comprado\nFROM Compras c\nJOIN Entidades en ON c.cuit_proveedor = en.cuit\nJOIN Tipos_Comprobante tc ON c.id_tipo_comprobante = tc.id_tipo_comprobante\nGROUP BY en.razon_social, c.cuit_proveedor\nORDER BY monto_total_comprado DESC\nLIMIT 10;"
       },
       {
         "id": "e-005",
-        "name": "P\u00f3lizas Pr\u00f3ximas a Vencer (30 d\u00edas)",
-        "query": "SELECT p.num_poliza, p.producto, per.nombre || ' ' || per.apellido AS tomador, p.fecha_vencimiento\nFROM POLIZA p\nJOIN PERSONA per ON p.dni_tomador = per.dni\nWHERE p.estado = 'ACTIVO' AND p.fecha_vencimiento >= CURRENT_DATE AND p.fecha_vencimiento <= CURRENT_DATE + INTERVAL '30 days'\nORDER BY p.fecha_vencimiento ASC;"
+        "name": "Análisis de Gastos por Categoría (Rubros)",
+        "query": "SELECT\n  tg.descripcion AS rubro_gasto,\n  SUM(c.neto_gravado * tc.multiplicador_contable) AS total_neto_gastado\nFROM Compras c\nJOIN Tipos_Gasto tg ON c.id_tipo_gasto = tg.id_tipo_gasto\nJOIN Tipos_Comprobante tc ON c.id_tipo_comprobante = tc.id_tipo_comprobante\nJOIN Ejercicios_Fiscales e ON c.id_ejercicio = e.id_ejercicio\nWHERE e.anio_fiscal = 2022\nGROUP BY tg.descripcion\nORDER BY total_neto_gastado DESC;"
       },
       {
         "id": "e-006",
-        "name": "Historial de Siniestralidad por Asegurado",
-        "query": "SELECT per.nombre || ' ' || per.apellido AS asegurado, COUNT(s.num_siniestro) as total_siniestros\nFROM PERSONA per\nJOIN ASEGURADO_POLIZA ap ON per.dni = ap.dni_persona\nJOIN SINIESTRO s ON ap.num_poliza = s.num_poliza AND ap.producto = s.producto\nGROUP BY per.dni, per.nombre, per.apellido\nORDER BY total_siniestros DESC\nLIMIT 12;"
+        "name": "Control de Percepciones y Retenciones Sufridas",
+        "query": "SELECT\n  e.anio_fiscal,\n  SUM(COALESCE(c.perc_iva, 0) * tc.multiplicador_contable) AS percepciones_iva,\n  SUM(COALESCE(c.perc_iibb, 0) * tc.multiplicador_contable) AS percepciones_iibb,\n  SUM(COALESCE(c.perc_ganancias, 0) * tc.multiplicador_contable) AS percepciones_ganancias\nFROM Compras c\nJOIN Ejercicios_Fiscales e ON c.id_ejercicio = e.id_ejercicio\nJOIN Tipos_Comprobante tc ON c.id_tipo_comprobante = tc.id_tipo_comprobante\nGROUP BY e.anio_fiscal\nORDER BY e.anio_fiscal;"
+      },
+      {
+        "id": "e-007",
+        "name": "Composición de Ventas por Tipo de Factura",
+        "query": "SELECT\n  tv.id_tipo_venta AS tipo_comprobante,\n  tv.receptor AS tipo_cliente,\n  COUNT(v.id_venta) AS cantidad_facturas_emitidas,\n  SUM(v.neto_gravado * tc.multiplicador_contable) AS ingresos_netos\nFROM Ventas v\nJOIN Tipo_Venta tv ON v.id_tipo_venta = tv.id_tipo_venta\nJOIN Tipos_Comprobante tc ON v.id_tipo_comprobante = tc.id_tipo_comprobante\nGROUP BY tv.id_tipo_venta, tv.receptor\nORDER BY ingresos_netos DESC;"
+      },
+      {
+        "id": "e-008",
+        "name": "Evolución Mensual de la Facturación",
+        "query": "SELECT\n  EXTRACT(MONTH FROM v.fecha) AS mes,\n  SUM(v.neto_gravado * tc.multiplicador_contable) AS total_neto,\n  SUM(v.total * tc.multiplicador_contable) AS total_facturado_con_iva\nFROM Ventas v\nJOIN Tipos_Comprobante tc ON v.id_tipo_comprobante = tc.id_tipo_comprobante\nWHERE EXTRACT(YEAR FROM v.fecha) = 2022\nGROUP BY mes\nORDER BY mes ASC;"
+      },
+      {
+        "id": "e-009",
+        "name": "Control de Notas de Crédito y Devoluciones",
+        "query": "SELECT\n  en.razon_social,\n  COUNT(v.id_venta) AS cantidad_notas_credito,\n  ABS(SUM(v.total * tc.multiplicador_contable)) AS monto_devuelto \nFROM Ventas v\nJOIN Entidades en ON v.cuit_cliente = en.cuit\nJOIN Tipos_Comprobante tc ON v.id_tipo_comprobante = tc.id_tipo_comprobante\nWHERE tc.multiplicador_contable = -1\nGROUP BY en.razon_social\nORDER BY monto_devuelto DESC;"
+      },
+      {
+        "id": "e-010",
+        "name": "Auditoría: Proveedores sin Clasificación de Gasto",
+        "query": "SELECT\n  cuit,\n  razon_social\nFROM Entidades\nWHERE id_tipo_gasto_defecto IS NULL\nORDER BY razon_social;"
+      },
+      {
+        "id": "e-011",
+        "name": "Comprobantes Registrados por Ejercicio y Estado",
+        "query": "SELECT\n  e.anio_fiscal,\n  e.estado,\n  COUNT(DISTINCT v.id_venta) AS cantidad_ventas_registradas,\n  COUNT(DISTINCT c.id_compra) AS cantidad_compras_registradas\nFROM Ejercicios_Fiscales e\nLEFT JOIN Ventas v ON e.id_ejercicio = v.id_ejercicio\nLEFT JOIN Compras c ON e.id_ejercicio = c.id_ejercicio\nGROUP BY e.anio_fiscal, e.estado\nORDER BY e.anio_fiscal DESC;"
+      },
+      {
+        "id": "e-012",
+        "name": "Listado Detallado del Libro IVA Compras",
+        "query": "SELECT\n  c.fecha,\n  tc.descripcion AS tipo_comprobante,\n  CONCAT(c.pto_vta, '-', c.nro_cpte) AS numero_factura,\n  en.razon_social AS proveedor,\n  c.cuit_proveedor,\n  c.neto_gravado,\n  c.iva_21,\n  c.iva_27,\n  c.iva_105,\n  c.exento,\n  c.no_gravado,\n  (COALESCE(c.perc_iva, 0) + COALESCE(c.perc_iibb, 0) + COALESCE(c.perc_ganancias, 0)) AS percepciones,\n  c.total\nFROM Compras c\nJOIN Entidades en ON c.cuit_proveedor = en.cuit\nJOIN Tipos_Comprobante tc ON c.id_tipo_comprobante = tc.id_tipo_comprobante\nWHERE EXTRACT(YEAR FROM c.fecha) = 2022 AND EXTRACT(MONTH FROM c.fecha) = 4\nORDER BY c.fecha ASC;"
       }
     ]
   }
