@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
+import { getDefaultTableDocs } from '@/lib/tableSchemas';
 import { Play, Save, AlertCircle, Database, Lock, Trash2, Clock, CheckCircle2, XCircle } from 'lucide-react';
 
 interface HistoryItem {
@@ -27,7 +28,7 @@ const templatesByOrg: Record<string, { id: string; name: string; query: string }
     },
     {
       id: 'b-003',
-      name: 'Úlumos Pagos Registrados',
+      name: 'Últimos Pagos Registrados',
       query: "SELECT id, poliza_id, fecha_pago, monto, metodo_pago FROM pago ORDER BY fecha_pago DESC LIMIT 10;"
     },
     {
@@ -177,14 +178,17 @@ export default function SqlPage() {
         if (res.ok) {
           const data = await res.json();
           if (data.rows && data.rows.length > 0) {
+            const allowedTables = getDefaultTableDocs(orgId).map(t => t.tableName);
             const tempSchema: Record<string, string[]> = {};
             data.rows.forEach((row: any) => {
               const tableName = row.table_name;
-              const colInfo = `${row.column_name} (${row.data_type})`;
-              if (!tempSchema[tableName]) {
-                tempSchema[tableName] = [];
+              if (allowedTables.includes(tableName)) {
+                const colInfo = `${row.column_name} (${row.data_type})`;
+                if (!tempSchema[tableName]) {
+                  tempSchema[tableName] = [];
+                }
+                tempSchema[tableName].push(colInfo);
               }
-              tempSchema[tableName].push(colInfo);
             });
             setSchema(tempSchema);
           } else {
