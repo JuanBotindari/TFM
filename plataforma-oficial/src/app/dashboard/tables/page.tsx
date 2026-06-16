@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
+import { getDefaultTableDocs } from '@/lib/tableSchemas';
 import { 
   Table as TableIcon, 
   Search, 
@@ -17,17 +18,28 @@ import {
   List
 } from 'lucide-react';
 
-const TABLES = [
-  { id: 'poliza', name: 'Pólizas', icon: '📄' },
-  { id: 'persona', name: 'Asegurados', icon: '👤' },
-  { id: 'siniestro', name: 'Siniestros', icon: '💥' },
-  { id: 'recibo', name: 'Recibos', icon: '💰' },
-  { id: 'pago', name: 'Pagos', icon: '🏦' },
-];
+const getIconForTable = (tableName: string) => {
+  const icons: Record<string, string> = {
+    poliza: '📄', persona: '👤', siniestro: '💥', recibo: '💰', pago: '🏦', asegurado_poliza: '👥',
+    entidades: '🏢', ejercicios_fiscales: '📅', compras: '🛒', ventas: '📈', 
+    tipos_comprobante: '🧾', tipos_gasto: '💳', tipo_venta: '🏷️'
+  };
+  return icons[tableName] || '📊';
+};
 
 export default function TablesPage() {
   const { currentOrg } = useAuth();
-  const [selectedTable, setSelectedTable] = useState(TABLES[0].id);
+  
+  const TABLES = useMemo(() => {
+    const docs = getDefaultTableDocs(currentOrg?.id);
+    return docs.map(doc => ({
+      id: doc.tableName,
+      name: doc.tableName.charAt(0).toUpperCase() + doc.tableName.slice(1).replace(/_/g, ' '),
+      icon: getIconForTable(doc.tableName)
+    }));
+  }, [currentOrg]);
+
+  const [selectedTable, setSelectedTable] = useState('');
   const [data, setData] = useState<any[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -36,7 +48,14 @@ export default function TablesPage() {
   const [currentPage, setCurrentPage] = useState(0);
   const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>(null);
 
+  useEffect(() => {
+    if (TABLES.length > 0 && (!selectedTable || !TABLES.find(t => t.id === selectedTable))) {
+      setSelectedTable(TABLES[0].id);
+    }
+  }, [TABLES, selectedTable]);
+
   const fetchData = async () => {
+    if (!selectedTable) return;
     setLoading(true);
     try {
       let query = supabase
