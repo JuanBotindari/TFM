@@ -240,14 +240,14 @@ export default function DocumentationPage() {
               Tabla: <span style={{ color: 'var(--accent)' }}>{table.tableName}</span>
             </h3>
             <div style={{ overflowX: 'auto', border: '1px solid var(--border-primary)', borderRadius: '0 0 8px 8px' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', tableLayout: 'fixed' }}>
                 <thead>
                   <tr style={{ borderBottom: '2px solid var(--border-primary)', background: 'var(--bg-subtle)' }}>
-                    <th style={{ padding: '12px 16px', color: 'var(--text-tertiary)', fontSize: 13 }}>Columna</th>
-                    <th style={{ padding: '12px 16px', color: 'var(--text-tertiary)', fontSize: 13 }}>Tipo</th>
-                    <th style={{ padding: '12px 16px', color: 'var(--text-tertiary)', fontSize: 13 }}>Descripción</th>
-                    <th style={{ padding: '12px 16px', color: 'var(--text-tertiary)', fontSize: 13 }}>PK</th>
-                    <th style={{ padding: '12px 16px', color: 'var(--text-tertiary)', fontSize: 13 }}>Sensible</th>
+                    <th style={{ width: '20%', padding: '12px 16px', color: 'var(--text-tertiary)', fontSize: 13 }}>Columna</th>
+                    <th style={{ width: '15%', padding: '12px 16px', color: 'var(--text-tertiary)', fontSize: 13 }}>Tipo</th>
+                    <th style={{ width: '45%', padding: '12px 16px', color: 'var(--text-tertiary)', fontSize: 13 }}>Descripción</th>
+                    <th style={{ width: '10%', padding: '12px 16px', color: 'var(--text-tertiary)', fontSize: 13, textAlign: 'center' }}>PK</th>
+                    <th style={{ width: '10%', padding: '12px 16px', color: 'var(--text-tertiary)', fontSize: 13, textAlign: 'center' }}>Sensible</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -260,7 +260,7 @@ export default function DocumentationPage() {
                             type="text" 
                             value={col.type}
                             onChange={(e) => updateTableColumn(tIndex, cIndex, 'type', e.target.value)}
-                            style={{ width: '100px', padding: '4px 8px', borderRadius: 4, border: '1px solid var(--border-primary)', background: 'var(--bg-input)', color: 'var(--text-primary)' }}
+                            style={{ width: '100%', padding: '4px 8px', borderRadius: 4, border: '1px solid var(--border-primary)', background: 'var(--bg-input)', color: 'var(--text-primary)' }}
                           />
                         ) : col.type}
                       </td>
