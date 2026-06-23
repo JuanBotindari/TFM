@@ -35,7 +35,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (isLoaded && isSignedIn && user) {
       const role = (user.publicMetadata?.role as any) || 'viewer';
-      const orgId = (user.publicMetadata?.orgId as string) || 'org-banco';
+      const orgId = (user.publicMetadata?.orgId as string) || 'org-estudio';
 
       // 🔄 Sync with Supabase user_profiles table
       supabase

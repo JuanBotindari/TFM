@@ -72,10 +72,30 @@ export default function TablesPage() {
       }
 
       const { data: result, error, count } = await query;
-      if (error) throw error;
-      
-      setData(result || []);
-      setTotalCount(count || 0);
+      if (error) {
+        if (error.message?.includes('org_id') || error.code === 'PGRST200') {
+          console.warn(`Column org_id might be missing in ${selectedTable}, falling back to query without org_id filter`);
+          let fallbackQuery = supabase
+            .from(selectedTable)
+            .select('*', { count: 'exact' })
+            .range(currentPage * pageSize, (currentPage + 1) * pageSize - 1);
+          
+          if (sortConfig) {
+            fallbackQuery = fallbackQuery.order(sortConfig.key, { ascending: sortConfig.direction === 'asc' });
+          }
+          
+          const fallbackResult = await fallbackQuery;
+          if (fallbackResult.error) throw fallbackResult.error;
+          
+          setData(fallbackResult.data || []);
+          setTotalCount(fallbackResult.count || 0);
+        } else {
+          throw error;
+        }
+      } else {
+        setData(result || []);
+        setTotalCount(count || 0);
+      }
     } catch (err) {
       console.error('Error fetching table data:', err);
     } finally {
