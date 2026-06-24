@@ -38,34 +38,32 @@ Esta arquitectura de roles condiciona por completo la Interfaz de Usuario. Si un
 
 ## 3. Ingeniería de Datos: Ingesta, Chunking y Bases de Datos Vectoriales
 
-El conocimiento de la IA no es mágico; requiere un pipeline de Ingesta de Datos (Data Ingestion Pipeline) sumamente robusto.
+El conocimiento de la IA no es mágico; requiere un pipeline de Ingesta de Datos (Data Ingestion Pipeline) sumamente robusto. La solución técnica se despliega mediante una infraestructura desacoplada y robusta en el backend, implementando una arquitectura asíncrona de alto rendimiento utilizando FastAPI y Uvicorn, orquestada mediante el ecosistema LangChain.
 
 ### Parseo y Fragmentación (Chunking)
 El usuario "Admin" accede a nuestra pestaña de Documentación y sube archivos de alta complejidad (por ejemplo, los diccionarios de datos Excel del modelo de Seguros y Contable). El backend no puede enviar un Excel entero a un LLM. Por tanto, aplicamos un script ETL que extrae el texto de estos documentos y lo formatea en estructuras JSON legibles.
 Dado que los LLMs tienen una "ventana de contexto" limitada, aplicamos un proceso de **Chunking** (fragmentación semántica). Dividimos los textos masivos en pequeños bloques de información que mantienen el contexto original.
 
-### Generación de Embeddings (Ollama)
-Una vez fragmentados, estos textos deben ser comprensibles para la máquina. Hacemos una llamada a la API local de **Ollama**, utilizando modelos específicos de vectorización. El modelo lee el texto en lenguaje natural y lo transforma en un vector matemático, específicamente un array de **768 dimensiones**.
+### Generación de Embeddings y Modelos Agnósticos
+Una vez fragmentados, los textos deben ser comprensibles para la máquina. Aquí radica una de las mayores fortalezas del sistema: su adaptabilidad polimórfica y agnosticismo de proveedor. El sistema permite la conmutación dinámica entre modelos de lenguaje comerciales en la nube (como Google Gemini 2.0 Flash) para razonamiento general, y modelos locales de código abierto (como Llama 3 o Phi-3) a través de Ollama. El modelo local lee el texto y lo transforma en un vector matemático de 768 dimensiones.
 
-### Almacenamiento y Búsqueda de Similitud (pgvector)
-Estos vectores, junto con sus metadatos (a qué `orgId` pertenecen, tamaño del archivo original, fecha de subida), se almacenan en Supabase. Sin embargo, PostgreSQL no entiende de vectores por defecto. Para ello, hemos activado y configurado la extensión nativa **`pgvector`**. 
-Cuando el usuario le hace una pregunta al Chat, convertimos su pregunta a otro vector de 768 dimensiones y ejecutamos en Supabase un **Cosine Similarity Search** (búsqueda de similitud de cosenos). La base de datos calcula qué fragmentos matemáticos están más cerca de la pregunta y nos devuelve únicamente los párrafos exactos que contienen la respuesta, descartando miles de páginas irrelevantes.
+### Almacenamiento Vectorial Local (Chroma) y Base Relacional (Supabase)
+La persistencia y recuperación de la información combina un enfoque híbrido. Por un lado, utilizamos una base de datos relacional robusta en Supabase (PostgreSQL con la extensión pgvector) para la gestión de usuarios, perfiles, auditoría y seguridad.
+Por otro lado, el almacenamiento de los vectores (embeddings) de los documentos corporativos se realiza de forma local y embebida en disco mediante **Chroma**. Esta base de datos vectorial local está estructurada de forma estanca por cada tenant. Cuando el usuario hace una pregunta, la búsqueda semántica (Cosine Similarity Search) se ejecuta en Chroma, recuperando exclusivamente los chunks de su organización sin exponer el conocimiento a bases de datos públicas.
 
 *(Añadir aquí diagrama `diagrama_embeddings.jpg` mostrando el pipeline de ETL a Vector)*
 
 ---
 
-## 4. El Cerebro: El Patrón "Intent Router" en Python
+## 4. El Núcleo Computacional: El Patrón "Intent Router"
 
-Cuando un usuario escribe "Dime las vacaciones que me corresponden" o "Dame las ventas del Q3", el sistema no sabe a priori si debe leer un documento o consultar una tabla SQL. Para solucionarlo, hemos construido un motor de enrutamiento basado en Inteligencia Artificial.
+Una de las principales innovaciones del núcleo computacional (BaseModel) radica en su enrutador inteligente de consultas. Cuando un usuario escribe "Dime las vacaciones que me corresponden" o "Dame las ventas del Q3", el sistema no sabe a priori si debe leer un documento o consultar una tabla SQL. 
 
-### Refactorización y Patrón Single Responsibility
-El corazón de nuestro backend en Python (FastAPI) es la clase `BaseModelLLM/base_llm.py`. Inicialmente, este archivo manejaba toda la lógica, lo cual generaba un código monolítico e inescalable. Aplicando principios de ingeniería de software (SOLID), refactorizamos esta clase para convertirla en un **Intent Router**.
-
-El LLM actúa como un despachador. Evalúa semánticamente el prompt del usuario y decide la "Intención". Según esta decisión, el enrutador invoca a la clase *Handler* especializada correspondiente, instanciadas en el método `_inicializar_handlers()`:
-- `VectorStoreHandler` (RAG): Se activa para recuperar documentos y manuales.
-- `TablasHandler` (SQL): Se activa para análisis cuantitativo.
-- `DirectoHandler` / `InternetHandler` / `OtroHandler`: Para consultas generales, charlas casuales o búsquedas web.
+### Refactorización y Clasificación en Tiempo Real
+Aplicando principios de ingeniería de software (SOLID), refactorizamos la lógica monolítica de la clase `BaseModelLLM/base_llm.py` para construir un **Intent Router**. Este subsistema clasifica en tiempo real la intención del usuario para derivar la petición hacia el pipeline óptimo. El sistema no aplica un "RAG ciego" a todas las preguntas, sino que decide algorítmicamente la estrategia de resolución más adecuada, invocando a la clase *Handler* especializada:
+- `VectorStoreHandler` (RAG): Búsqueda semántica para recuperar normativas y documentos.
+- `TablasHandler` (SQL): Consultas léxicas exactas sobre datos tabulares mediante utilidades virtuales.
+- `DirectoHandler` / `InternetHandler`: Para consultas generales, charlas casuales o navegación web.
 
 De esta forma, el flujo de ejecución queda completamente aislado, permitiendo depurar, mejorar y testear cada ruta de la IA de manera independiente.
 
