@@ -6,25 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { BookOpen, Save, FileText, Table as TableIcon, Edit2, ShieldAlert, Check, X } from 'lucide-react';
 
-// Default schema for tables if no saved data is found
-const DEFAULT_TABLES_DOCS = [
-  {
-    tableName: 'poliza',
-    columns: [
-      { name: 'id', type: 'uuid', description: 'Identificador único de la póliza', isPk: true, isSensitive: false },
-      { name: 'numero', type: 'varchar', description: 'Número de póliza', isPk: false, isSensitive: false },
-      { name: 'fecha_inicio', type: 'date', description: 'Fecha de inicio', isPk: false, isSensitive: false },
-    ]
-  },
-  {
-    tableName: 'persona',
-    columns: [
-      { name: 'id', type: 'uuid', description: 'Identificador de persona', isPk: true, isSensitive: false },
-      { name: 'nombre', type: 'varchar', description: 'Nombre completo', isPk: false, isSensitive: true },
-      { name: 'documento', type: 'varchar', description: 'DNI o pasaporte', isPk: false, isSensitive: true },
-    ]
-  }
-];
+import { getDefaultTableDocs } from '@/lib/tableSchemas';
 
 export default function DocumentationPage() {
   const { currentOrg, isAdmin } = useAuth();
@@ -32,7 +14,7 @@ export default function DocumentationPage() {
   // States
   const [documents, setDocuments] = useState<any[]>([]);
   const [docDescriptions, setDocDescriptions] = useState<Record<string, string>>({});
-  const [tablesDocs, setTablesDocs] = useState<any[]>(DEFAULT_TABLES_DOCS);
+  const [tablesDocs, setTablesDocs] = useState<any[]>([]);
   
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -50,14 +32,19 @@ export default function DocumentationPage() {
         const { data: docsData } = await query;
         if (docsData) {
           setDocuments(docsData);
+          const initialDesc: Record<string, string> = {};
+          docsData.forEach((d: any) => {
+            if (d.description) initialDesc[d.id] = d.description;
+          });
+          setDocDescriptions(initialDesc);
         }
 
-        // Load descriptions from localStorage (since we might not have them in DB schema yet)
-        const savedDocDesc = localStorage.getItem(`tfm_doc_desc_${currentOrg?.id}`);
-        if (savedDocDesc) setDocDescriptions(JSON.parse(savedDocDesc));
-
         const savedTablesDocs = localStorage.getItem(`tfm_tables_docs_${currentOrg?.id}`);
-        if (savedTablesDocs) setTablesDocs(JSON.parse(savedTablesDocs));
+        if (savedTablesDocs) {
+          setTablesDocs(JSON.parse(savedTablesDocs));
+        } else {
+          setTablesDocs(getDefaultTableDocs(currentOrg?.id));
+        }
 
       } catch (err) {
         console.error('Error fetching documentation data', err);
@@ -69,19 +56,24 @@ export default function DocumentationPage() {
     fetchData();
   }, [currentOrg]);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     setSaving(true);
     try {
-      localStorage.setItem(`tfm_doc_desc_${currentOrg?.id}`, JSON.stringify(docDescriptions));
       localStorage.setItem(`tfm_tables_docs_${currentOrg?.id}`, JSON.stringify(tablesDocs));
-      // In a real scenario, we'd save this to Supabase
-      setTimeout(() => {
-        setSaving(false);
-        alert('Documentación guardada exitosamente.');
-      }, 500);
+      
+      // Guardar las descripciones directamente en Supabase
+      const updatePromises = Object.entries(docDescriptions).map(([id, desc]) => 
+        supabase.from('documents').update({ description: desc }).eq('id', id)
+      );
+      
+      await Promise.all(updatePromises);
+
+      setSaving(false);
+      alert('Documentación guardada exitosamente.');
     } catch (e) {
       console.error(e);
       setSaving(false);
+      alert('Hubo un error al guardar los cambios.');
     }
   };
 
@@ -248,14 +240,14 @@ export default function DocumentationPage() {
               Tabla: <span style={{ color: 'var(--accent)' }}>{table.tableName}</span>
             </h3>
             <div style={{ overflowX: 'auto', border: '1px solid var(--border-primary)', borderRadius: '0 0 8px 8px' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', tableLayout: 'fixed' }}>
                 <thead>
                   <tr style={{ borderBottom: '2px solid var(--border-primary)', background: 'var(--bg-subtle)' }}>
-                    <th style={{ padding: '12px 16px', color: 'var(--text-tertiary)', fontSize: 13 }}>Columna</th>
-                    <th style={{ padding: '12px 16px', color: 'var(--text-tertiary)', fontSize: 13 }}>Tipo</th>
-                    <th style={{ padding: '12px 16px', color: 'var(--text-tertiary)', fontSize: 13 }}>Descripción</th>
-                    <th style={{ padding: '12px 16px', color: 'var(--text-tertiary)', fontSize: 13 }}>PK</th>
-                    <th style={{ padding: '12px 16px', color: 'var(--text-tertiary)', fontSize: 13 }}>Sensible</th>
+                    <th style={{ width: '20%', padding: '12px 16px', color: 'var(--text-tertiary)', fontSize: 13 }}>Columna</th>
+                    <th style={{ width: '15%', padding: '12px 16px', color: 'var(--text-tertiary)', fontSize: 13 }}>Tipo</th>
+                    <th style={{ width: '45%', padding: '12px 16px', color: 'var(--text-tertiary)', fontSize: 13 }}>Descripción</th>
+                    <th style={{ width: '10%', padding: '12px 16px', color: 'var(--text-tertiary)', fontSize: 13, textAlign: 'center' }}>PK</th>
+                    <th style={{ width: '10%', padding: '12px 16px', color: 'var(--text-tertiary)', fontSize: 13, textAlign: 'center' }}>Sensible</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -268,7 +260,7 @@ export default function DocumentationPage() {
                             type="text" 
                             value={col.type}
                             onChange={(e) => updateTableColumn(tIndex, cIndex, 'type', e.target.value)}
-                            style={{ width: '100px', padding: '4px 8px', borderRadius: 4, border: '1px solid var(--border-primary)', background: 'var(--bg-input)', color: 'var(--text-primary)' }}
+                            style={{ width: '100%', padding: '4px 8px', borderRadius: 4, border: '1px solid var(--border-primary)', background: 'var(--bg-input)', color: 'var(--text-primary)' }}
                           />
                         ) : col.type}
                       </td>

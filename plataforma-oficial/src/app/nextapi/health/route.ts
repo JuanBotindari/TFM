@@ -28,6 +28,8 @@ export async function GET() {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
+        'ngrok-skip-browser-warning': 'true',
+        'Bypass-Tunnel-Reminder': 'true'
       },
       // Evitar almacenamiento en caché para obtener estados en tiempo real
       cache: 'no-store',

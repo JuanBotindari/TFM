@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 
 export default function DocumentsPage() {
-  const { currentOrg, currentUser } = useAuth();
+  const { currentOrg, currentUser, isViewer } = useAuth();
   const [documents, setDocuments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -173,58 +173,62 @@ export default function DocumentsPage() {
             Gestiona tu base de conocimiento no estructurada. La IA aprenderá de estos archivos.
           </p>
         </div>
-        <div style={{ display: 'flex', gap: 12 }}>
-          <button 
-            onClick={() => fileInputRef.current?.click()}
-            className="btn-primary" 
-            style={{ display: 'flex', alignItems: 'center', gap: 8 }}
-          >
-            <Upload size={18} /> Subir Documento
-          </button>
-          <input 
-            type="file" 
-            ref={fileInputRef} 
-            onChange={(e) => handleFileUpload(e.target.files)} 
-            style={{ display: 'none' }} 
-            accept=".pdf,.docx,.txt"
-          />
-        </div>
+        {!isViewer && (
+          <div style={{ display: 'flex', gap: 12 }}>
+            <button 
+              onClick={() => fileInputRef.current?.click()}
+              className="btn-primary" 
+              style={{ display: 'flex', alignItems: 'center', gap: 8 }}
+            >
+              <Upload size={18} /> Subir Documento
+            </button>
+            <input 
+              type="file" 
+              ref={fileInputRef} 
+              onChange={(e) => handleFileUpload(e.target.files)} 
+              style={{ display: 'none' }} 
+              accept=".pdf,.docx,.txt"
+            />
+          </div>
+        )}
       </div>
 
       {/* Upload Zone */}
-      <div 
-        onDragOver={(e) => { e.preventDefault(); setDragActive(true); }}
-        onDragLeave={() => setDragActive(false)}
-        onDrop={(e) => { e.preventDefault(); setDragActive(false); handleFileUpload(e.dataTransfer.files); }}
-        style={{
-          border: `2px dashed ${dragActive ? 'var(--accent)' : 'var(--border-primary)'}`,
-          background: dragActive ? 'var(--accent-light)' : 'var(--bg-subtle)',
-          borderRadius: 20,
-          padding: '40px',
-          textAlign: 'center',
-          transition: 'all 0.2s',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: 16
-        }}
-      >
-        <div style={{ 
-          width: 64, height: 64, borderRadius: 16, background: 'var(--bg-card)', 
-          display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent)',
-          boxShadow: 'var(--shadow-sm)'
-        }}>
-          <FileUp size={32} />
+      {!isViewer && (
+        <div 
+          onDragOver={(e) => { e.preventDefault(); setDragActive(true); }}
+          onDragLeave={() => setDragActive(false)}
+          onDrop={(e) => { e.preventDefault(); setDragActive(false); handleFileUpload(e.dataTransfer.files); }}
+          style={{
+            border: `2px dashed ${dragActive ? 'var(--accent)' : 'var(--border-primary)'}`,
+            background: dragActive ? 'var(--accent-light)' : 'var(--bg-subtle)',
+            borderRadius: 20,
+            padding: '40px',
+            textAlign: 'center',
+            transition: 'all 0.2s',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 16
+          }}
+        >
+          <div style={{ 
+            width: 64, height: 64, borderRadius: 16, background: 'var(--bg-card)', 
+            display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent)',
+            boxShadow: 'var(--shadow-sm)'
+          }}>
+            <FileUp size={32} />
+          </div>
+          <div>
+            <p style={{ fontWeight: 700, fontSize: 16, marginBottom: 4 }}>
+              {uploading ? 'Subiendo archivo...' : 'Arrastra y suelta tus archivos aquí'}
+            </p>
+            <p style={{ fontSize: 14, color: 'var(--text-tertiary)' }}>
+              Soporta PDF, Word y Texto (Máx. 50MB)
+            </p>
+          </div>
         </div>
-        <div>
-          <p style={{ fontWeight: 700, fontSize: 16, marginBottom: 4 }}>
-            {uploading ? 'Subiendo archivo...' : 'Arrastra y suelta tus archivos aquí'}
-          </p>
-          <p style={{ fontSize: 14, color: 'var(--text-tertiary)' }}>
-            Soporta PDF, Word y Texto (Máx. 50MB)
-          </p>
-        </div>
-      </div>
+      )}
 
       {/* Search and Filters */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -275,12 +279,14 @@ export default function DocumentsPage() {
                 </div>
                 <div style={{ display: 'flex', gap: 4 }}>
                   <button className="btn-ghost" style={{ padding: 6 }}><Download size={16} /></button>
-                  <button 
-                    onClick={() => deleteDocument(doc.id, doc.storage_path)}
-                    className="btn-ghost" style={{ padding: 6, color: 'var(--danger)' }}
-                  >
-                    <Trash2 size={16} />
-                  </button>
+                  {!isViewer && (
+                    <button 
+                      onClick={() => deleteDocument(doc.id, doc.storage_path)}
+                      className="btn-ghost" style={{ padding: 6, color: 'var(--danger)' }}
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -312,6 +318,7 @@ export default function DocumentsPage() {
                   </span>
                 </div>
                 <button 
+                  onClick={() => alert(doc.description || 'Este documento aún no tiene resumen o descripción. Puedes añadir uno desde la sección de Documentación.')}
                   className="btn-secondary" 
                   style={{ fontSize: 11, padding: '6px 12px', display: 'flex', alignItems: 'center', gap: 6 }}
                 >
