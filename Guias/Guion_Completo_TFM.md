@@ -16,9 +16,16 @@ Intentar capitalizar estos activos intangibles utilizando Inteligencia Artificia
 
 El objetivo de este Trabajo de Fin de Máster ha sido el diseño y construcción de una plataforma B2B SaaS híbrida orientada a la **gestión del conocimiento organizacional mediante inteligencia artificial generativa**. Una solución que despliega una arquitectura **RAG (Retrieval-Augmented Generation)** para la comprensión de documentos corporativos, y **Text-to-SQL** para consultas analíticas sobre bases de datos. Todo ello bajo una arquitectura de **Inquilino Múltiple (Multi-Tenant)** y ejecutando modelos Open-Source en local para garantizar la soberanía total sobre estos activos estratégicos.
 
+Para validar de forma práctica la versatilidad de este ecosistema ante la fragmentación de la información, el sistema gestiona y unifica dos tipologías de datos diferenciadas: el **conocimiento no estructurado (narrativo)**, compuesto por documentos PDF masivos con cláusulas, regulaciones y manuales de procedimientos que requieren una fragmentación recursiva y almacenamiento vectorial semántico, y el **conocimiento estructurado y semi-estructurado (tabular)**, conformado por tablas de datos exactos en formato CSV o Excel, donde la coincidencia léxica rígida e indexada anula cualquier posibilidad de error numérico. 
+
+Esta dualidad metodológica se ha puesto a prueba bajo un modelo multi-tenant mediante la simulación de dos perfiles de clientes corporativos con necesidades operativas críticas. El primero es un **Cliente de Entorno Bancario (Área de Seguros)**, cuya problemática radica en la enorme densidad de sus pólizas y manuales de cobertura; la plataforma indexa estos PDFs de forma estanca bajo un identificador único de organización (`org_id`) para que los gestores comerciales resuelvan dudas complejas de los usuarios sobre exclusiones en tiempo real. El segundo es un **Cliente de Estudio Contable (Gestión Fiscal y Tributaria)**, caracterizado por la alta volatilidad normativa de los boletines oficiales y la dependencia de parámetros numéricos estrictos; en este inquilino, el sistema combina la comprensión semántica de las leyes impositivas con consultas relacionales exactas a tablas de vencimientos y alícuotas, demostrando una escalabilidad horizontal limpia y un aislamiento absoluto de los datos sin alterar el código núcleo de la solución.
+
+
 *(Añadir aquí diagrama `tfm_flujo.jpg.jpg` para mostrar la visión del usuario final)*
 
 ---
+
+
 
 ## 2. Arquitectura Base y Seguridad: Multi-Tenancy y RBAC
 
