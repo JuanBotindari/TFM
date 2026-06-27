@@ -19,6 +19,7 @@ interface H2Section {
   tag: string;
   title: string;
   body: string;
+  image?: string;
   h3: H3Item[];
 }
 
@@ -39,7 +40,7 @@ const sections: H1Section[] = [
     tag: 'INTRODUCCIÓN',
     title: 'El Valor Estratégico del Dato y las Limitaciones de la IA Comercial',
     description:
-      'En el contexto organizacional contemporáneo, los datos y el conocimiento derivados de su análisis han adquirido una relevancia estratégica equiparable a la de los activos tradicionales (Mikalef et al., 2020; Côrte-Real et al., 2016). Los datos han dejado de ser un subproducto operativo para convertirse en un activo organizacional central. Su valor no se manifiesta por acumulación, sino por la capacidad de transformarlos en conocimiento accionable que oriente la acción organizativa.',
+      'En el contexto organizacional contemporáneo, los datos y el conocimiento derivados de su análisis han adquirido una relevancia estratégica equiparable a la de los activos tradicionales (Mikalef et al., 2020; Côrte-Real et al., 2016). Los datos han dejado de ser un subproducto operativo para convertirse en un activo organizacional central. Su valor no se manifiesta por acumulación, sino por la capacidad de transformarlos en conocimiento accionable que oriente la acción organizativa.\n\nPara validar de forma práctica la versatilidad de este ecosistema ante la fragmentación de la información, el sistema gestiona y unifica dos tipologías de datos diferenciadas: el conocimiento no estructurado (narrativo), compuesto por documentos PDF masivos con regulaciones; y el conocimiento estructurado y semi-estructurado (tabular), conformado por tablas de datos exactos en formato CSV o Excel.\n\nEsta dualidad metodológica se ha puesto a prueba bajo un modelo multi-tenant mediante la simulación de dos perfiles de clientes corporativos con necesidades operativas críticas: un Cliente de Entorno Bancario (Área de Seguros) y un Cliente de Estudio Contable (Gestión Fiscal y Tributaria).',
     h2sections: [
       {
         icon: Brain,
@@ -62,6 +63,7 @@ const sections: H1Section[] = [
         tag: 'LA PROPUESTA',
         title: 'Plataforma RAG + Text-to-SQL: Gestión del Conocimiento con IA Generativa',
         body: 'El objetivo de este Trabajo de Fin de Máster ha sido el diseño y construcción de una plataforma B2B SaaS híbrida orientada a la gestión del conocimiento organizacional mediante inteligencia artificial generativa. Una solución que despliega una arquitectura RAG (Retrieval-Augmented Generation) para la comprensión profunda de documentos corporativos, y Text-to-SQL para la ejecución de consultas analíticas directas sobre bases de datos. Todo ello bajo una arquitectura de Inquilino Múltiple (Multi-Tenant) y ejecutando modelos Open-Source en local para garantizar la soberanía total sobre los activos estratégicos de la organización.',
+        image: '/imagenes_tfm/tfm_flujo.jpg.jpg',
         h3: [
           {
             title: 'Objetivo Académico del TFM',
@@ -139,6 +141,7 @@ const sections: H1Section[] = [
         tag: 'MODELOS DE LENGUAJE',
         title: 'Modelos Comerciales en la Nube vs. Modelos Locales',
         body: 'El sistema permite transicionar dinámicamente entre LLMs. Para tareas de razonamiento general sin exposición de datos, se utilizan modelos comerciales en la nube de máximo rendimiento, como Google Gemini 2.0 Flash. Sin embargo, cuando se detecta el procesamiento de documentos corporativos o consultas a bases de datos relacionales privadas, el sistema conmuta automáticamente a modelos locales de código abierto (como Llama 3 o Phi-3) ejecutados a través de Ollama en infraestructura propia.',
+        image: '/imagenes_tfm/diagrama_embeddings.jpg',
         h3: [
           {
             title: 'Soberanía Total del Dato (On-Premise)',
@@ -151,6 +154,7 @@ const sections: H1Section[] = [
         tag: 'INTENT ROUTER',
         title: 'El Enrutador Inteligente de Consultas (BaseModel)',
         body: 'Una de las principales innovaciones del núcleo computacional radica en su enrutador inteligente de consultas. Este subsistema (implementado en la clase BaseModel) clasifica en tiempo real la intención del usuario para derivar la petición hacia el pipeline óptimo. El sistema no aplica un "RAG ciego" a todas las preguntas, sino que decide algorítmicamente la estrategia de resolución más adecuada.',
+        image: '/imagenes_tfm/baseLLM.jpg',
         h3: [
           {
             title: 'Pipeline RAG (Búsqueda Semántica)',
@@ -159,6 +163,85 @@ const sections: H1Section[] = [
           {
             title: 'Pipeline Text-to-SQL (Datos Tabulares)',
             body: 'Si el usuario solicita agregaciones, métricas o cruces de datos estructurados, el router deriva la consulta a las herramientas virtuales (Data Tools). El LLM local lee el esquema de la base de datos (tableSchemas) y genera dinámicamente una consulta SQL sintácticamente correcta para PostgreSQL, ejecutándola de forma segura.'
+          }
+        ]
+      }
+    ]
+  },
+  {
+    number: '04',
+    tag: 'GENERACIÓN DINÁMICA',
+    title: 'Text-to-SQL y Bypass Seguro de PGRST202',
+    description: 'La rama más compleja de la plataforma es la democratización de la base de datos mediante la generación de SQL dinámica (Text-to-SQL). Si el Intent Router deriva la petición al TablasHandler, se inicia un protocolo que transforma lenguaje natural en consultas relacionales estructuradas.',
+    h2sections: [
+      {
+        icon: Database,
+        tag: 'SCHEMA PROMPTING',
+        title: 'Data Governance e Inyección Dinámica',
+        body: 'El LLM no sabe qué tablas tiene la Empresa A. Para evitar cruces de datos, hemos descentralizado la configuración. No obstante, antes de incorporar las bases de datos de cada cliente a Supabase fue necesario aplicar un proceso de Data Governance. Al tratarse de organizaciones con modelos de datos heterogéneos, desarrollamos scripts de transformación y normalización para homogeneizar tablas y nomenclaturas, garantizando un esquema consistente. Una vez normalizados, el frontend lee archivos estáticos (tableSchemas.ts) específicos para el orgId activo. Esta información se inyecta en el "System Prompt" de Ollama. De este modo, la IA genera código SQL puro perfectamente adaptado a la arquitectura de ese cliente.',
+        h3: []
+      },
+      {
+        icon: Shield,
+        tag: 'POSTGREST',
+        title: 'Reto Crítico: El Error PGRST202',
+        body: 'Durante el desarrollo, nos enfrentamos a un muro arquitectónico. Al intentar que el backend ejecutara la "Raw SQL Query" generada por el LLM a través de la API REST estándar de Supabase, el sistema nos devolvía sistemáticamente el error de seguridad PGRST202. Esto ocurre porque el motor Row-Level Security (RLS) de PostgREST bloquea consultas crudas y dinámicas para evitar vulnerabilidades masivas de inyección SQL.',
+        h3: [
+          {
+            title: 'La Solución: Remote Procedure Calls (RPC)',
+            body: 'Para sortear este problema sin comprometer la seguridad, programamos a bajo nivel en PostgreSQL. Desarrollamos una función SQL personalizada (public.execute_sql). Nuestro backend invoca de forma segura esta función RPC. La base de datos recibe el código, lo ejecuta bajo los privilegios estrictos de ese usuario, y devuelve los resultados formateados de forma segura en un JSON puro.'
+          }
+        ]
+      }
+    ]
+  },
+  {
+    number: '05',
+    tag: 'FULL-STACK Y DESPLIEGUE',
+    title: 'Resolución de Problemas de Infraestructura y UI',
+    description: 'Un proyecto full-stack conlleva retos operativos más allá del Machine Learning. La implementación abarcó desde la sincronización de estados en la interfaz hasta la configuración de redes asimétricas complejas.',
+    h2sections: [
+      {
+        icon: Lock,
+        tag: 'FRONTEND',
+        title: 'Hydration Mismatch en Next.js 14',
+        body: 'A nivel de Interfaz de Usuario, adoptar el nuevo App Router de Next.js nos generó severos errores de Hydration Mismatch. El servidor de Vercel pre-renderizaba una versión del menú lateral sin autenticación, mientras que el navegador del cliente intentaba renderizar roles. Esta colisión de estados en el RootLayout colapsaba la aplicación. Tuvimos que unificar el manejo de estados asíncronos y refactorizar el código duplicado para asegurar que la hidratación de React fluyera de forma síncrona.',
+        h3: []
+      },
+      {
+        icon: Brain,
+        tag: 'RED ASIMÉTRICA',
+        title: 'Infraestructura de Red Híbrida: Túnel Bypassing NAT',
+        body: 'El mayor logro técnico ha sido la topología de red. Alquilar GPUs en la nube para alojar nuestros modelos de IA costaría cientos de euros. La decisión fue mantener el Frontend alojado en Vercel, pero ejecutar el Backend de Inteligencia Artificial (FastAPI + Ollama) en Hardware Local. Esto generó un problema de conectividad: el entorno Serverless de Vercel no podía comunicarse con nuestra red local debido a firewalls y al NAT.',
+        image: '/imagenes_tfm/Diagrama de Red e Infraestructura.jpg',
+        h3: [
+          {
+            title: 'Túnel Reverso Seguro (Pinggy / Ngrok)',
+            body: 'La solución definitiva consistió en levantar un túnel reverso seguro mediante Pinggy. Establecimos un dominio estático y lo inyectamos como variable de entorno (PYTHON_BACKEND_URL) en Vercel. El tráfico viaja cifrado a través de este túnel, golpeando directamente en el puerto local de Uvicorn. Logramos coste cero en servidores GPU, latencia mínima y soberanía absoluta del Dato.'
+          }
+        ]
+      }
+    ]
+  },
+  {
+    number: '06',
+    tag: 'CONCLUSIONES',
+    title: 'Impacto, Logros y Futuro de la Plataforma',
+    description: 'Este Trabajo de Fin de Máster ha culminado en una plataforma productiva que trasciende el concepto de "chatbot". Hemos diseñado una Arquitectura Empresarial completa con aislamiento absoluto de datos y un motor de IA híbrido.',
+    h2sections: [
+      {
+        icon: Code2,
+        tag: 'NEXT STEPS',
+        title: 'Trabajo Futuro y Evolución del Sistema',
+        body: 'La arquitectura de microservicios establecida permite la evolución directa hacia dos grandes tendencias de la industria corporativa: Modelos de Agentes Autónomos (Agentic AI) y el Fine-Tuning de modelos locales de código abierto.',
+        h3: [
+          {
+            title: 'Modelos de Agentes Autónomos (Agentic AI)',
+            body: 'Otorgar capacidades al Intent Router no solo para hacer consultas SELECT a la base de datos, sino para ejecutar operaciones de escritura (UPDATE, INSERT), permitiendo a la IA rellenar formularios, agendar reuniones o enviar correos electrónicos corporativos.'
+          },
+          {
+            title: 'Fine-Tuning de Modelos Abiertos',
+            body: 'Optimizar los modelos de la familia Llama o Mistral que corren en Ollama, entrenándolos exhaustivamente con el vocabulario técnico específico de los diccionarios de seguros o contables, reduciendo aún más los tiempos de inferencia en hardware local.'
           }
         ]
       }
@@ -274,6 +357,14 @@ function H2Slide({ data, sectionNum, h2Num, index, parentTag }: { data: H2Sectio
             </p>
           ))}
         </motion.div>
+
+        {/* H2 Image */}
+        {data.image && (
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.2 }}
+            style={{ marginBottom: 36, borderRadius: 12, overflow: 'hidden', border: '1px solid var(--border-primary)', background: 'var(--bg-secondary)', padding: 12 }}>
+            <img src={data.image} alt={data.title} style={{ width: '100%', height: 'auto', display: 'block', borderRadius: 8 }} />
+          </motion.div>
+        )}
 
         {/* H3 expandables */}
         {data.h3.length > 0 && (
