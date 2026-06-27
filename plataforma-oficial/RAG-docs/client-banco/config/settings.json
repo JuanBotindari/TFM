@@ -96,37 +96,37 @@
       {
         "id": "b-001",
         "name": "Listar P\u00f3lizas Activas",
-        "query": "SELECT * FROM poliza WHERE estado = 'activa' LIMIT 10;"
+        "query": "SELECT * FROM poliza WHERE estado = 'ACTIVO' LIMIT 10;"
       },
       {
         "id": "b-002",
         "name": "Siniestros por Estado",
-        "query": "SELECT estado, COUNT(*) as cantidad FROM siniestro GROUP BY estado ORDER BY cantidad DESC;"
+        "query": "SELECT estado_siniestro, COUNT(*) as cantidad FROM siniestro GROUP BY estado_siniestro ORDER BY cantidad DESC;"
       },
       {
         "id": "b-003",
         "name": "\u00daltimos Pagos Registrados",
-        "query": "SELECT id, poliza_id, fecha_pago, monto, metodo_pago FROM pago ORDER BY fecha_pago DESC LIMIT 10;"
+        "query": "SELECT num_siniestro, num_pago, fecha_pago, importe, estado_pago FROM pago ORDER BY fecha_pago DESC LIMIT 10;"
       },
       {
         "id": "b-004",
         "name": "Personas Aseguradas",
-        "query": "SELECT id, nombre, documento, email, telefono FROM persona LIMIT 20;"
+        "query": "SELECT nombre, dni, edad, nacionalidad FROM persona LIMIT 20;"
       },
       {
         "id": "b-005",
         "name": "P\u00f3lizas con sus Asegurados",
-        "query": "SELECT p.numero_poliza, p.estado, per.nombre, per.email\nFROM poliza p\nJOIN asegurado_poliza ap ON p.id = ap.poliza_id\nJOIN persona per ON ap.persona_id = per.id\nLIMIT 10;"
+        "query": "SELECT numero_poliza, estado, tipo, cobertura, SUM(prima_neta) as prima_total\nFROM poliza\nGROUP BY numero_poliza, estado, tipo, cobertura\nLIMIT 10;"
       },
       {
         "id": "b-006",
         "name": "Resumen de Siniestros por P\u00f3liza",
-        "query": "SELECT p.numero_poliza, COUNT(s.id) as total_siniestros, SUM(s.monto_reclamado) as total_reclamado\nFROM poliza p\nLEFT JOIN siniestro s ON p.id = s.poliza_id\nGROUP BY p.numero_poliza\nORDER BY total_reclamado DESC NULLS LAST\nLIMIT 15;"
+        "query": "SELECT numero_poliza, estado_siniestro, SUM(importe_reclamado) as siniestro_total\nFROM siniestro\nGROUP BY numero_poliza, estado_siniestro\nORDER BY siniestro_total DESC NULLS LAST\nLIMIT 15;"
       },
       {
         "id": "b-007",
         "name": "Recibos Pendientes de Cobro",
-        "query": "SELECT r.numero_recibo, p.numero_poliza, r.monto, r.fecha_vencimiento\nFROM recibo r\nJOIN poliza p ON r.poliza_id = p.id\nWHERE r.estado = 'pendiente'\nORDER BY r.fecha_vencimiento ASC;"
+        "query": "SELECT numero_recibo, poliza_id, importe, estado_recibo, fecha_vencimiento FROM recibo WHERE estado = 'pendiente' ORDER BY fecha_vencimiento ASC;"
       }
     ]
   }
