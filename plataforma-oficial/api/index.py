@@ -14,7 +14,7 @@ load_dotenv(os.path.join(parent_dir, '.env.local'))
 
 from BaseModelLLM.clientes.banco import ClienteBanco
 from BaseModelLLM.base_llm import analizar_error_conexion
-# from BaseModelLLM.clientes.estudio import ClienteEstudio
+from BaseModelLLM.clientes.estudio_contable import ClienteEstudioContable
 
 app = FastAPI(docs_url="/api/docs", openapi_url="/api/openapi.json")
 
@@ -26,7 +26,7 @@ def obtener_cliente(org_id: str):
         if "banco" in org_id.lower():
             cli = ClienteBanco()
         else:
-            cli = ClienteBanco() # fallback genérico para pruebas
+            cli = ClienteEstudioContable() # fallback genérico para pruebas
         
         # En FastAPI, no necesitamos reconstruir siempre, solo conectamos
         clientes_instanciados[org_id] = cli
@@ -37,7 +37,7 @@ from typing import List, Dict, Any, Optional
 class QueryRequest(BaseModel):
     message: str
     history: Optional[List[Dict[str, Any]]] = []
-    org_id: str = "org-banco"
+    org_id: str = "org-estudio"
 
 @app.get("/api/health")
 async def health_endpoint():
