@@ -20,15 +20,13 @@ export default function ChatPage() {
     scrollToBottom();
   }, [messages, isTyping]);
 
-  const handleSend = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim() || isTyping) return;
+  const submitQuery = async (query: string) => {
+    if (!query.trim() || isTyping) return;
 
-    const userMessage = input.trim();
     const newMsg = {
       id: Date.now().toString(),
       role: 'user' as const,
-      content: userMessage,
+      content: query,
       timestamp: new Date().toISOString()
     };
 
@@ -41,7 +39,7 @@ export default function ChatPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          message: userMessage,
+          message: query,
           history: messages.map(m => ({ role: m.role, content: m.content }))
         })
       });
@@ -71,6 +69,11 @@ export default function ChatPage() {
     } finally {
       setIsTyping(false);
     }
+  };
+
+  const handleSend = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await submitQuery(input);
   };
 
   return (
@@ -189,13 +192,15 @@ export default function ChatPage() {
           {/* Quick Actions */}
           <div style={{ display: 'flex', gap: 8, marginBottom: 16, overflowX: 'auto', paddingBottom: 4 }}>
             {[
-              { icon: LayoutTemplate, label: 'Analizar Tabla' },
-              { icon: FileText, label: 'Resumir PDF' },
-              { icon: Search, label: 'Buscar Normativa' }
+              { icon: FileText, label: '¿Cual es la estructura general de archivos?' },
+              { icon: Search, label: '¿Como se hace un plan de facilidades?' },
+              { icon: LayoutTemplate, label: '¿Como se genera un CAI para resguardo?' },
+              { icon: UserIcon, label: '¿Quien es FERNANDEZ DAIANA?' }
             ].map((action, i) => (
-              <button key={i} className="btn-ghost" style={{ 
+              <button key={i} type="button" onClick={() => submitQuery(action.label)} className="btn-ghost" style={{ 
                 background: 'var(--bg-tertiary)', border: '1px solid var(--border-primary)', 
-                borderRadius: 100, fontSize: 12, padding: '6px 14px', whiteSpace: 'nowrap'
+                borderRadius: 100, fontSize: 12, padding: '6px 14px', whiteSpace: 'nowrap',
+                display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer'
               }}>
                 <action.icon size={14} /> {action.label}
               </button>
