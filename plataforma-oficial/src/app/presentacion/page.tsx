@@ -110,6 +110,7 @@ const sections: H1Section[] = [
         tag: 'EMBEDDINGS',
         title: 'Generación de Embeddings y Modelos Agnósticos',
         body: 'La arquitectura destaca por su adaptabilidad polimórfica y agnosticismo de proveedor. Tras la fragmentación, el motor transforma cada bloque de texto en un vector matemático de 768 dimensiones que actúa como su representación semántica.\n\nEl sistema no almacena las palabras de forma literal, sino mediante coordenadas en un espacio geométrico multidimensional donde los conceptos similares se posicionan de manera adyacente. Esta propiedad viabiliza búsquedas conceptuales precisas que localizan información relevante mediante sinónimos o términos implícitos, proveyendo al LLM del contexto idóneo para generar respuestas fundamentadas.',
+        image: '/imagenes_tfm/modulo_embeddings.png',
         h3: [
           {
             title: 'Conmutación Dinámica de Modelos',
