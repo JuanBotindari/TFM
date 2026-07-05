@@ -44,7 +44,7 @@ export async function POST(req: Request) {
           'Bypass-Tunnel-Reminder': 'true'
         },
         body: JSON.stringify({
-          org_id: "org-banco",
+          org_id: "org-estudio",
           message: message,
           history: history,
         }),
