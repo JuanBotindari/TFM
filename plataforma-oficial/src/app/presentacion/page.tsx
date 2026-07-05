@@ -251,7 +251,7 @@ const sections: H1Section[] = [
         tag: 'ALMACENAMIENTO',
         title: 'Almacenamiento Vectorial Local (Chroma) y Base Relacional (Supabase)',
         body: 'La arquitectura del sistema implementa un enfoque de persistencia híbrido diseñado de forma estratégica para optimizar tanto la gestión operativa como los tiempos de respuesta de la inteligencia artificial. Esta dualidad tecnológica separa las responsabilidades de datos en dos capas complementarias:\n\n• Capa Relacional (Supabase): Gestiona de manera centralizada la estructura transaccional del sistema, incluyendo el control de usuarios, la asignación de roles, las políticas de acceso y los registros de auditoría.\n\n• Capa Vectorial Embebida (Chroma): Almacena de forma local en disco los vectores semánticos correspondientes a los documentos corporativos. Al procesar las búsquedas vectoriales de manera perimetral e interna en el backend, se reduce drásticamente la latencia de las consultas semánticas y se agiliza la inyección de contexto en la IA.',
-        image: '/imagenes_tfm/diagrama_embeddings.jpg',
+        image: '/imagenes_tfm/diagrama_embeddings.png',
         h3: [
           {
             title: 'Persistencia Híbrida Vectorial y Relacional',
