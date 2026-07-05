@@ -11,14 +11,14 @@ import { ChevronDown, ChevronRight, Shield, Lock, Users, Code2, Brain, Database,
 // ─────────────────────────────────────────────
 interface H3Item {
   title: string;
-  body: string;
+  body: React.ReactNode;
 }
 
 interface H2Section {
   icon: React.ElementType;
   tag: string;
   title: string;
-  body: string;
+  body: React.ReactNode;
   image?: string;
   h3: H3Item[];
 }
@@ -27,7 +27,7 @@ interface H1Section {
   number: string;
   tag: string;
   title: string;
-  description: string;
+  description: React.ReactNode;
   h2sections: H2Section[];
 }
 
@@ -205,51 +205,195 @@ const sections: H1Section[] = [
     number: '05',
     tag: 'SEGURIDAD',
     title: 'Arquitectura Base y Seguridad: Multi-Tenancy y RBAC',
-    description: 'Para asegurar que esta plataforma sea un producto B2B verdaderamente viable y seguro en el mundo real, tuvimos que construir un entorno donde cada empresa opera en un espacio totalmente hermético, garantizando así la privacidad de sus datos y un funcionamiento constante sin costes desorbitados de servidores. A continuación, veremos las dos claves de este logro: cómo protegemos la información corporativa y cómo estructuramos nuestra red de forma inteligente.',
+    description: (
+          <>
+            <b>Plataforma B2B ofreciendo:</b>
+            <ul style={{ listStyleType: 'disc', marginLeft: '20px', marginTop: '10px' }}>
+              <li>En un <i>espacio totalmente hermético</i>.</li>
+              <li>Garantizando así la privacidad de sus datos.</li>
+              <li>Un funcionamiento constante sin costes desorbitados de servidores.</li>
+            </ul><br />
+            A continuación, veremos las dos claves de este logro: cómo protegemos la información corporativa y cómo estructuramos nuestra red de forma inteligente
+          </>
+        ),
     h2sections: [
       {
         icon: Shield,
         tag: 'AISLAMIENTO',
         title: 'Seguridad y Aislamiento de la Información Corporativa',
-        body: 'Para que esta plataforma sea un producto empresarial viable, el primer pilar es la seguridad absoluta. En el mundo de los negocios, un cliente jamás debe tener acceso a los documentos o datos de otro cliente. A esto lo llamamos un entorno aislado. Además de proteger los datos entre diferentes empresas, nuestro sistema controla estrictamente quién entra y qué puede hacer cada empleado dentro de su propia organización. Si un empleado no tiene los permisos suficientes, la plataforma simplemente se adapta y oculta botones u opciones críticas, asegurando que un usuario básico pueda consultar la Inteligencia Artificial, pero nunca borrar información estratégica.',
+        body: (
+            <>
+                    <b>Los pilares fundamentales:</b>
+                    <ul style={{ listStyleType: 'disc', marginLeft: '20px', marginTop: '10px' }}>
+                      <li style={{ marginBottom: '5px' }}>Entorno <i>aislado</i>.</li>
+                      <li style={{ marginBottom: '5px' }}>Control <b>estricto</b> de quién entra y quién sale.</li>
+                      <li>Administración de permisos.</li>
+                    </ul>
+                  </>
+                ),       
         image: '/imagenes_tfm/aislamiento_multi_tenant.png',
-        h3: [
+h3: [
           {
             title: 'Gestión de Identidad en el Edge (Clerk)',
-            body: 'Hemos integrado Clerk como solución de autenticación moderna compatible con arquitecturas Edge, evaluando el acceso en el middleware de Next.js antes de renderizar la página y ofreciendo flujos de acceso avanzados (Email y credenciales clásicas).',
+            body: (
+              <>
+                <p style={{ marginBottom: '12px' }}>
+                  Hemos integrado Clerk como solución de autenticación moderna compatible con arquitecturas Edge, evaluando el acceso en el middleware de Next.js antes de renderizar la página y ofreciendo flujos de acceso avanzados (Email y credenciales clásicas).
+                </p>
+                <ul style={{ listStyleType: 'disc', paddingLeft: '20px', margin: '0 0 16px 0' }}>
+                  <li style={{ marginBottom: '8px' }}><b>¿Qué es el Edge?</b> Significa que el código de seguridad no se ejecuta en un único servidor lejano, sino en una red global de servidores ultra-rápidos de Vercel distribuidos por todo el mundo, operando en el nodo más cercano al usuario.</li>
+                  <li style={{ marginBottom: '8px' }}><b>¿Qué es el Middleware?</b> Es un "guardia de seguridad" a la entrada de la aplicación. Inspecciona al usuario antes de que la página web empiece siquiera a cargarse o renderizarse en el navegador.</li>
+                  <li style={{ marginBottom: '8px' }}><b>¿Qué hace Clerk aquí?</b> Es la herramienta que gestiona los usuarios y las empresas. Emite un pase digital (Token JWT) que el Middleware lee al instante para comprobar quién eres y a qué empresa perteneces.</li>
+                </ul>
+                <b style={{ display: 'block', marginBottom: '8px', fontSize: '0.875rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#9ca3af' }}>¿Por qué es genial esta solución? (El valor técnico)</b>
+                <ul style={{ listStyleType: 'disc', paddingLeft: '20px', margin: '0' }}>
+                  <li style={{ marginBottom: '4px' }}><b>Seguridad Total:</b> Bloquea a los intrusos en la periferia de la red, antes de que puedan tocar vuestros datos o consumir recursos del sistema.</li>
+                  <li style={{ marginBottom: '4px' }}><b>Velocidad Absoluta:</b> Al verificar la identidad en el servidor más cercano al usuario y sin consultar bases de datos lentas en cada clic, la aplicación responde de manera inmediata.</li>
+                  <li style={{ marginBottom: '4px' }}><b>Control Multi-Empresa:</b> Permite estructurar de forma limpia los accesos para que cada cliente (como el Estudio Contable o el Banco) se mantenga en su entorno privado.</li>
+                </ul>
+              </>
+            )
           },
           {
             title: 'Control de Acceso Basado en Roles (RBAC) y Sincronización',
-            body: 'Clerk emite un Token JWT con un publicMetadata que contiene el orgId (identificador de la empresa) y el role (admin, editor, viewer). Un hook especializado en React (AuthContext.tsx) captura este JWT en el inicio de sesión y sincroniza el perfil mediante una operación upsert en la tabla relacional user_profiles de Supabase.',
+            body: (
+              <>
+                <p style={{ marginBottom: '12px' }}>
+                  Clerk emite un Token JWT con un <code style={{ backgroundColor: '#1f2937', padding: '2px 4px', borderRadius: '4px', fontFamily: 'monospace' }}>publicMetadata</code> que contiene el <code style={{ backgroundColor: '#1f2937', padding: '2px 4px', borderRadius: '4px', fontFamily: 'monospace' }}>orgId</code> (identificador de la empresa) y el <code style={{ backgroundColor: '#1f2937', padding: '2px 4px', borderRadius: '4px', fontFamily: 'monospace' }}>role</code> (<code style={{ backgroundColor: '#1f2937', padding: '2px 4px', borderRadius: '4px', fontFamily: 'monospace' }}>admin</code>, <code style={{ backgroundColor: '#1f2937', padding: '2px 4px', borderRadius: '4px', fontFamily: 'monospace' }}>editor</code>, <code style={{ backgroundColor: '#1f2937', padding: '2px 4px', borderRadius: '4px', fontFamily: 'monospace' }}>viewer</code>). Un hook especializado en React (<code style={{ backgroundColor: '#1f2937', padding: '2px 4px', borderRadius: '4px', fontFamily: 'monospace' }}>AuthContext.tsx</code>) captura este JWT en el inicio de sesión y sincroniza el perfil mediante una operación <code style={{ backgroundColor: '#1f2937', padding: '2px 4px', borderRadius: '4px', fontFamily: 'monospace' }}>upsert</code> en la tabla relacional <code style={{ backgroundColor: '#1f2937', padding: '2px 4px', borderRadius: '4px', fontFamily: 'monospace' }}>user_profiles</code> de Supabase.
+                </p>
+                <ul style={{ listStyleType: 'disc', paddingLeft: '20px', margin: '0 0 16px 0' }}>
+                  <li style={{ marginBottom: '8px' }}><b>¿Qué es RBAC?</b> Significa "Control de Acceso Basado en Roles". Es el sistema que decide qué puede hacer cada empleado según su rango: Admin (control total), Editor (modifica datos) o Viewer (solo lee).</li>
+                  <li style={{ marginBottom: '8px' }}><b>El "Pase VIP" (Token JWT con publicMetadata):</b> Cuando el usuario inicia sesión, Clerk le entrega una tarjeta digital de identificación (el Token JWT). Dentro de esta tarjeta viene grabado a fuego un chip invisible (publicMetadata) que dice dos cosas esenciales: a qué empresa perteneces (orgId) y qué puesto tienes (role).</li>
+                  <li style={{ marginBottom: '8px' }}><b>El Receptor (AuthContext.tsx):</b> Es un componente espía en la interfaz de usuario (React). En cuanto el usuario entra, este componente "caza" la tarjeta digital (el JWT) para saber al instante qué botones debe mostrarle u ocultarle en la pantalla.</li>
+                  <li style={{ marginBottom: '8px' }}><b>La Sincronización (upsert en Supabase):</b> Para que la base de datos sepa también quién ha entrado, el sistema hace un upsert (un comando inteligente que significa: "Si el usuario ya existe en la base de datos, actualiza sus datos; si es nuevo, regístralo"). Así, la tabla de perfiles en Supabase se mantiene idéntica a la de Clerk en tiempo real.</li>
+                </ul>
+                <b style={{ display: 'block', marginBottom: '8px', fontSize: '0.875rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#9ca3af' }}>¿Por qué es genial esta solución? (El valor técnico)</b>
+                <ul style={{ listStyleType: 'disc', paddingLeft: '20px', margin: '0' }}>
+                  <li style={{ marginBottom: '4px' }}><b>Eficiencia Máxima:</b> Al guardar el rol y la empresa dentro de la tarjeta digital (JWT), el frontend no tiene que preguntar a la base de datos qué permisos tiene el usuario cada vez que hace un clic. El pase ya lleva toda la información encima.</li>
+                  <li style={{ marginBottom: '4px' }}><b>Consistencia de Datos:</b> La operación upsert garantiza que la base de datos de la aplicación y el sistema de autenticación jamás se descoordinen, evitando errores de permisos.</li>
+                </ul>
+              </>
+            )
           },
           {
             title: 'Aislamiento Físico de Datos (Row Level Security - RLS)',
-            body: 'Para garantizar el Multi-Tenancy a nivel de infraestructura profunda, implementamos políticas de seguridad a nivel de fila (RLS) nativas de PostgreSQL en Supabase. Al inyectar dinámicamente el orgId en cada consulta, la base de datos rechaza a nivel criptográfico cualquier lectura o escritura de registros que no pertenezcan a la organización del usuario, neutralizando el riesgo de "Cross-Tenant Data Leakage".',
+            body: (
+              <>
+                <p style={{ marginBottom: '12px' }}>
+                  Para garantizar el Multi-Tenancy a nivel de infraestructura profunda, implementamos políticas de seguridad a nivel de fila (RLS) nativas de PostgreSQL en Supabase. Al inyectar dinámicamente el <code style={{ backgroundColor: '#1f2937', padding: '2px 4px', borderRadius: '4px', fontFamily: 'monospace' }}>orgId</code> en cada consulta, la base de datos rechaza a nivel criptográfico cualquier lectura o escritura de registros que no pertenezcan a la organización del usuario, neutralizando el riesgo de "Cross-Tenant Data Leakage".
+                </p>
+                <ul style={{ listStyleType: 'disc', paddingLeft: '20px', margin: '0 0 16px 0' }}>
+                  <li style={{ marginBottom: '8px' }}><b>¿Qué es el Multi-Tenancy?</b> Es el modelo de software donde una sola aplicación da servicio a múltiples empresas clientes (tenants), pero cada una debe vivir en su propio espacio estanco.</li>
+                  <li style={{ marginBottom: '8px' }}><b>¿Qué es el RLS (Row Level Security)?</b> Tradicionalmente, si tienes acceso a una tabla de la base de datos, ves todas las filas. RLS es una funcionalidad de PostgreSQL (la base de datos que usa Supabase) que actúa como un filtro invisible e infranqueable directamente en cada fila de la base de datos.</li>
+                  <li style={{ marginBottom: '8px' }}><b>El mecanismo de bloqueo:</b> Cada vez que el código hace una consulta (ej. "busca este documento"), el sistema inyecta automáticamente el código identificador de la empresa (orgId). La base de datos mira fila por fila y dice: <i>"¿Esta fila coincide con el orgId del usuario? Si sí, se la muestro; si no, la oculto como si jamás hubiera existido"</i>.</li>
+                </ul>
+                <b style={{ display: 'block', marginBottom: '8px', fontSize: '0.875rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#9ca3af' }}>¿Por qué es genial esta solución? (El valor técnico)</b>
+                <ul style={{ listStyleType: 'disc', paddingLeft: '20px', margin: '0' }}>
+                  <li style={{ marginBottom: '4px' }}><b>Seguridad Blindada (A nivel criptográfico):</b> El filtrado no se hace mediante código tradicional en el backend (donde un programador podría olvidar añadir un WHERE tenant_id = X por error). Lo gestiona el propio motor profundo de la base de datos. Si un atacante intentara trucar la URL o la interfaz para ver datos de otra empresa, la base de datos rechazaría la petición de raíz.</li>
+                  <li style={{ marginBottom: '4px' }}><b>Neutraliza el Cross-Tenant Data Leakage:</b> Elimina al 100% el riesgo de filtración de datos entre empresas clientes. Un Banco jamás podrá ver, ni por error, un solo registro del Estudio Contable.</li>
+                </ul>
+              </>
+            )
           },
           {
-            title: 'Prevención de Fugas en la Capa Visual',
-            body: 'La arquitectura de roles condiciona completamente el DOM de Next.js. A los perfiles con rol viewer, el servidor les re-renderiza la interfaz bloqueando dinámicamente el acceso a funcionalidades de manipulación de archivos y diccionarios corporativos, creando una degradación elegante del sistema.',
+            title: 'Prevención del Cross-Tenant Data Leakage en la Capa Visual',
+            body: (
+              <>
+                <p style={{ marginBottom: '12px' }}>
+                  La arquitectura de roles condiciona completamente el DOM de Next.js. A los perfiles con rol <code style={{ backgroundColor: '#1f2937', padding: '2px 4px', borderRadius: '4px', fontFamily: 'monospace' }}>viewer</code>, el servidor les re-renderiza la interfaz bloqueando dinámicamente el acceso a funcionalidades de manipulación de archivos y diccionarios corporativos, creando una degradación elegante del sistema.
+                </p>
+                <ul style={{ listStyleType: 'disc', paddingLeft: '20px', margin: '0 0 16px 0' }}>
+                  <li style={{ marginBottom: '8px' }}><b>¿Qué es el DOM de Next.js?</b> El DOM (Document Object Model) es, básicamente, la estructura de la página web que ve y toca el usuario (los botones, los menus, los formularios).</li>
+                  <li style={{ marginBottom: '8px' }}><b>El mecanismo de bloqueo visual:</b> Cuando un usuario entra a la plataforma, el servidor de Next.js comprueba su rol antes de enviarle la página. Si su rol es viewer (un observador básico), el servidor reconfigura la interfaz en tiempo real.</li>
+                  <li style={{ marginBottom: '8px' }}><b>¿Qué es la Degradación Elegante?</b> En lugar de lanzar un error rudo de "Acceso Denegado" o romper la página, la aplicación se adapta "elegantemente". Al usuario con rol viewer se le ocultan o deshabilitan por completo los botones peligrosos (como "Subir archivo", "Borrar documento" o "Modificar diccionario corporativo"). La app sigue funcionando perfectamente, pero limitada a sus permisos.</li>
+                </ul>
+                <b style={{ display: 'block', marginBottom: '8px', fontSize: '0.875rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#9ca3af' }}>¿Por qué es genial esta solución? (El valor técnico)</b>
+                <ul style={{ listStyleType: 'disc', paddingLeft: '20px', margin: '0' }}>
+                  <li style={{ marginBottom: '4px' }}><b>Doble Capa de Seguridad:</b> No basta con bloquear los datos en la base de datos profunda (con el RLS). Al bloquear también los elementos en la Capa Visual, evitáis que un usuario intente siquiera pulsar un botón para el que no está autorizado.</li>
+                  <li style={{ marginBottom: '4px' }}><b>Excelente Experiencia de Usuario (UX):</b> Evita la frustración. El empleado solo ve las herramientas que realmente puede usar, manteniendo una interfaz limpia, intuitiva y segura.</li>
+                </ul>
+              </>
+            )
           }
-        ],
-      },
+        ],      },
       {
         icon: Lock,
         tag: 'DESPLIEGUE',
         title: 'Despliegue Híbrido: Privacidad Absoluta y Ahorro de Costes',
-        body: 'El segundo gran reto operativo fue la conectividad. Alquilar potentes ordenadores en la nube para alojar y hacer funcionar nuestro cerebro de Inteligencia Artificial hubiera disparado los costes a cientos de euros mensuales, haciendo el proyecto inviable. Por ello, diseñamos una arquitectura "híbrida": la interfaz gráfica y la aplicación web que usan los clientes están alojadas en la nube, pero todo el núcleo de razonamiento de la Inteligencia Artificial se ejecuta directamente en los servidores locales físicos de la empresa. Gracias a esto, no pagamos por servidores en la nube, las respuestas son instantáneas y la empresa mantiene el control 100% sobre sus propios datos sin depender de terceros.',
+        body: (
+                <>
+                  <b>Nuestra solución está enfocada en un modelo híbrido:</b>
+                  <ul style={{ listStyleType: 'disc', paddingLeft: '20px', margin: '10px 0 0 0' }}>
+                    <li style={{ marginBottom: '6px' }}>La interfaz gráfica y la aplicación web que usan los clientes están alojadas en la <i>nube</i>.</li>
+                    <li style={{ marginBottom: '6px' }}>El núcleo de razonamiento de la Inteligencia Artificial se ejecuta directamente en los <b>servidores locales físicos</b> de la empresa.</li>
+                  </ul>
+                </>
+              ),
         image: '/imagenes_tfm/arquitectura_hibrida.png',
-        h3: [
+h3: [
           {
             title: 'Túnel Reverso para Bypassing NAT',
-            body: 'Al ejecutar el frontend en Vercel (Cloud) y el backend en FastAPI local (On-Premise), la red Serverless de Vercel arrojaba errores 503/404 por culpa de los cortafuegos y el NAT local. Implementamos un túnel reverso persistente y seguro mediante Pinggy / Ngrok, inyectando un dominio estático (PYTHON_BACKEND_URL) en las variables de entorno de Vercel.',
+            body: (
+              <>
+                <p style={{ margin: 0 }}>
+                  Al ejecutar el frontend en Vercel (Cloud) y el backend en FastAPI local (On-Premise), la red Serverless de Vercel arrojaba errores 503/404 por culpa de los cortafuegos y el NAT local. Implementamos un túnel reverso persistente y seguro mediante <b>Pinggy / Ngrok</b>, inyectando un dominio estático (<code style={{ backgroundColor: '#1f2937', padding: '2px 4px', borderRadius: '4px', fontFamily: 'monospace' }}>PYTHON_BACKEND_URL</code>) en las variables de entorno de Vercel.
+                </p>
+              </>
+            ),
           },
           {
             title: 'Resolución del Hydration Mismatch en Next.js',
-            body: 'A nivel de interfaz, el nuevo App Router de Next.js generó conflictos de hidratación porque el servidor (Vercel) pre-renderizaba la barra lateral sin la sesión autenticada, mientras el cliente (navegador) tenía la cookie de Clerk activa. Unificamos el manejo de estado asíncrono en el RootLayout para lograr una hidratación síncrona sin colapsos visuales.',
+            body: (
+              <>
+                <p style={{ marginBottom: '12px' }}>
+                  A nivel de interfaz, el nuevo <i>App Router</i> de Next.js generó conflictos de hidratación porque el servidor (Vercel) pre-renderizaba la barra lateral sin la sesión autenticada, mientras el cliente (navegador) tenía la cookie de Clerk activa. Unificamos el manejo de estado asíncrono en el <code style={{ backgroundColor: '#1f2937', padding: '2px 4px', borderRadius: '4px', fontFamily: 'monospace' }}>RootLayout</code> para lograr una hidratación síncrona sin colapsos visuales.
+                </p>
+                <ul style={{ listStyleType: 'disc', paddingLeft: '20px', margin: '0 0 16px 0' }}>
+                  <li style={{ marginBottom: '8px' }}><b>¿Qué es la Hidratación?</b> En Next.js, para que la web cargue súper rápido, el servidor (Vercel) dibuja primero una versión estática de la página (HTML plano) y se la envía al navegador. Justo después, el navegador descarga el código JavaScript de React y lo "acopla" sobre ese dibujo estático para que los botones tengan vida. A ese proceso de darle vida al código se le llama hidratación.</li>
+                  <li style={{ marginBottom: '8px' }}><b>La regla de oro:</b> Para que React no se rompa, el dibujo que hace el servidor y el dibujo que arranca en el navegador tienen que ser exactamente idénticos.</li>
+                  <li style={{ marginBottom: '8px' }}>
+                    <b>El conflicto (El Mismatch):</b> Al usar el nuevo App Router de Next.js, ocurrió una descoordinación:
+                    <ul style={{ listStyleType: 'circle', paddingLeft: '20px', marginTop: '6px' }}>
+                      <li style={{ marginBottom: '4px' }}>El servidor dibujaba la barra lateral asumiendo que el usuario no estaba logueado porque no tenía acceso inmediato a los datos en tiempo real.</li>
+                      <li style={{ marginBottom: '4px' }}>El navegador del usuario, al recibir la página, detectaba que la cookie de inicio de sesión de Clerk sí estaba activa y dibujaba la barra lateral con las opciones del usuario logueado.</li>
+                    </ul>
+                  </li>
+                  <li style={{ marginBottom: '8px' }}><b>El resultado:</b> Al no coincidir las dos versiones, React lanzaba un error crítico en la consola (Hydration Mismatch), provocando parpadeos molestos o "colapsos visuales" en la pantalla.</li>
+                </ul>
+                <b style={{ display: 'block', marginBottom: '6px' }}>¿Cómo lo solucionasteis? (Unificación en el RootLayout)</b>
+                <p style={{ marginBottom: '12px' }}>
+                  En lugar de dejar que cada componente de la barra lateral intentara adivinar de forma asíncrona si el usuario estaba dentro o fuera, movisteis y centralizasteis toda la lógica del estado de autenticación en la raíz de la aplicación: el RootLayout. Al envolver toda la estructura en un único punto de control síncrono, garantizasteis que tanto el servidor como el cliente se pusieran de acuerdo sobre el estado de la sesión antes de pintar cualquier píxel, logrando una carga limpia, fluida y sin errores de consola.
+                </p>
+                <b style={{ display: 'block', marginBottom: '8px', fontSize: '0.875rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#9ca3af' }}>¿Por qué es genial esta solución? (El valor técnico)</b>
+                <p style={{ margin: 0 }}>
+                  Demuestra ante el tribunal que domináis el ciclo de vida del renderizado de Next.js y que sabéis resolver problemas avanzados de sincronización entre el servidor (Server-Side Rendering) y la interfaz del cliente.
+                </p>
+              </>
+            ),
           },
           {
             title: 'Configuración de Red y Timeouts Serverless',
-            body: 'Debido a que el LLM genera respuestas en streaming (SSE) y a veces tiene alta latencia de inferencia en hardware local, el ruteo asíncrono requirió un rediseño manual en el archivo vercel.json para extender la tolerancia de red de larga duración en la capa de Vercel y evitar cortes de conexión abruptos.',
+            body: (
+              <>
+                <p style={{ marginBottom: '12px' }}>
+                  Debido a que el LLM genera respuestas en streaming (SSE) y a veces tiene alta latencia de inferencia en hardware local, el ruteo asíncrono requirió un rediseño manual en el archivo <code style={{ backgroundColor: '#1f2937', padding: '2px 4px', borderRadius: '4px', fontFamily: 'monospace' }}>vercel.json</code> para extender la tolerancia de red de larga duración en la capa de Vercel y evitar cortes de conexión abruptos.
+                </p>
+                <ul style={{ listStyleType: 'disc', paddingLeft: '20px', margin: '0 0 16px 0' }}>
+                  <li style={{ marginBottom: '8px' }}><b>¿Qué es el Streaming (SSE)?</b> Los modelos de lenguaje (LLM) no devuelven la respuesta de golpe como una base de datos tradicional. En su lugar, usan Server-Sent Events (SSE), que es la tecnología que permite que la IA vaya respondiendo y "escribiendo" la respuesta palabra por palabra en vuestra pantalla en tiempo real.</li>
+                  <li style={{ marginBottom: '8px' }}><b>El problema de la latencia local:</b> Como vuestro backend de IA corre en un servidor local (On-Premise) y no en un superordenador en la nube, el "cerebro" tarda un poco más en pensar (alta latencia de inferencia) antes de empezar a escupir las palabras.</li>
+                  <li style={{ marginBottom: '8px' }}><b>El corte abrupto de Vercel (Timeout):</b> Las plataformas en la nube como Vercel tienen una regla estricta por defecto: si un servidor tarda más de unos pocos segundos (normalmente 10-15 segundos) en responder, Vercel asume que el sistema se ha colgado y corta la conexión de golpe (lanzando un error de red). Esto hacía que las respuestas largas de vuestra IA se quedaran a medias.</li>
+                </ul>
+                <b style={{ display: 'block', marginBottom: '6px' }}>¿Cómo lo solucionasteis? (Rediseño en vercel.json)</b>
+                <p style={{ marginBottom: '12px' }}>
+                  Para evitar que la nube colgara el teléfono a vuestro servidor local mientras este seguía procesando el texto, modificasteis manualmente el archivo de configuración vercel.json de vuestro proyecto. En este archivo añadisteis una directiva para extender los límites de tiempo de espera (timeouts) de las funciones Serverless. Le dijisteis a Vercel algo como: <i>"Oye, mantén la conexión abierta durante más tiempo del habitual porque estamos transmitiendo datos de IA de larga duración desde un entorno local"</i>.
+                </p>
+                <b style={{ display: 'block', marginBottom: '8px', fontSize: '0.875rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#9ca3af' }}>¿Por qué es genial esta solución? (El valor técnico)</b>
+                <ul style={{ listStyleType: 'disc', paddingLeft: '20px', margin: '0' }}>
+                  <li style={{ marginBottom: '4px' }}><b>Estabilidad del Sistema:</b> Asegura que los usuarios puedan recibir respuestas completas, complejas y detalladas de la IA sin sufrir cortes inesperados o pantallas de error a mitad del chat.</li>
+                  <li style={{ marginBottom: '4px' }}><b>Optimización Cloud-to-Local:</b> Demuestra que sabéis configurar infraestructura en la nube real para adaptarla a las limitaciones físicas del hardware local, logrando que dos mundos distintos se entiendan a la perfección.</li>
+                </ul>
+              </>
+            ),
           }
         ],
       }
@@ -516,7 +660,7 @@ function H1Slide({ data, sectionNum }: { data: H1Section; sectionNum: number }) 
           {data.title}
         </motion.h2>
         <motion.p initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.2 }}
-          style={{ fontSize: 17, color: 'var(--text-secondary)', lineHeight: 1.85, textAlign: 'justify' }}>
+          style={{ fontSize: 17, color: 'var(--text-secondary)', lineHeight: 1.85, textAlign: 'justify', whiteSpace: 'pre-line' }}>
           {data.description}
         </motion.p>
       </div>
@@ -530,7 +674,7 @@ function H1Slide({ data, sectionNum }: { data: H1Section; sectionNum: number }) 
 function H2Slide({ data, sectionNum, h2Num, index, parentTag }: { data: H2Section; sectionNum: number; h2Num: number; index: number; parentTag: string }) {
   const Icon = data.icon;
   const refLabel = `${sectionNum}.${h2Num}`;
-  const paragraphs = data.body.split('\n\n');
+  const paragraphs = typeof data.body === 'string' ? data.body.split('\n\n') : [];
 
   return (
     <section id={`h2-${sectionNum}-${h2Num}`} style={{ padding: '80px 0', borderTop: '1px solid var(--border-primary)' }}>
@@ -559,11 +703,17 @@ function H2Slide({ data, sectionNum, h2Num, index, parentTag }: { data: H2Sectio
         {/* H2 Body */}
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.15 }}
           style={{ marginBottom: 36 }}>
-          {paragraphs.map((p, i) => (
-            <p key={i} style={{ fontSize: 16, color: 'var(--text-secondary)', lineHeight: 1.85, textAlign: 'justify', marginBottom: i < paragraphs.length - 1 ? 16 : 0 }}>
-              {p}
-            </p>
-          ))}
+          {typeof data.body === 'string' ? (
+            paragraphs.map((p, i) => (
+              <p key={i} style={{ fontSize: 16, color: 'var(--text-secondary)', lineHeight: 1.85, textAlign: 'justify', marginBottom: i < paragraphs.length - 1 ? 16 : 0 }}>
+                {p}
+              </p>
+            ))
+          ) : (
+            <div style={{ fontSize: 16, color: 'var(--text-secondary)', lineHeight: 1.85, textAlign: 'justify', whiteSpace: 'pre-line' }}>
+              {data.body}
+            </div>
+          )}
         </motion.div>
 
         {/* H2 Image */}
