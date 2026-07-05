@@ -5,7 +5,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { mockChatMessages } from '@/lib/mockData';
 import { Send, Paperclip, Search, ChevronDown, Bot, User as UserIcon, FileText, LayoutTemplate, MoreHorizontal } from 'lucide-react';
 
+import { useAuth } from '@/contexts/AuthContext';
+
 export default function ChatPage() {
+  const { currentOrg } = useAuth();
   const [messages, setMessages] = useState(mockChatMessages);
   const [input, setInput] = useState('');
   const [model, setModel] = useState('GPT-4o Enterprise');
@@ -40,6 +43,7 @@ export default function ChatPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: query,
+          orgId: currentOrg?.id || 'org-estudio',
           history: messages.map(m => ({ role: m.role, content: m.content }))
         })
       });
