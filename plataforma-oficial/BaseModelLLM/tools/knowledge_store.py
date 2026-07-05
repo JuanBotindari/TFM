@@ -45,6 +45,7 @@ class SafeSupabaseVectorStore(SupabaseVectorStore):
     ) -> list[Document]:
         rpc_params = {
             "query_embedding": embedding,
+            "match_count": k,
             "filter": filter or {}
         }
         res = self._client.rpc(self.query_name, rpc_params).execute()
@@ -74,9 +75,10 @@ class SafeSupabaseVectorStore(SupabaseVectorStore):
         filter: dict | None = None,
         **kwargs
     ) -> list[tuple[Document, float]]:
-        embedding = self._embedding_service.embed_query(query)
+        embedding = self._embedding.embed_query(query)
         rpc_params = {
             "query_embedding": embedding,
+            "match_count": k,
             "filter": filter or {}
         }
         res = self._client.rpc(self.query_name, rpc_params).execute()

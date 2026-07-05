@@ -5,8 +5,23 @@
         "respuesta_modelo": "BLOQUE 2: Estructura General de Archivos\nESTRUCTURA RAÍZ: Al ingresar a la unidad, encontrarán estas 6 carpetas principales.\n● 01. EMPRESAS: Sociedades (SA, SRL, SAS).\n● 02. PERSONAS FÍSICAS: Monotributistas y Responsables Inscriptos individuales.\n● 03. ADMINISTRACION ESTUDIO: Planillas Administrativas generales, Planillas de Facturación, Carpetas personales del Estudio, Instructivos y etc.\n● 04. SUELDOS: Todo lo relacionado a sueldos está en esta carpeta.\n● 05. CONSORCIO URIBURU: Documentación del consorcio, recibos, expensas.\n● 06. VENCIMIENTOS: Planillas de Vencimientos"
     },
     {
+        "pregunta": "Como se hace un plan de facilidades?",
+        "fichero_fuente": "Como hacer un PLAN de FACILIDADES.pdf",
+        "respuesta_modelo": "Ingresar en el aplicativo de afip “MIS FACILIDADES” con el cuit de la persona física o jurídica que esté pidiendo el plan."
+    },
+    {
+        "pregunta": "Como se genera un CAI para resguardo?",
+        "fichero_fuente": "Como_hacer_un_CAI-Remitos.pdf",
+        "respuesta_modelo": "GENERAR\n- Entramos a Afip con la empresa o el cliente\n- Abrimos el aplicativo AUTORIZACION DE IMPRESIÓN DE COMPROBANTES\n- “Consultar CAI” para ver que Pto.Vta. solemos poner\n- “Solicitud de CAI” > Verificación de cumplimiento de obligaciones formales” > tiene que decir “NO REGISTRA INCONVENIENTES PARA SOLICITAR COMPROBANTES” > en el caso de no decir eso PREGUNTAR FEDE (es para ver si podemos solicitar o no el CAI)\n- “Solicitud manual” > Los comprobantes son de resguardo? NO > ponemos el Pto. Vta. > Seleccionamos mail) > Cantidad 2.000 (en este caso)"
+    },
+    {
         "pregunta": "Que tareas hace el mail SUELDOS?",
         "fichero_fuente": "oraganizacion_mails_respuesta.jpeg",
         "respuesta_modelo": "Centraliza las consultas de sueldo, luego Gestiona respuestas sobre sueldos y Realiza envios relacionados con sueldos."
+    },
+    {
+        "pregunta": "Quien es FERNANDEZ DAIANA?",
+        "fichero_fuente": "FACTURACIÓN MONOTRIBUTISTAS VARIOS.pdf",
+        "respuesta_modelo": "FERNANDEZ DAIANA - 27-39658026-3\nDaiana es dueña de un gimnasio que se llama “Muscle Factory” ella cobra todas sus asesorías por las cuentas bancarias, actualmente tiene MercadoPago y BBVA.\nLa tarea del estudio es emitir las facturas y llevar un control de su facturación mensual. Porque ella no sabe hacerlas y en su momento siempre se colgaba.\nPara esto Daiana nos debería (no lo suele hacer) enviar siempre a principio de mes sus extractos bancarios, lo debemos analizar, y en base a sus ingresos bancarios, se deben emitir 4 facturas por mes sobre sus asesorías. Actualmente utilizamos el siguiente concepto: “Asesorías y Rutinas \nSemana 1” y asi sucesivamente…\nEl análisis se basa en controlar los importes totales sobre transferencias recibidas, verificar que no sean transferencias de ella misma, además verificar que el total por mes tenga lógica con la categoría del monotributo y del importe que se va a estar facturando en el mes.\nIMPORTANTE → El maximo pactado para su facturacion y que no le aumente la categoria de monotributo es aproximadamente 3.000.000"
     }
 ]
