@@ -16,8 +16,7 @@ const fadeInUp = {
 const team = [
   { name: 'Juan Botindari', role: 'Founder & Lead Developer', bio: 'Especialista en IA y sistemas RAG con experiencia en banca y consultoría.', emoji: '👨‍💻' },
   { name: 'Marcel Dupont', role: 'Co-Founder & AI Architect', bio: 'Experto en modelos de lenguaje y pipelines de procesamiento de datos.', emoji: '🧠' },
-  { name: 'Sofía Méndez', role: 'Head of Design', bio: 'Diseñadora UX/UI con foco en experiencias enterprise de alta calidad.', emoji: '🎨' },
-  { name: 'Andrés Ríos', role: 'Backend Lead', bio: 'Ingeniero de infraestructura con experiencia en sistemas distribuidos.', emoji: '⚙️' },
+  { name: 'Isabella Rebolledo', role: 'Head of Design', bio: 'Diseñadora UX/UI con foco en experiencias enterprise de alta calidad.', emoji: '🎨' },
 ];
 
 const values = [

@@ -311,6 +311,7 @@ class BaseModel(ABC):
         print("\n📚 Inicializando base de conocimiento vectorial...")
 
         indexer = KnowledgeIndexer(
+            org_id=self.tech.get("org_id", "org-banco"),
             path_cliente=self.path_cliente,
             config=self.config,
             embeddings=self.embeddings,
@@ -329,10 +330,20 @@ class BaseModel(ABC):
 
     def _establecer_prompt_dinamico(self):
         instr = self.config.get("instrucciones_sistema", {})
+        
+        # Agregar ejemplos de QA al prompt de sistema si existen
+        ejemplos_str = ""
+        if hasattr(self, "ejemplos_qa") and self.ejemplos_qa:
+            ejemplos_str = "\nEJEMPLOS DE RESPUESTAS ESPERADAS (Few-Shot):\n"
+            for ej in self.ejemplos_qa:
+                ejemplos_str += f"- Pregunta: {ej.get('pregunta', '')}\n"
+                ejemplos_str += f"  Respuesta esperada: {ej.get('respuesta_modelo', '')}\n"
+                ejemplos_str += f"  Fuente sugerida: {ej.get('fichero_fuente', '')}\n\n"
+
         prompt_sys = f"""{instr.get('prompt_maestro')}
                     ESTILO REQUERIDO: {instr.get('estilo_respuesta')}
                     REGLAS DE ORO: {', '.join(instr.get('reglas_oro', []))}
-
+                    {ejemplos_str}
                     PROTOCOLO DE ACCESO A DATOS ESTRUCTURADOS (TABLAS):
                     Si necesitas datos precisos que NO están en el conocimiento RAG, escribe:
                     [USAR_TABLA: término_de_búsqueda]
