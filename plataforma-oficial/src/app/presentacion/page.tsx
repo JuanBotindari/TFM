@@ -11,14 +11,14 @@ import { ChevronDown, ChevronRight, Shield, Lock, Users, Code2, Brain, Database,
 // ─────────────────────────────────────────────
 interface H3Item {
   title: string;
-  body: string;
+  body: React.ReactNode;
 }
 
 interface H2Section {
   icon: React.ElementType;
   tag: string;
   title: string;
-  body: string;
+  body: React.ReactNode;
   image?: string;
   h3: H3Item[];
 }
@@ -27,7 +27,7 @@ interface H1Section {
   number: string;
   tag: string;
   title: string;
-  description: string;
+  description: React.ReactNode;
   h2sections: H2Section[];
 }
 
@@ -39,51 +39,179 @@ const sections: H1Section[] = [
     number: '01',
     tag: 'INTRODUCCIÓN',
     title: 'El Valor Estratégico del Dato y las Limitaciones de la IA Comercial',
-    description: 'Buenos días a todos. Antes de profundizar en metodologías o líneas de código, queremos invitarlos a que abran en las pantallas de sus ordenadores el enlace que les hemos compartido. Lo que están viendo en este momento es RAG Platform, nuestro producto final. No se trata de un simple proyecto de simulación teórica, sino de una plataforma B2B SaaS híbrida real y funcional, diseñada para resolver un desafío crítico en las empresas actuales.\n\nY es que, en el contexto organizacional contemporáneo, los datos y el conocimiento ya no son un simple subproducto operativo; estudios de referencia como los de Mikalef o Côrte-Real demuestran que se han convertido en un activo organizacional central, con una relevancia estratégica idéntica a la de los activos tradicionales para mejorar el desempeño y la competitividad. Sin embargo, el valor real de estos datos no se manifiesta por su mera acumulación, sino por la capacidad de transformarlos en conocimiento accionable. Y aquí es donde las empresas chocan con la realidad, porque la información hoy en día está severamente fragmentada. Por un lado, las organizaciones poseen conocimiento no estructurado y narrativo que se queda cautivo dentro de normativas, manuales y PDFs extensos; y por otro lado, manejan métricas y datos numéricos estructurados en bases de datos relacionales.',
+    description: (
+          <>
+            <p style={{ marginBottom: '12px' }}>
+              Los datos y el conocimiento ya no son un simple subproducto operativo; se han convertido en un <b>activo organizacional central</b>.
+            </p>
+            <p style={{ marginBottom: '12px' }}>
+              El valor real de estos datos no se manifiesta por su mera acumulación, sino por la capacidad de transformarlos en <i>conocimiento accionable</i>.
+            </p>
+            <p style={{ marginBottom: '8px' }}>
+              Surge un desafío de cara a la fragmentación de la información. Las organizaciones poseen:
+            </p>
+            <ul style={{ listStyleType: 'disc', paddingLeft: '20px', margin: '0' }}>
+              <li style={{ marginBottom: '6px' }}>
+                <b>Conocimiento no estructurado y narrativo:</b> que se queda cautivo dentro de normativas, manuales y PDFs extensos.
+              </li>
+              <li style={{ marginBottom: '6px' }}>
+                <b>Métricas y datos numéricos estructurados:</b> en bases de datos relacionales.
+              </li>
+            </ul>
+          </>
+        ),
     h2sections: [
       {
         icon: Brain,
         tag: 'PLATAFORMA',
-        title: 'Presentación de RAG Platform',
-        body: 'Si se fijan en la interfaz de la plataforma que tienen en sus pantallas —y como también se ilustra en el diagrama de flujo del usuario final que estamos proyectando—, nuestro producto ofrece utilidades diseñadas justamente para unificar este ecosistema fragmentado bajo una arquitectura de Inquilino Múltiple o Multi-Tenant. Esto significa que diferentes organizaciones pueden usar la misma infraestructura de software manteniendo sus datos completamente invisibles y aislados entre sí mediante identificadores únicos. Para validar esta versatilidad de forma práctica, pusimos a prueba el sistema con dos perfiles de clientes corporativos que sufren esta fragmentación en su día a día:\n\nPor un lado, piensen en nuestro primer cliente piloto: el Área de Seguros de un Entorno Bancario. Su gran problema es la enorme densidad de sus manuales de cobertura y pólizas. Nuestra plataforma procesa de forma recursiva esos PDFs no estructurados, permitiendo a los gestores comerciales preguntar en lenguaje natural sobre exclusiones o coberturas y recibir respuestas semánticas precisas con citas de origen en tiempo real. Por otro lado, miren a nuestro segundo cliente piloto: un Estudio Contable. Aquí, los profesionales lidian con la alta volatilidad de los boletines fiscales y exigen parámetros numéricos exactos. En este caso, el sistema activa nuestro motor analítico Text-to-SQL, ejecutando consultas rígidas directamente sobre tablas indexadas en formatos CSV o Excel, anulando por completo el riesgo de error numérico al verificar una alícuota o un vencimiento.',
-        h3: [],
+        title: 'RAG Platform',
+        body: (
+                      <>
+                        <p style={{ marginBottom: '12px' }}>
+                          Plataforma que ofrece utilidades diseñadas para unificar el ecosistema fragmentado de datos bajo una arquitectura de <b>Inquilino Múltiple o Multi-Tenant</b>. 
+                        </p>
+                        <p style={{ marginBottom: '8px' }}>
+                          Sistema validado con dos perfiles de clientes corporativos que sufren esta fragmentación cotidianamente:
+                        </p>
+                        <ul style={{ listStyleType: 'disc', paddingLeft: '20px', margin: '0' }}>
+                          <li style={{ marginBottom: '6px' }}>
+                            <b>Área de seguros de un entorno bancario:</b> caracterizado por una enorme densidad de manuales de cobertura y pólizas.
+                          </li>
+                          <li style={{ marginBottom: '6px' }}>
+                            <b>Estudio contable:</b> expuesto a una alta volatilidad de los boletines fiscales y con exigencia de parámetros numéricos exactos.
+                          </li>
+                        </ul>
+                      </>
+                    ),
+                h3: [],
       },
       {
         icon: Database,
         tag: 'PROPUESTA',
         title: 'Propuesta',
-        body: 'Para lograr un producto con este nivel de utilidad empresarial, se estructuró una propuesta concebida fundamentalmente a través del diseño del sistema, que abarca la arquitectura de la solución, los casos de uso corporativos que otorgan contexto al sistema, la gestión multimodal y multilingüe de diversos tipos de archivos y lenguajes, y la lógica del flujo agéntico.',
-        image: '/imagenes_tfm/arquitectura_sistema.jpeg',
+        body: '',
+        image: '/imagenes_tfm/arquitectura_solucion.png',
+        h3: [],
+      },
+      {
+        icon: Database,
+        tag: 'PROPUESTA',
+        title: 'Casos de uso',
+        body: '',
+        image: '/imagenes_tfm/contexto_solucion.png',
+        h3: [],
+      },
+      {
+        icon: Database,
+        tag: 'PROPUESTA',
+        title: 'Gestión de la información',
+        body: '',
+        image: '/imagenes_tfm/gestion_multimodal_multilingual.png',
+        h3: [],
+      },
+      {
+        icon: Database,
+        tag: 'PROPUESTA',
+        title: 'Flujo agéntico',
+        body: '',
+        image: '/imagenes_tfm/flujo_agentico.png',
         h3: [],
       },
       {
         icon: Shield,
         tag: 'SOLUCIÓN',
         title: 'Solución y Limitaciones',
-        body: 'Tuvimos que superar las dos grandes limitaciones que impiden usar herramientas comerciales como ChatGPT o Claude en entornos corporativos: los problemas insalvables de privacidad —ya que subir información financiera a servidores de terceros vulnera el secreto comercial— y las peligrosas alucinaciones de los modelos genéricos, que al desconocer el contexto privado de la compañía inventan respuestas que carecen de anclaje con la realidad. Nosotros resolvimos esto ejecutando modelos Open-Source en local, garantizando la soberanía absoluta sobre los datos estratégicos de la empresa.\n\nEn resumen, lo que tienen ante ustedes es una solución híbrida que fusiona la comprensión de documentos mediante RAG y el análisis de bases de datos mediante Text-to-SQL para transformar el conocimiento fragmentado en decisiones inmediatas. Y ahora que ya conocen el producto final, sus utilidades y el impacto directo que genera en el negocio... les expondremos todo lo que hay detrás y cómo se estructuró técnicamente el producto para hacerlo realidad.',
-        image: '/imagenes_tfm/tfm_flujo.jpg.jpg',
+        body: (
+              <>
+                <p style={{ marginBottom: '8px' }}>
+                  Limitaciones en el uso de herramientas comerciales como ChatGPT o Claude en entornos corporativos: 
+                </p>
+                <ul style={{ listStyleType: 'disc', paddingLeft: '20px', margin: '0 0 16px 0' }}>
+                  <li style={{ marginBottom: '6px' }}><b>Problemas de privacidad</b>.</li>
+                  <li style={{ marginBottom: '6px' }}><b>Alucinaciones de los modelos genéricos</b> debido al desconocimiento del contexto.</li>
+                </ul>
+                <p style={{ margin: 0 }}>
+                  Ante las limitaciones, <b>RAG Platform</b> pretende ser una solución híbrida que fusiona la comprensión de documentos mediante RAG y el análisis de bases de datos para transformar el conocimiento fragmentado en decisiones inmediatas.
+                </p>
+              </>
+            ),
+
         h3: [
           {
             title: 'Arquitectura de la solución',
-            body: 'Respecto de la arquitectura, esta funciona como un ecosistema de componentes interconectados que priorizan la precisión mediante un flujo de datos estructurado en cuatro etapas principales: (i) recepción y clasificación, (ii) procesamiento de contexto y recuperación, (iii) síntesis y razonamiento, y (iv) entrega de respuesta y trazabilidad.',
+            body: (
+              <>
+                <p style={{ margin: 0 }}>
+                  Respecto de la arquitectura, esta funciona como un ecosistema de componentes interconectados que priorizan la precisión mediante un flujo de datos estructurado en cuatro etapas principales: (i) recepción y clasificación, (ii) procesamiento de contexto y recuperación, (iii) síntesis y razonamiento, y (iv) entrega de respuesta y trazabilidad.
+                </p>
+              </>
+            ),
           },
           {
-            title: 'Estrategias de Ingesta Diferenciadas',
-            body: 'Datos No Estructurados: Procesados en Python con PyPDFDirectoryLoader de LangChain. Se aplica un particionado recursivo (RecursiveCharacterTextSplitter) para mantener cohesión semántica. Datos Estructurados (Tablas): Cargados mediante la librería Pandas y openpyxl. El motor se apoya en búsquedas léxicas precisas y comandos de filtrado deterministas para evitar la desviación probabilística del LLM.',
+            title: 'Estrategias de ingesta diferenciadas',
+            body: (
+              <>
+                <ul style={{ listStyleType: 'disc', paddingLeft: '20px', margin: '0' }}>
+                  <li style={{ marginBottom: '8px' }}>
+                    <b>Datos no estructurados:</b> procesados en Python con <code style={{ backgroundColor: '#1f2937', padding: '2px 4px', borderRadius: '4px', fontFamily: 'monospace' }}>PyPDFDirectoryLoader</code> de LangChain. Se aplica un particionado recursivo (<code style={{ backgroundColor: '#1f2937', padding: '2px 4px', borderRadius: '4px', fontFamily: 'monospace' }}>RecursiveCharacterTextSplitter</code>) para mantener cohesión semántica.
+                  </li>
+                  <li style={{ marginBottom: '8px' }}>
+                    <b>Datos estructurados (Tablas):</b> cargados mediante la librería Pandas y <code style={{ backgroundColor: '#1f2937', padding: '2px 4px', borderRadius: '4px', fontFamily: 'monospace' }}>openpyxl</code>. El motor se apoya en búsquedas léxicas precisas y comandos de filtrado deterministas para evitar la desviación probabilística del LLM.
+                  </li>
+                </ul>
+              </>
+            ),
           },
           {
-            title: 'Orquestación del Backend',
-            body: 'Desarrollado sobre la clase núcleo BaseModel utilizando FastAPI (asincronía nativa para operaciones no bloqueantes) y Uvicorn como servidor ASGI. La modularidad permite intercambiar el LLM subyacente entre APIs en la nube (langchain-google-genai) y entornos locales de inferencia con Ollama (Llama-3 / Phi-3).',
+            title: 'Orquestación del backend',
+            body: (
+              <>
+                <ul style={{ listStyleType: 'disc', paddingLeft: '20px', margin: '0' }}>
+                  <li style={{ marginBottom: '8px' }}>
+                    Backend desarrollado sobre la clase núcleo <code style={{ backgroundColor: '#1f2937', padding: '2px 4px', borderRadius: '4px', fontFamily: 'monospace' }}>BaseModel</code> utilizando FastAPI (asincronía nativa para operaciones no bloqueantes) y Uvicorn como servidor ASGI.
+                  </li>
+                  <li style={{ marginBottom: '8px' }}>
+                    La modularidad permite intercambiar el LLM subyacente entre APIs en la nube (<code style={{ backgroundColor: '#1f2937', padding: '2px 4px', borderRadius: '4px', fontFamily: 'monospace' }}>langchain-google-genai</code>) y entornos locales de inferencia con Ollama (Llama-3 / Phi-3).
+                  </li>
+                </ul>
+              </>
+            ),
           },
           {
-            title: 'Mitigación Activa de Alucinaciones',
-            body: 'Se implementó un enrutador inteligente de intenciones (Intent Router) mediante ingeniería de prompts estricta en el orquestador. Las búsquedas vectoriales imponen un filtro de confianza con un umbral de similitud semántica (score < 0.85); si no se alcanza, el agente intercepta el flujo y commuta a un protocolo de respaldo explícito ([USAR_TABLA]) para comprobar repositorios tabulares relacionales.',
+            title: 'Mitigación activa de alucinaciones',
+            body: (
+              <>
+                <ul style={{ listStyleType: 'disc', paddingLeft: '20px', margin: '0' }}>
+                  <li style={{ marginBottom: '8px' }}>
+                    Se implementó un enrutador inteligente de intenciones (<b>Intent Router</b>) mediante ingeniería de prompts estricta en el orquestador.
+                  </li>
+                  <li style={{ marginBottom: '8px' }}>
+                    Las búsquedas vectoriales imponen un filtro de confianza con un umbral de similitud semántica (<code style={{ backgroundColor: '#1f2937', padding: '2px 4px', borderRadius: '4px', fontFamily: 'monospace' }}>score &lt; 0.85</code>); si no se alcanza, el agente intercepta el flujo y conmuta a un protocolo de respaldo explícito (<code style={{ backgroundColor: '#1f2937', padding: '2px 4px', borderRadius: '4px', fontFamily: 'monospace' }}>[USAR_TABLA]</code>) para comprobar repositorios tabulares relacionales.
+                  </li>
+                </ul>
+              </>
+            ),
           },
           {
-            title: 'Frontend y Entrega',
-            body: 'Construido en Next.js 15 (App Router) aprovechando React Server Components y la renderización en el servidor con streaming (Streaming SSR) vía Server-Sent Events (SSE) para renderizar la respuesta progresivamente (token a token). Autenticación y RBAC (control de accesos basado en roles) delegados en Clerk. Despliegue cloud ejecutado en Vercel acoplado a túneles seguros con Ngrok durante la fase operativa local.',
+            title: 'Frontend y despliegue',
+            body: (
+              <>
+                <ul style={{ listStyleType: 'disc', paddingLeft: '20px', margin: '0' }}>
+                  <li style={{ marginBottom: '8px' }}>
+                    Construido en Next.js 15 (App Router) aprovechando React Server Components y la renderización en el servidor con streaming (<b>Streaming SSR</b>) vía Server-Sent Events (SSE) para renderizar la respuesta progresivamente (token a token).
+                  </li>
+                  <li style={{ marginBottom: '8px' }}>
+                    Autenticación y RBAC (control de accesos basado en roles) desplegados en Clerk.
+                  </li>
+                  <li style={{ marginBottom: '8px' }}>
+                    Despliegue cloud ejecutado en Vercel acoplado a túneles seguros con Ngrok durante la fase operativa local.
+                  </li>
+                </ul>
+              </>
+            ),
           }
         ],
+
       },
     ],
   },
@@ -172,84 +300,342 @@ const sections: H1Section[] = [
     number: '04',
     tag: 'NÚCLEO',
     title: 'El Núcleo Computacional: El Patrón "Intent Router"',
-    description: 'Una vez que les hemos explicado el proceso de selección del modelo de LLM y lo que implica, es el momento de analizar el verdadero motor del proyecto: el núcleo computacional gobernado por la clase BaseModel.',
+    description: '',
     h2sections: [
       {
         icon: Code2,
+        tag: 'CLASE BASE MODEL',
+        title: 'Clase BaseModel',
+        body: (
+          <>
+            <p style={{ marginBottom: '12px' }}>
+              Clase base modular que destaca por su <b>adaptabilidad polimórfica</b> y <b>agnosticismo de proveedor</b>.
+            </p>
+            <p style={{ marginBottom: '12px' }}>
+              Hace factible la conmutación dinámica entre modelos de lenguaje comerciales en la nube y modelos locales de código abierto a través de Ollama.
+            </p>
+            <ul style={{ listStyleType: 'disc', paddingLeft: '20px', margin: '0' }}>
+              <li style={{ marginBottom: '6px' }}>
+                Si el usuario pregunta algo como <i>"Dime las coberturas de esta póliza"</i>, el sistema debe buscar en textos no estructurados.
+              </li>
+              <li style={{ marginBottom: '6px' }}>
+                Si pregunta <i>"¿Cuáles fueron las ventas o alícuotas del mes pasado?"</i>, la respuesta está en una base de datos tabular.
+              </li>
+            </ul>
+          </>
+        ),
+        h3: [ ],
+      },
+
+      {
+        icon: Code2,
         tag: 'INTENT ROUTER',
-        title: 'El Discurso de la Diapositiva',
-        body: 'Cuando un usuario interactúa con un asistente inteligente y escribe una consulta en texto plano, surge un desafío de arquitectura crítico. Si el usuario pregunta algo como: "Dime las coberturas de esta póliza", el sistema debe buscar en textos no estructurados. Pero si pregunta: "¿Cuáles fueron las ventas o alícuotas del mes pasado?", la respuesta está en una base de datos tabular. El sistema no sabe a priori qué estructura consultar. La solución tradicional en la industria suele ser el "RAG ciego", es decir, lanzar la pregunta contra todos los repositorios a la vez. Esto es un error en entornos corporativos porque satura la memoria, dispara el consumo y coste de tokens, aumenta la latencia e incrementa exponencialmente el riesgo de alucinación.\n\nPara solucionar esto, aplicamos principios de ingeniería de software SOLID. Refactorizamos por completo el backend para construir un subsistema modular que llamamos Intent Router o Enrutador Inteligente de Consultas. Como pueden observar en el diagrama de ramificación abstracta del código que estamos proyectando, cuando entra una petición, el sistema la clasifica algorítmicamente en tiempo real mediante lógica booleana estricta y decide, antes de tocar la base de datos, cuál es la estrategia de resolución óptima.\n\nDependiendo de esta clasificación, el router deriva el flujo de ejecución e invoca de manera aislada a un componente especializado que hereda de una clase abstracta común: Si la intención es puramente narrativa, se activa el VectorStoreHandler; si exige datos numéricos, se delega en el TablasHandler; y si es una pregunta abierta, se enruta al DirectoHandler o InternetHandler. Lo valioso de esta arquitectura no es solo el ahorro computacional, sino que el flujo de ejecución queda completamente aislado.',
-        image: '/imagenes_tfm/baseLLM.jpg',
+        title: 'Intent Router',
+        body: (
+              <>
+                <p style={{ marginBottom: '8px' }}>
+                  Subsistema que clasifica en tiempo real la intención del usuario para derivar la petición hacia el pipeline óptimo:
+                </p>
+                <ul style={{ listStyleType: 'disc', paddingLeft: '20px', margin: '0' }}>
+                  <li style={{ marginBottom: '6px' }}>Búsqueda semántica RAG.</li>
+                  <li style={{ marginBottom: '6px' }}>Consultas léxicas exactas sobre datos tabulares mediante Pandas.</li>
+                  <li style={{ marginBottom: '6px' }}>Navegación web.</li>
+                  <li style={{ marginBottom: '6px' }}>Respuesta directa.</li>
+                </ul>
+              </>
+            ),
+        image: '/imagenes_tfm/intent_router.png',
+        h3: [],
+      },
+
+      {
+        icon: Code2,
+        tag: 'Ventajas',
+        title: 'Ventajas',
+        body: (
+          <>
+            <p style={{ marginBottom: '8px' }}>
+              La implementación del enrutador inteligente de consultas trae consigo beneficios como:
+            </p>
+            <ul style={{ listStyleType: 'disc', paddingLeft: '20px', margin: '0' }}>
+              <li style={{ marginBottom: '6px' }}>
+                <b>Ahorro computacional:</b> pues evita el sobrecosto de contexto.
+              </li>
+              <li style={{ marginBottom: '6px' }}>
+                <b>El aislamiento del flujo de ejecución</b>.
+              </li>
+            </ul>
+          </>
+        ),
         h3: [
           {
-            title: 'Detalle de la Refactorización (SOLID)',
-            body: 'El código original residía en un módulo monolítico denominado BaseModelLLM/base_llm.py. Se aplicó rigurosamente el Principio de Responsabilidad Única (SRP) y el Principio de Abierto/Cerrado (OCP). Se definió una interfaz abstracta para los Handlers, permitiendo que el sistema sea extensible a nuevos pipelines (como bases de datos de grafos en el futuro) simplemente añadiendo una clase, sin modificar el código del enrutador central.',
+            title: 'Refactorización (SOLID)',
+            body: (
+              <>
+                <p style={{ marginBottom: '12px' }}>
+                  El código original residía en un módulo monolítico denominado <code style={{ backgroundColor: '#1f2937', padding: '2px 4px', borderRadius: '4px', fontFamily: 'monospace' }}>BaseModelLLM/base_llm.py</code>. 
+                </p>
+                <p style={{ marginBottom: '12px' }}>
+                  Se aplicó rigurosamente el <b>Principio de Responsabilidad Única (SRP)</b> y el <b>Principio de Abierto/Cerrado (OCP)</b>. 
+                </p>
+                <p style={{ margin: 0 }}>
+                  Se definió una interfaz abstracta para los Handlers, permitiendo que el sistema fuese extensible a nuevos pipelines (como bases de datos de grafos en el futuro), simplemente añadiendo una clase, sin modificar el código del enrutador central.
+                </p>
+              </>
+            ),
           },
           {
-            title: 'Mecanismo de Clasificación (Intent Router)',
-            body: 'No se utiliza un clasificador probabilístico simple o un modelo de Machine Learning tradicional que añada latencia. El enrutamiento se ejecuta mediante un prompt del sistema altamente optimizado inyectado en el LLM orquestador (langchain), estructurado con JSON Schema estructurado (PydanticOutputParser). El modelo es forzado a devolver un objeto JSON estricto con la clave intent (RAG, TABLA, DIRECTO, INTERNET). Si el JSON es inválido, un bloque try-except captura el error y activa la ruta de contingencia de forma segura.',
+            title: 'Mecanismo de clasificación (Intent Router)',
+            body: (
+              <>
+                <ul style={{ listStyleType: 'disc', paddingLeft: '20px', margin: '0' }}>
+                  <li style={{ marginBottom: '8px' }}>
+                    No se utiliza un clasificador probabilístico simple o un modelo de Machine Learning tradicional que añada latencia. 
+                  </li>
+                  <li style={{ marginBottom: '8px' }}>
+                    El enrutamiento se ejecuta mediante un prompt del sistema altamente optimizado inyectado en el LLM orquestador (langchain), estructurado con JSON Schema estructurado (<code style={{ backgroundColor: '#1f2937', padding: '2px 4px', borderRadius: '4px', fontFamily: 'monospace' }}>PydanticOutputParser</code>). 
+                  </li>
+                  <li style={{ marginBottom: '8px' }}>
+                    El modelo es forzado a devolver un objeto JSON estricto con la clave <code style={{ backgroundColor: '#1f2937', padding: '2px 4px', borderRadius: '4px', fontFamily: 'monospace' }}>intent</code> (RAG, TABLA, DIRECTO, INTERNET). 
+                  </li>
+                  <li style={{ marginBottom: '8px' }}>
+                    Si el JSON es inválido, un bloque <code style={{ backgroundColor: '#1f2937', padding: '2px 4px', borderRadius: '4px', fontFamily: 'monospace' }}>try-except</code> captura el error y activa la ruta de contingencia de forma segura.
+                  </li>
+                </ul>
+              </>
+            ),
           },
           {
-            title: 'Intercambio Dinámico de Contexto',
-            body: 'El Intent Router actúa en la capa del backend asíncrono (async/await en FastAPI). Al recibir la petición, encapsula los metadatos del usuario, incluyendo el org_id y el historial de chat comprimido (ConversationBufferWindowMemory), pasándolos como argumentos al handler seleccionado para evitar la pérdida de memoria de la sesión durante la conmutación de rutas.',
+            title: 'Intercambio dinámico de contexto',
+            body: (
+              <>
+                <p style={{ margin: 0 }}>
+                  El Intent Router actúa en la capa del backend asíncrono (<code style={{ backgroundColor: '#1f2937', padding: '2px 4px', borderRadius: '4px', fontFamily: 'monospace' }}>async/await</code> en FastAPI). Al recibir la petición, encapsula los metadatos del usuario, incluyendo el <code style={{ backgroundColor: '#1f2937', padding: '2px 4px', borderRadius: '4px', fontFamily: 'monospace' }}>org_id</code> y el historial de chat comprimido (<code style={{ backgroundColor: '#1f2937', padding: '2px 4px', borderRadius: '4px', fontFamily: 'monospace' }}>ConversationBufferWindowMemory</code>), pasándolos como argumentos al handler seleccionado para evitar la pérdida de memoria de la sesión durante la conmutación de rutas.
+                </p>
+              </>
+            ),
           },
           {
-            title: 'Flujo Logístico y Manejo de Errores en Handlers',
-            body: 'Cada Handler implementa su propio bloque de manejo de excepciones. Por ejemplo, si el TablasHandler falla al parsear una consulta con Pandas debido a un formato inesperado en el archivo .csv, levanta una excepción controlada que es capturada por el orquestador principal, evitando un error 500 Internal Server Error en el frontend y ofreciendo una respuesta de degradación elegante (graceful degradation) al usuario.',
+            title: 'Flujo logístico y manejo de errores en handlers',
+            body: (
+              <>
+                <p style={{ marginBottom: '12px' }}>
+                  Cada handler implementa su propio bloque de manejo de excepciones:
+                </p>
+                <ul style={{ listStyleType: 'disc', paddingLeft: '20px', margin: '0 0 16px 0' }}>
+                  <li style={{ marginBottom: '10px' }}>
+                    <b>TablasHandler:</b> si el handler falla al parsear una consulta con Pandas debido a un formato inesperado en el archivo .csv, levanta una excepción controlada que es capturada por el orquestador principal, evitando un error 500 Internal Server Error en el frontend y ofreciendo una respuesta de <i>degradación elegante</i> (graceful degradation) al usuario.
+                  </li>
+                  <li style={{ marginBottom: '10px' }}>
+                    <b>VectorStoreHandler:</b> este componente gestiona operaciones críticas de E/S de alta dimensionalidad con la base de datos vectorial (Supabase/Chroma) y la API del modelo de embeddings. Ante fallos de conectividad de red, picos de latencia, problemas de autenticación con el token del inquilino, o saturación del límite de peticiones (Rate Limiting), el handler intercepta la excepción técnica. En lugar de interrumpir el hilo de ejecución asíncrono en FastAPI, el sistema mitiga el error mediante una política de reintentos con retraso exponencial. Si el fallo persiste, se genera un mensaje estructurado que informa al usuario sobre la indisponibilidad temporal del repositorio documental, manteniendo intacta la sesión conversacional.
+                  </li>
+                  <li style={{ marginBottom: '10px' }}>
+                    <b>DirectoHandler / InternetHandler:</b> al interactuar con capas de charla casual o motores de búsqueda externa, las principales vulnerabilidades radican en la recepción de respuestas malformadas o timeouts prolongados por parte de los servicios de navegación. El bloque de excepciones de estos handlers implementa un temporizador estricto (timeout threshold). Si la solicitud web o la inferencia abierta excede el tiempo límite establecido, la excepción es capturada para activar un protocolo de degradación, forzando al orquestador principal a emitir una respuesta de contingencia predefinida que invita al usuario a reformular su consulta.
+                  </li>
+                </ul>
+                <p style={{ margin: 0 }}>
+                  <b>Mecanismo de Auto-corrección y Fallback:</b> un aspecto clave en la robustez del núcleo computacional es que, si la excepción levantada por un handler se debe a la ausencia de información válida (por ejemplo, un score de similitud semántica inferior al umbral de confianza de 0.85 en el VectorStoreHandler), el orquestador intercepta el evento no como un error crítico de software, sino como un desencadenante lógico. Esto permite desviar de forma autónoma el flujo de la petición hacia el comando interno <code style={{ backgroundColor: '#1f2937', padding: '2px 4px', borderRadius: '4px', fontFamily: 'monospace' }}>[USAR_TABLA]</code>, intentando resolver la consulta en repositorios alternativos antes de admitir la falta de datos.
+                </p>
+              </>
+            ),
           }
         ],
-      }
+      },
     ],
   },
   {
     number: '05',
     tag: 'SEGURIDAD',
     title: 'Arquitectura Base y Seguridad: Multi-Tenancy y RBAC',
-    description: 'Para asegurar que esta plataforma sea un producto B2B verdaderamente viable y seguro en el mundo real, tuvimos que construir un entorno donde cada empresa opera en un espacio totalmente hermético, garantizando así la privacidad de sus datos y un funcionamiento constante sin costes desorbitados de servidores. A continuación, veremos las dos claves de este logro: cómo protegemos la información corporativa y cómo estructuramos nuestra red de forma inteligente.',
+    description: (
+          <>
+            <b>Plataforma B2B ofreciendo:</b>
+            <ul style={{ listStyleType: 'disc', marginLeft: '20px', marginTop: '10px' }}>
+              <li>En un <i>espacio totalmente hermético</i>.</li>
+              <li>Garantizando así la privacidad de sus datos.</li>
+              <li>Un funcionamiento constante sin costes desorbitados de servidores.</li>
+            </ul><br />
+            A continuación, veremos las dos claves de este logro: cómo protegemos la información corporativa y cómo estructuramos nuestra red de forma inteligente
+          </>
+        ),
     h2sections: [
       {
         icon: Shield,
         tag: 'AISLAMIENTO',
         title: 'Seguridad y Aislamiento de la Información Corporativa',
-        body: 'Para que esta plataforma sea un producto empresarial viable, el primer pilar es la seguridad absoluta. En el mundo de los negocios, un cliente jamás debe tener acceso a los documentos o datos de otro cliente. A esto lo llamamos un entorno aislado. Además de proteger los datos entre diferentes empresas, nuestro sistema controla estrictamente quién entra y qué puede hacer cada empleado dentro de su propia organización. Si un empleado no tiene los permisos suficientes, la plataforma simplemente se adapta y oculta botones u opciones críticas, asegurando que un usuario básico pueda consultar la Inteligencia Artificial, pero nunca borrar información estratégica.',
+        body: (
+            <>
+                    <b>Los pilares fundamentales:</b>
+                    <ul style={{ listStyleType: 'disc', marginLeft: '20px', marginTop: '10px' }}>
+                      <li style={{ marginBottom: '5px' }}>Entorno <i>aislado</i>.</li>
+                      <li style={{ marginBottom: '5px' }}>Control <b>estricto</b> de quién entra y quién sale.</li>
+                      <li>Administración de permisos.</li>
+                    </ul>
+                  </>
+                ),       
         image: '/imagenes_tfm/aislamiento_multi_tenant.png',
         h3: [
           {
             title: 'Gestión de Identidad en el Edge (Clerk)',
-            body: 'Hemos integrado Clerk como solución de autenticación moderna compatible con arquitecturas Edge, evaluando el acceso en el middleware de Next.js antes de renderizar la página y ofreciendo flujos de acceso avanzados (Email y credenciales clásicas).',
+            body: (
+              <>
+                <p style={{ marginBottom: '12px' }}>
+                  Hemos integrado Clerk como solución de autenticación moderna compatible con arquitecturas Edge, evaluando el acceso en el middleware de Next.js antes de renderizar la página y ofreciendo flujos de acceso avanzados (Email y credenciales clásicas).
+                </p>
+                <ul style={{ listStyleType: 'disc', paddingLeft: '20px', margin: '0 0 16px 0' }}>
+                  <li style={{ marginBottom: '8px' }}><b>¿Qué es el Edge?</b> Significa que el código de seguridad no se ejecuta en un único servidor lejano, sino en una red global de servidores ultra-rápidos de Vercel distribuidos por todo el mundo, operando en el nodo más cercano al usuario.</li>
+                  <li style={{ marginBottom: '8px' }}><b>¿Qué es el Middleware?</b> Es un "guardia de seguridad" a la entrada de la aplicación. Inspecciona al usuario antes de que la página web empiece siquiera a cargarse o renderizarse en el navegador.</li>
+                  <li style={{ marginBottom: '8px' }}><b>¿Qué hace Clerk aquí?</b> Es la herramienta que gestiona los usuarios y las empresas. Emite un pase digital (Token JWT) que el Middleware lee al instante para comprobar quién eres y a qué empresa perteneces.</li>
+                </ul>
+                <b style={{ display: 'block', marginBottom: '8px', fontSize: '0.875rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#9ca3af' }}>¿Por qué es genial esta solución? (El valor técnico)</b>
+                <ul style={{ listStyleType: 'disc', paddingLeft: '20px', margin: '0' }}>
+                  <li style={{ marginBottom: '4px' }}><b>Seguridad Total:</b> Bloquea a los intrusos en la periferia de la red, antes de que puedan tocar vuestros datos o consumir recursos del sistema.</li>
+                  <li style={{ marginBottom: '4px' }}><b>Velocidad Absoluta:</b> Al verificar la identidad en el servidor más cercano al usuario y sin consultar bases de datos lentas en cada clic, la aplicación responde de manera inmediata.</li>
+                  <li style={{ marginBottom: '4px' }}><b>Control Multi-Empresa:</b> Permite estructurar de forma limpia los accesos para que cada cliente (como el Estudio Contable o el Banco) se mantenga en su entorno privado.</li>
+                </ul>
+              </>
+            )
           },
           {
             title: 'Control de Acceso Basado en Roles (RBAC) y Sincronización',
-            body: 'Clerk emite un Token JWT con un publicMetadata que contiene el orgId (identificador de la empresa) y el role (admin, editor, viewer). Un hook especializado en React (AuthContext.tsx) captura este JWT en el inicio de sesión y sincroniza el perfil mediante una operación upsert en la tabla relacional user_profiles de Supabase.',
+            body: (
+              <>
+                <p style={{ marginBottom: '12px' }}>
+                  Clerk emite un Token JWT con un <code style={{ backgroundColor: '#1f2937', padding: '2px 4px', borderRadius: '4px', fontFamily: 'monospace' }}>publicMetadata</code> que contiene el <code style={{ backgroundColor: '#1f2937', padding: '2px 4px', borderRadius: '4px', fontFamily: 'monospace' }}>orgId</code> (identificador de la empresa) y el <code style={{ backgroundColor: '#1f2937', padding: '2px 4px', borderRadius: '4px', fontFamily: 'monospace' }}>role</code> (<code style={{ backgroundColor: '#1f2937', padding: '2px 4px', borderRadius: '4px', fontFamily: 'monospace' }}>admin</code>, <code style={{ backgroundColor: '#1f2937', padding: '2px 4px', borderRadius: '4px', fontFamily: 'monospace' }}>editor</code>, <code style={{ backgroundColor: '#1f2937', padding: '2px 4px', borderRadius: '4px', fontFamily: 'monospace' }}>viewer</code>). Un hook especializado en React (<code style={{ backgroundColor: '#1f2937', padding: '2px 4px', borderRadius: '4px', fontFamily: 'monospace' }}>AuthContext.tsx</code>) captura este JWT en el inicio de sesión y sincroniza el perfil mediante una operación <code style={{ backgroundColor: '#1f2937', padding: '2px 4px', borderRadius: '4px', fontFamily: 'monospace' }}>upsert</code> en la tabla relacional <code style={{ backgroundColor: '#1f2937', padding: '2px 4px', borderRadius: '4px', fontFamily: 'monospace' }}>user_profiles</code> de Supabase.
+                </p>
+                <ul style={{ listStyleType: 'disc', paddingLeft: '20px', margin: '0 0 16px 0' }}>
+                  <li style={{ marginBottom: '8px' }}><b>¿Qué es RBAC?</b> Significa "Control de Acceso Basado en Roles". Es el sistema que decide qué puede hacer cada empleado según su rango: Admin (control total), Editor (modifica datos) o Viewer (solo lee).</li>
+                  <li style={{ marginBottom: '8px' }}><b>El "Pase VIP" (Token JWT con publicMetadata):</b> Cuando el usuario inicia sesión, Clerk le entrega una tarjeta digital de identificación (el Token JWT). Dentro de esta tarjeta viene grabado a fuego un chip invisible (publicMetadata) que dice dos cosas esenciales: a qué empresa perteneces (orgId) y qué puesto tienes (role).</li>
+                  <li style={{ marginBottom: '8px' }}><b>El Receptor (AuthContext.tsx):</b> Es un componente espía en la interfaz de usuario (React). En cuanto el usuario entra, este componente "caza" la tarjeta digital (el JWT) para saber al instante qué botones debe mostrarle u ocultarle en la pantalla.</li>
+                  <li style={{ marginBottom: '8px' }}><b>La Sincronización (upsert en Supabase):</b> Para que la base de datos sepa también quién ha entrado, el sistema hace un upsert (un comando inteligente que significa: "Si el usuario ya existe en la base de datos, actualiza sus datos; si es nuevo, regístralo"). Así, la tabla de perfiles en Supabase se mantiene idéntica a la de Clerk en tiempo real.</li>
+                </ul>
+                <b style={{ display: 'block', marginBottom: '8px', fontSize: '0.875rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#9ca3af' }}>¿Por qué es genial esta solución? (El valor técnico)</b>
+                <ul style={{ listStyleType: 'disc', paddingLeft: '20px', margin: '0' }}>
+                  <li style={{ marginBottom: '4px' }}><b>Eficiencia Máxima:</b> Al guardar el rol y la empresa dentro de la tarjeta digital (JWT), el frontend no tiene que preguntar a la base de datos qué permisos tiene el usuario cada vez que hace un clic. El pase ya lleva toda la información encima.</li>
+                  <li style={{ marginBottom: '4px' }}><b>Consistencia de Datos:</b> La operación upsert garantiza que la base de datos de la aplicación y el sistema de autenticación jamás se descoordinen, evitando errores de permisos.</li>
+                </ul>
+              </>
+            )
           },
           {
             title: 'Aislamiento Físico de Datos (Row Level Security - RLS)',
-            body: 'Para garantizar el Multi-Tenancy a nivel de infraestructura profunda, implementamos políticas de seguridad a nivel de fila (RLS) nativas de PostgreSQL en Supabase. Al inyectar dinámicamente el orgId en cada consulta, la base de datos rechaza a nivel criptográfico cualquier lectura o escritura de registros que no pertenezcan a la organización del usuario, neutralizando el riesgo de "Cross-Tenant Data Leakage".',
+            body: (
+              <>
+                <p style={{ marginBottom: '12px' }}>
+                  Para garantizar el Multi-Tenancy a nivel de infraestructura profunda, implementamos políticas de seguridad a nivel de fila (RLS) nativas de PostgreSQL en Supabase. Al inyectar dinámicamente el <code style={{ backgroundColor: '#1f2937', padding: '2px 4px', borderRadius: '4px', fontFamily: 'monospace' }}>orgId</code> en cada consulta, la base de datos rechaza a nivel criptográfico cualquier lectura o escritura de registros que no pertenezcan a la organización del usuario, neutralizando el riesgo de "Cross-Tenant Data Leakage".
+                </p>
+                <ul style={{ listStyleType: 'disc', paddingLeft: '20px', margin: '0 0 16px 0' }}>
+                  <li style={{ marginBottom: '8px' }}><b>¿Qué es el Multi-Tenancy?</b> Es el modelo de software donde una sola aplicación da servicio a múltiples empresas clientes (tenants), pero cada una debe vivir en su propio espacio estanco.</li>
+                  <li style={{ marginBottom: '8px' }}><b>¿Qué es el RLS (Row Level Security)?</b> Tradicionalmente, si tienes acceso a una tabla de la base de datos, ves todas las filas. RLS es una funcionalidad de PostgreSQL (la base de datos que usa Supabase) que actúa como un filtro invisible e infranqueable directamente en cada fila de la base de datos.</li>
+                  <li style={{ marginBottom: '8px' }}><b>El mecanismo de bloqueo:</b> Cada vez que el código hace una consulta (ej. "busca este documento"), el sistema inyecta automáticamente el código identificador de la empresa (orgId). La base de datos mira fila por fila y dice: <i>"¿Esta fila coincide con el orgId del usuario? Si sí, se la muestro; si no, la oculto como si jamás hubiera existido"</i>.</li>
+                </ul>
+                <b style={{ display: 'block', marginBottom: '8px', fontSize: '0.875rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#9ca3af' }}>¿Por qué es genial esta solución? (El valor técnico)</b>
+                <ul style={{ listStyleType: 'disc', paddingLeft: '20px', margin: '0' }}>
+                  <li style={{ marginBottom: '4px' }}><b>Seguridad Blindada (A nivel criptográfico):</b> El filtrado no se hace mediante código tradicional en el backend (donde un programador podría olvidar añadir un WHERE tenant_id = X por error). Lo gestiona el propio motor profundo de la base de datos. Si un atacante intentara trucar la URL o la interfaz para ver datos de otra empresa, la base de datos rechazaría la petición de raíz.</li>
+                  <li style={{ marginBottom: '4px' }}><b>Neutraliza el Cross-Tenant Data Leakage:</b> Elimina al 100% el riesgo de filtración de datos entre empresas clientes. Un Banco jamás podrá ver, ni por error, un solo registro del Estudio Contable.</li>
+                </ul>
+              </>
+            )
           },
           {
-            title: 'Prevención de Fugas en la Capa Visual',
-            body: 'La arquitectura de roles condiciona completamente el DOM de Next.js. A los perfiles con rol viewer, el servidor les re-renderiza la interfaz bloqueando dinámicamente el acceso a funcionalidades de manipulación de archivos y diccionarios corporativos, creando una degradación elegante del sistema.',
+            title: 'Prevención del Cross-Tenant Data Leakage en la Capa Visual',
+            body: (
+              <>
+                <p style={{ marginBottom: '12px' }}>
+                  La arquitectura de roles condiciona completamente el DOM de Next.js. A los perfiles con rol <code style={{ backgroundColor: '#1f2937', padding: '2px 4px', borderRadius: '4px', fontFamily: 'monospace' }}>viewer</code>, el servidor les re-renderiza la interfaz bloqueando dinámicamente el acceso a funcionalidades de manipulación de archivos y diccionarios corporativos, creando una degradación elegante del sistema.
+                </p>
+                <ul style={{ listStyleType: 'disc', paddingLeft: '20px', margin: '0 0 16px 0' }}>
+                  <li style={{ marginBottom: '8px' }}><b>¿Qué es el DOM de Next.js?</b> El DOM (Document Object Model) es, básicamente, la estructura de la página web que ve y toca el usuario (los botones, los menus, los formularios).</li>
+                  <li style={{ marginBottom: '8px' }}><b>El mecanismo de bloqueo visual:</b> Cuando un usuario entra a la plataforma, el servidor de Next.js comprueba su rol antes de enviarle la página. Si su rol es viewer (un observador básico), el servidor reconfigura la interfaz en tiempo real.</li>
+                  <li style={{ marginBottom: '8px' }}><b>¿Qué es la Degradación Elegante?</b> En lugar de lanzar un error rudo de "Acceso Denegado" o romper la página, la aplicación se adapta "elegantemente". Al usuario con rol viewer se le ocultan o deshabilitan por completo los botones peligrosos (como "Subir archivo", "Borrar documento" o "Modificar diccionario corporativo"). La app sigue funcionando perfectamente, pero limitada a sus permisos.</li>
+                </ul>
+                <b style={{ display: 'block', marginBottom: '8px', fontSize: '0.875rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#9ca3af' }}>¿Por qué es genial esta solución? (El valor técnico)</b>
+                <ul style={{ listStyleType: 'disc', paddingLeft: '20px', margin: '0' }}>
+                  <li style={{ marginBottom: '4px' }}><b>Doble Capa de Seguridad:</b> No basta con bloquear los datos en la base de datos profunda (con el RLS). Al bloquear también los elementos en la Capa Visual, evitáis que un usuario intente siquiera pulsar un botón para el que no está autorizado.</li>
+                  <li style={{ marginBottom: '4px' }}><b>Excelente Experiencia de Usuario (UX):</b> Evita la frustración. El empleado solo ve las herramientas que realmente puede usar, manteniendo una interfaz limpia, intuitiva y segura.</li>
+                </ul>
+              </>
+            )
           }
-        ],
-      },
+        ],      },
       {
         icon: Lock,
         tag: 'DESPLIEGUE',
         title: 'Despliegue Híbrido: Privacidad Absoluta y Ahorro de Costes',
-        body: 'El segundo gran reto operativo fue la conectividad. Alquilar potentes ordenadores en la nube para alojar y hacer funcionar nuestro cerebro de Inteligencia Artificial hubiera disparado los costes a cientos de euros mensuales, haciendo el proyecto inviable. Por ello, diseñamos una arquitectura "híbrida": la interfaz gráfica y la aplicación web que usan los clientes están alojadas en la nube, pero todo el núcleo de razonamiento de la Inteligencia Artificial se ejecuta directamente en los servidores locales físicos de la empresa. Gracias a esto, no pagamos por servidores en la nube, las respuestas son instantáneas y la empresa mantiene el control 100% sobre sus propios datos sin depender de terceros.',
+        body: (
+                <>
+                  <b>Nuestra solución está enfocada en un modelo híbrido:</b>
+                  <ul style={{ listStyleType: 'disc', paddingLeft: '20px', margin: '10px 0 0 0' }}>
+                    <li style={{ marginBottom: '6px' }}>La interfaz gráfica y la aplicación web que usan los clientes están alojadas en la <i>nube</i>.</li>
+                    <li style={{ marginBottom: '6px' }}>El núcleo de razonamiento de la Inteligencia Artificial se ejecuta directamente en los <b>servidores locales físicos</b> de la empresa.</li>
+                  </ul>
+                </>
+              ),
         image: '/imagenes_tfm/arquitectura_hibrida.png',
         h3: [
           {
             title: 'Túnel Reverso para Bypassing NAT',
-            body: 'Al ejecutar el frontend en Vercel (Cloud) y el backend en FastAPI local (On-Premise), la red Serverless de Vercel arrojaba errores 503/404 por culpa de los cortafuegos y el NAT local. Implementamos un túnel reverso persistente y seguro mediante Pinggy / Ngrok, inyectando un dominio estático (PYTHON_BACKEND_URL) en las variables de entorno de Vercel.',
+            body: (
+              <>
+                <p style={{ margin: 0 }}>
+                  Al ejecutar el frontend en Vercel (Cloud) y el backend en FastAPI local (On-Premise), la red Serverless de Vercel arrojaba errores 503/404 por culpa de los cortafuegos y el NAT local. Implementamos un túnel reverso persistente y seguro mediante <b>Pinggy / Ngrok</b>, inyectando un dominio estático (<code style={{ backgroundColor: '#1f2937', padding: '2px 4px', borderRadius: '4px', fontFamily: 'monospace' }}>PYTHON_BACKEND_URL</code>) en las variables de entorno de Vercel.
+                </p>
+              </>
+            ),
           },
           {
             title: 'Resolución del Hydration Mismatch en Next.js',
-            body: 'A nivel de interfaz, el nuevo App Router de Next.js generó conflictos de hidratación porque el servidor (Vercel) pre-renderizaba la barra lateral sin la sesión autenticada, mientras el cliente (navegador) tenía la cookie de Clerk activa. Unificamos el manejo de estado asíncrono en el RootLayout para lograr una hidratación síncrona sin colapsos visuales.',
+            body: (
+              <>
+                <p style={{ marginBottom: '12px' }}>
+                  A nivel de interfaz, el nuevo <i>App Router</i> de Next.js generó conflictos de hidratación porque el servidor (Vercel) pre-renderizaba la barra lateral sin la sesión autenticada, mientras el cliente (navegador) tenía la cookie de Clerk activa. Unificamos el manejo de estado asíncrono en el <code style={{ backgroundColor: '#1f2937', padding: '2px 4px', borderRadius: '4px', fontFamily: 'monospace' }}>RootLayout</code> para lograr una hidratación síncrona sin colapsos visuales.
+                </p>
+                <ul style={{ listStyleType: 'disc', paddingLeft: '20px', margin: '0 0 16px 0' }}>
+                  <li style={{ marginBottom: '8px' }}><b>¿Qué es la Hidratación?</b> En Next.js, para que la web cargue súper rápido, el servidor (Vercel) dibuja primero una versión estática de la página (HTML plano) y se la envía al navegador. Justo después, el navegador descarga el código JavaScript de React y lo "acopla" sobre ese dibujo estático para que los botones tengan vida. A ese proceso de darle vida al código se le llama hidratación.</li>
+                  <li style={{ marginBottom: '8px' }}><b>La regla de oro:</b> Para que React no se rompa, el dibujo que hace el servidor y el dibujo que arranca en el navegador tienen que ser exactamente idénticos.</li>
+                  <li style={{ marginBottom: '8px' }}>
+                    <b>El conflicto (El Mismatch):</b> Al usar el nuevo App Router de Next.js, ocurrió una descoordinación:
+                    <ul style={{ listStyleType: 'circle', paddingLeft: '20px', marginTop: '6px' }}>
+                      <li style={{ marginBottom: '4px' }}>El servidor dibujaba la barra lateral asumiendo que el usuario no estaba logueado porque no tenía acceso inmediato a los datos en tiempo real.</li>
+                      <li style={{ marginBottom: '4px' }}>El navegador del usuario, al recibir la página, detectaba que la cookie de inicio de sesión de Clerk sí estaba activa y dibujaba la barra lateral con las opciones del usuario logueado.</li>
+                    </ul>
+                  </li>
+                  <li style={{ marginBottom: '8px' }}><b>El resultado:</b> Al no coincidir las dos versiones, React lanzaba un error crítico en la consola (Hydration Mismatch), provocando parpadeos molestos o "colapsos visuales" en la pantalla.</li>
+                </ul>
+                <b style={{ display: 'block', marginBottom: '6px' }}>¿Cómo lo solucionasteis? (Unificación en el RootLayout)</b>
+                <p style={{ marginBottom: '12px' }}>
+                  En lugar de dejar que cada componente de la barra lateral intentara adivinar de forma asíncrona si el usuario estaba dentro o fuera, movisteis y centralizasteis toda la lógica del estado de autenticación en la raíz de la aplicación: el RootLayout. Al envolver toda la estructura en un único punto de control síncrono, garantizasteis que tanto el servidor como el cliente se pusieran de acuerdo sobre el estado de la sesión antes de pintar cualquier píxel, logrando una carga limpia, fluida y sin errores de consola.
+                </p>
+                <b style={{ display: 'block', marginBottom: '8px', fontSize: '0.875rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#9ca3af' }}>¿Por qué es genial esta solución? (El valor técnico)</b>
+                <p style={{ margin: 0 }}>
+                  Demuestra ante el tribunal que domináis el ciclo de vida del renderizado de Next.js y que sabéis resolver problemas avanzados de sincronización entre el servidor (Server-Side Rendering) y la interfaz del cliente.
+                </p>
+              </>
+            ),
           },
           {
             title: 'Configuración de Red y Timeouts Serverless',
-            body: 'Debido a que el LLM genera respuestas en streaming (SSE) y a veces tiene alta latencia de inferencia en hardware local, el ruteo asíncrono requirió un rediseño manual en el archivo vercel.json para extender la tolerancia de red de larga duración en la capa de Vercel y evitar cortes de conexión abruptos.',
+            body: (
+              <>
+                <p style={{ marginBottom: '12px' }}>
+                  Debido a que el LLM genera respuestas en streaming (SSE) y a veces tiene alta latencia de inferencia en hardware local, el ruteo asíncrono requirió un rediseño manual en el archivo <code style={{ backgroundColor: '#1f2937', padding: '2px 4px', borderRadius: '4px', fontFamily: 'monospace' }}>vercel.json</code> para extender la tolerancia de red de larga duración en la capa de Vercel y evitar cortes de conexión abruptos.
+                </p>
+                <ul style={{ listStyleType: 'disc', paddingLeft: '20px', margin: '0 0 16px 0' }}>
+                  <li style={{ marginBottom: '8px' }}><b>¿Qué es el Streaming (SSE)?</b> Los modelos de lenguaje (LLM) no devuelven la respuesta de golpe como una base de datos tradicional. En su lugar, usan Server-Sent Events (SSE), que es la tecnología que permite que la IA vaya respondiendo y "escribiendo" la respuesta palabra por palabra en vuestra pantalla en tiempo real.</li>
+                  <li style={{ marginBottom: '8px' }}><b>El problema de la latencia local:</b> Como vuestro backend de IA corre en un servidor local (On-Premise) y no en un superordenador en la nube, el "cerebro" tarda un poco más en pensar (alta latencia de inferencia) antes de empezar a escupir las palabras.</li>
+                  <li style={{ marginBottom: '8px' }}><b>El corte abrupto de Vercel (Timeout):</b> Las plataformas en la nube como Vercel tienen una regla estricta por defecto: si un servidor tarda más de unos pocos segundos (normalmente 10-15 segundos) en responder, Vercel asume que el sistema se ha colgado y corta la conexión de golpe (lanzando un error de red). Esto hacía que las respuestas largas de vuestra IA se quedaran a medias.</li>
+                </ul>
+                <b style={{ display: 'block', marginBottom: '6px' }}>¿Cómo lo solucionasteis? (Rediseño en vercel.json)</b>
+                <p style={{ marginBottom: '12px' }}>
+                  Para evitar que la nube colgara el teléfono a vuestro servidor local mientras este seguía procesando el texto, modificasteis manualmente el archivo de configuración vercel.json de vuestro proyecto. En este archivo añadisteis una directiva para extender los límites de tiempo de espera (timeouts) de las funciones Serverless. Le dijisteis a Vercel algo como: <i>"Oye, mantén la conexión abierta durante más tiempo del habitual porque estamos transmitiendo datos de IA de larga duración desde un entorno local"</i>.
+                </p>
+                <b style={{ display: 'block', marginBottom: '8px', fontSize: '0.875rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#9ca3af' }}>¿Por qué es genial esta solución? (El valor técnico)</b>
+                <ul style={{ listStyleType: 'disc', paddingLeft: '20px', margin: '0' }}>
+                  <li style={{ marginBottom: '4px' }}><b>Estabilidad del Sistema:</b> Asegura que los usuarios puedan recibir respuestas completas, complejas y detalladas de la IA sin sufrir cortes inesperados o pantallas de error a mitad del chat.</li>
+                  <li style={{ marginBottom: '4px' }}><b>Optimización Cloud-to-Local:</b> Demuestra que sabéis configurar infraestructura en la nube real para adaptarla a las limitaciones físicas del hardware local, logrando que dos mundos distintos se entiendan a la perfección.</li>
+                </ul>
+              </>
+            ),
           }
         ],
       }
@@ -259,63 +645,96 @@ const sections: H1Section[] = [
     number: '06',
     tag: 'CONCLUSIONES',
     title: 'Conclusiones y Logros',
-    description: 'Para cerrar nuestra exposición, queremos conectar este recorrido técnico con la visión estratégica del proyecto. Este Trabajo de Fin de Máster ha culminado en el desarrollo de una solución productiva real que trasciende por completo el concepto básico de un "chatbot" corporativo. Lo que hemos diseñado, validado y desplegado es una verdadera Arquitectura Empresarial e integral para la gestión de activos intangibles.',
+    description: '',
     h2sections: [
       {
         icon: Users,
         tag: 'LOGROS',
         title: 'Logros Alcanzados',
-        body: 'Si tuviéramos que resumir los grandes hitos que validan nuestras hipótesis iniciales, destacaríamos cuatro pilares fundamentales:\n\n• Primero, garantizamos un aislamiento absoluto de datos por cliente mediante un modelo multi-tenant nativo, demostrando que es posible escalar horizontalmente e incorporar nuevas organizaciones sin alterar el código núcleo.\n• Segundo, consolidamos un motor de IA híbrido sumamente robusto, capaz de combinar comprensión semántica (RAG) con rigor matemático estructurado (Text-to-SQL).\n• Tercero, implementamos un despliegue de red asimétrico Nube-Local, reduciendo los costes operativos a cero usando hardware propio y blindando la privacidad al 100%.\n• Y cuarto, establecemos una gobernanza de roles estricta directamente en la capa de datos (PostgreSQL), asegurando trazabilidad y auditoría.',
+        body: '',
         image: '/imagenes_tfm/logros.png',
         h3: [],
-      }
-    ],
-  },
-  {
-    number: '07',
-    tag: 'FUTURO',
-    title: 'Trabajo Futuro',
-    description: 'Sin embargo, el verdadero valor de este desarrollo es que no representa un punto final. Gracias a la flexibilidad de nuestra arquitectura, el sistema está perfectamente preparado para evolucionar hacia las dos grandes macro-tendencias de la industria tecnológica actual.',
-    h2sections: [
-      {
-        icon: Brain,
-        tag: 'AGENTIC AI',
-        title: 'Evolución a Modelos de Agentes Autónomos (Agentic AI)',
-        body: 'La primera línea futura es transformar la IA de un sistema "consultivo" a un sistema "ejecutivo". El objetivo es que nuestro enrutador no se limite a leer datos, sino que adquiera capacidades de acción (operaciones de escritura). Esto permitirá a la IA rellenar formularios, agendar reuniones o redactar y emitir correos electrónicos corporativos de forma totalmente autónoma.',
-        h3: [],
       },
       {
-        icon: Code2,
-        tag: 'FINE-TUNING',
-        title: 'Fine-Tuning Especializado de Modelos Abiertos',
-        body: 'La segunda línea es el entrenamiento especializado (Fine-Tuning). El siguiente paso lógico es entrenar modelos locales más eficientes (Llama o Mistral) inyectándoles directamente la jerga contable y los diccionarios técnicos de los clientes. Esto optimizará el rendimiento en hardware local, reduciendo drásticamente los tiempos de respuesta y eliminando cualquier dependencia de proveedores de IA externos.\n\nCon esto demostramos que "RAG Platform" no es solo una solución para los problemas de hoy, sino una infraestructura escalable, segura y preparada para el futuro de la inteligencia artificial empresarial. Quedamos a su entera disposición para sus preguntas. Muchas gracias.',
-        h3: [],
-      },
-      {
-        icon: Database,
-        tag: 'TÉCNICO',
-        title: 'Detalles Técnicos del Trabajo Futuro (Backup)',
-        body: 'A continuación se exponen los detalles técnicos y metodológicos que respaldan las líneas de evolución propuestas para el sistema.',
+        icon: Users,
+        tag: 'LOGROS',
+        title: 'Trabajo futuro',
+        body: (
+          <>
+            <p style={{ marginBottom: '8px' }}>
+              Sistema preparado para evolucionar de forma directa hacia las dos grandes macro-tendencias que están transformando la industria tecnológica actual:
+            </p>
+            <ul style={{ listStyleType: 'disc', paddingLeft: '20px', margin: '0' }}>
+              <li style={{ marginBottom: '6px' }}>
+                <b>Modelos de agentes autónomos o Agentic AI:</b> con el propósito de que Intent Router no se limite únicamente a realizar lecturas o consultas de tipo <code style={{ backgroundColor: '#1f2937', padding: '2px 4px', borderRadius: '4px', fontFamily: 'monospace' }}>SELECT</code> sobre las bases de datos.
+              </li>
+              <li style={{ marginBottom: '6px' }}>
+                <b>Fine-Tuning especializado</b> de modelos abiertos.
+              </li>
+            </ul>
+          </>
+        ),
         h3: [
           {
             title: 'Mecanismos de Extensión Agéntica (LangGraph / Tool Calling)',
-            body: 'La evolución hacia Agentic AI se plantea sustituyendo la lógica secuencial actual por grafos de conocimiento utilizando librerías como LangGraph o la API de Tool Calling nativa de LangChain. Al mapear funciones de Python como herramientas específicas (ej. API de Microsoft Graph o pasarelas SQL con permisos de escritura), el LLM puede secuenciar llamadas, evaluar si la ejecución fue exitosa y auto-corregirse en caso de error.',
+            body: (
+              <>
+                <p style={{ marginBottom: '12px' }}>
+                  La evolución hacia Agentic AI se plantea sustituyendo la lógica secuencial actual por grafos de conocimiento utilizando librerías como <code style={{ backgroundColor: '#1f2937', padding: '2px 4px', borderRadius: '4px', fontFamily: 'monospace' }}>LangGraph</code> o la API de Tool Calling nativa de LangChain.
+                </p>
+                <p style={{ margin: 0 }}>
+                  Al mapear funciones de Python como herramientas específicas (por ejemplo, llamadas a la API de Microsoft Graph o pasarelas SQL con permisos de escritura), el LLM puede secuenciar llamadas, evaluar si la ejecución fue exitosa y auto-corregirse en caso de excepciones.
+                </p>
+              </>
+            ),
           },
           {
             title: 'Técnicas de Fine-Tuning Local (QLoRA / Unsloth)',
-            body: 'Se plantea un flujo de entrenamiento utilizando QLoRA para reducir exigencias de memoria de video (VRAM) en GPUs corporativas, procesado mediante frameworks como Unsloth o Hugging Face TRL. Los pesos adaptativos se entrenarán con datasets sintéticos extraídos de nuestras trazas (evaluaciones_pendientes.json).',
+            body: (
+              <>
+                <p style={{ marginBottom: '12px' }}>
+                  Para la optimización de modelos locales en Ollama, se plantea un flujo de entrenamiento utilizando <b>QLoRA (Quantized Low-Rank Adaptation)</b> para reducir las exigencias de memoria de video (VRAM) en las GPUs corporativas.
+                </p>
+                <p style={{ margin: 0 }}>
+                  El pipeline se procesará mediante frameworks de aceleración como Unsloth o Hugging Face TRL, entrenando los pesos adaptativos con datasets sintéticos generados a partir de las trazas recolectadas en nuestro propio archivo <code style={{ backgroundColor: '#1f2937', padding: '2px 4px', borderRadius: '4px', fontFamily: 'monospace' }}>evaluaciones_pendientes.json</code>.
+                </p>
+              </>
+            ),
           },
           {
-            title: 'Soberanía y Seguridad en Operaciones CRUD',
-            body: 'Otorgar permisos de escritura introduce riesgos de inyección. El respaldo se basará en flujos de validación humana (Human-in-the-loop) para confirmación de transacciones (commit) y sanitización estricta de variables con Pydantic.',
+            title: 'Soberanía y seguridad en operaciones CRUD',
+            body: (
+              <>
+                <p style={{ marginBottom: '8px' }}>
+                  El otorgar permisos de escritura al agente corporativo introduce riesgos de inyección de código. El respaldo de seguridad técnica se basará en:
+                </p>
+                <ul style={{ listStyleType: 'disc', paddingLeft: '20px', margin: '0' }}>
+                  <li style={{ marginBottom: '6px' }}>
+                    Ejecución de comandos de base de datos dentro de transacciones aisladas con confirmación (commit) sujeta a la aprobación de un usuario mediante flujos de validación (<b>Human-in-the-loop</b>).
+                  </li>
+                  <li style={{ marginBottom: '6px' }}>
+                    Sanitización estricta de variables de entrada utilizando validadores de esquemas de datos con <code style={{ backgroundColor: '#1f2937', padding: '2px 4px', borderRadius: '4px', fontFamily: 'monospace' }}>Pydantic</code> antes de invocar cualquier handler de automatización.
+                  </li>
+                </ul>
+              </>
+            ),
           },
           {
-            title: 'Persistencia en Producción',
-            body: 'La persistencia de memoria en FastAPI se migrará a un clúster de Redis para evitar sobrecarga de RAM ante picos masivos de múltiples inquilinos.',
+            title: 'Persistencia multinivel en producción',
+            body: (
+              <>
+                <p style={{ marginBottom: '12px' }}>
+                  La persistencia de sesiones calientes en memoria en la API de FastAPI resulta ser un inconveniente a mejorar.
+                </p>
+                <p style={{ margin: 0 }}>
+                  Se migrará a un clúster de <b>Redis</b> en caché para evitar la sobrecarga de la RAM del servidor ante picos masivos de concurrencia de múltiples inquilinos simultáneos.
+                </p>
+              </>
+            ),
           }
-        ]
+        ],
       }
-    ]
+    ],
   }
 ];
 
@@ -481,7 +900,11 @@ function H3Accordion({ item, refNum, parentTag }: { item: H3Item; refNum: string
       <AnimatePresence initial={false}>
         {open && (
           <motion.div key="body" initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.25, ease: 'easeInOut' }} style={{ overflow: 'hidden' }}>
-            <p style={{ padding: '0 16px 14px', fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.8, textAlign: 'justify' }}>{item.body}</p>
+            {typeof item.body === 'string' ? (
+              <p style={{ padding: '0 16px 14px', fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.8, textAlign: 'justify', margin: 0 }}>{item.body}</p>
+            ) : (
+              <div style={{ padding: '0 16px 14px', fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.8, textAlign: 'justify' }}>{item.body}</div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
@@ -515,10 +938,17 @@ function H1Slide({ data, sectionNum }: { data: H1Section; sectionNum: number }) 
           style={{ fontSize: 'clamp(32px, 4.5vw, 58px)', fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.1, marginBottom: 28 }}>
           {data.title}
         </motion.h2>
-        <motion.p initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.2 }}
-          style={{ fontSize: 17, color: 'var(--text-secondary)', lineHeight: 1.85, textAlign: 'justify' }}>
-          {data.description}
-        </motion.p>
+        {typeof data.description === 'string' ? (
+          <motion.p initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.2 }}
+            style={{ fontSize: 17, color: 'var(--text-secondary)', lineHeight: 1.85, textAlign: 'justify', whiteSpace: 'pre-line' }}>
+            {data.description}
+          </motion.p>
+        ) : (
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.2 }}
+            style={{ fontSize: 17, color: 'var(--text-secondary)', lineHeight: 1.85, textAlign: 'justify', whiteSpace: 'pre-line' }}>
+            {data.description}
+          </motion.div>
+        )}
       </div>
     </section>
   );
@@ -530,7 +960,7 @@ function H1Slide({ data, sectionNum }: { data: H1Section; sectionNum: number }) 
 function H2Slide({ data, sectionNum, h2Num, index, parentTag }: { data: H2Section; sectionNum: number; h2Num: number; index: number; parentTag: string }) {
   const Icon = data.icon;
   const refLabel = `${sectionNum}.${h2Num}`;
-  const paragraphs = data.body.split('\n\n');
+  const paragraphs = typeof data.body === 'string' ? data.body.split('\n\n') : [];
 
   return (
     <section id={`h2-${sectionNum}-${h2Num}`} style={{ padding: '80px 0', borderTop: '1px solid var(--border-primary)' }}>
@@ -559,11 +989,17 @@ function H2Slide({ data, sectionNum, h2Num, index, parentTag }: { data: H2Sectio
         {/* H2 Body */}
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.15 }}
           style={{ marginBottom: 36 }}>
-          {paragraphs.map((p, i) => (
-            <p key={i} style={{ fontSize: 16, color: 'var(--text-secondary)', lineHeight: 1.85, textAlign: 'justify', marginBottom: i < paragraphs.length - 1 ? 16 : 0 }}>
-              {p}
-            </p>
-          ))}
+          {typeof data.body === 'string' ? (
+            paragraphs.map((p, i) => (
+              <p key={i} style={{ fontSize: 16, color: 'var(--text-secondary)', lineHeight: 1.85, textAlign: 'justify', marginBottom: i < paragraphs.length - 1 ? 16 : 0 }}>
+                {p}
+              </p>
+            ))
+          ) : (
+            <div style={{ fontSize: 16, color: 'var(--text-secondary)', lineHeight: 1.85, textAlign: 'justify', whiteSpace: 'pre-line' }}>
+              {data.body}
+            </div>
+          )}
         </motion.div>
 
         {/* H2 Image */}
