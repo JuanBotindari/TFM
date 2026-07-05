@@ -107,7 +107,11 @@ export default function DocumentsPage() {
 
       // 4. Trigger embeddings recompute for all documents
       try {
-        await fetch('/api/embeddings/recompute', { method: 'POST' });
+        await fetch('/api/embeddings/recompute', { 
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ orgId: currentOrg?.id })
+        });
       } catch (recomputeErr) {
         console.error('Error triggering embeddings recompute:', recomputeErr);
       }

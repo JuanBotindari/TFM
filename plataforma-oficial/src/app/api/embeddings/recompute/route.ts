@@ -5,8 +5,22 @@ import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
   try {
-    // Fetch all documents (could filter by organization if needed)
-    const { data: docs, error } = await supabase.from('documents').select('id, storage_path');
+    let orgId = 'org-banco';
+    try {
+      const body = await request.json();
+      if (body && body.orgId) {
+        orgId = body.orgId;
+      }
+    } catch (e) {
+      // Body might be empty or invalid JSON
+    }
+
+    // Fetch documents belonging to this organization
+    const { data: docs, error } = await supabase
+      .from('documents')
+      .select('id, storage_path')
+      .eq('org_id', orgId);
+
     if (error) throw error;
 
     // Call the Python backend to do the actual embedding generation
@@ -18,7 +32,7 @@ export async function POST(request: Request) {
       const pyRes = await fetch(pythonApiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ org_id: 'org-banco' }) // Customize if needed
+        body: JSON.stringify({ org_id: orgId })
       });
       if (!pyRes.ok) {
         console.error('Python embedding recompute failed:', await pyRes.text());

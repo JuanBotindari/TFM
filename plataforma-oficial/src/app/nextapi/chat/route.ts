@@ -30,7 +30,7 @@ export async function POST(req: Request) {
       return new NextResponse('Unauthorized', { status: 401 });
     }
 
-    const { message, history } = await req.json();
+    const { message, history, orgId } = await req.json();
 
     const PYTHON_BACKEND_URL = getPythonBackendUrl();
     console.log(`[Chat Route] Connecting to Python backend: ${PYTHON_BACKEND_URL}`);
@@ -44,7 +44,7 @@ export async function POST(req: Request) {
           'Bypass-Tunnel-Reminder': 'true'
         },
         body: JSON.stringify({
-          org_id: "org-estudio",
+          org_id: orgId || "org-estudio",
           message: message,
           history: history,
         }),
