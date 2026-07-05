@@ -219,13 +219,13 @@ const sections: H1Section[] = [
     number: '02',
     tag: 'INGENIERÍA',
     title: 'Ingeniería de Datos EMBEDDINGS: Ingesta, Chunking y Bases de Datos Vectoriales',
-    description: 'El conocimiento de la IA no es mágico; requiere un pipeline de Ingesta de Datos (Data Ingestion Pipeline) sumamente robusto. La solución técnica se despliega mediante una infraestructura desacoplada y robusta en el backend, implementando una arquitectura asíncrona de alto rendimiento utilizando FastAPI y Uvicorn, orquestada mediante el ecosistema LangChain.',
+    description: 'Esta solución técnica se despliega en el backend mediante una infraestructura completamente desacoplada y asíncrona, configurada bajo una arquitectura de alto rendimiento que aprovecha las capacidades de FastAPI y Uvicorn. Toda la lógica de conexión, flujos de datos y manipulación semántica se encuentra orquestada de manera sistemática a través del ecosistema LangChain, garantizando así la escalabilidad, la eficiencia en el manejo de peticiones concurrentes y la viabilidad técnica a largo plazo de todo el sistema.',
     h2sections: [
       {
         icon: FileText,
         tag: 'CHUNKING',
         title: 'Parseo y Fragmentación (Chunking)',
-        body: 'Aquí entraría también el sistema de roles. Los usuarios con rol de “Admin”, tienen la opción de acceder a la pestaña de “Documentación” y subir los archivos de alta complejidad, como podrían ser los diccionarios de datos de Excel del modelo. El backend no puede enviar ese excel entero al LLM, por lo que se aplica un script de ETL, y lo formateamos en estructuras JSON para que puedan ser legibles.\n\nDado que los LLMs tienen una ventana de contexto limitada, aplicamos un proceso de chunking, para dividir la gran cantidad de texto del que dispone el modelo, en pequeños bloques de información que mantienen el contexto original.',
+        body: 'Desde esta interfaz se permite la carga de archivos corporativos complejos, como diccionarios de datos en Excel. Dado que los LLMs no procesan eficientemente documentos tabulares masivos, el backend ejecuta un pipeline ETL automatizado que extrae y transforma esta información a un formato JSON estandarizado y legible.\n\nPosteriormente, para no desbordar la ventana de contexto del modelo, se aplica una técnica de fragmentación semántica (*chunking*). Esta fase divide los datos masivos en bloques mínimos e independientes, lo que optimiza la latencia de procesamiento sin comprometer la cohesión ni la integridad del contexto original.',
         h3: [
           {
             title: 'Administración y gestión del documento',
@@ -237,7 +237,8 @@ const sections: H1Section[] = [
         icon: Code2,
         tag: 'EMBEDDINGS',
         title: 'Generación de Embeddings y Modelos Agnósticos',
-        body: 'Aquí es donde entra nuestro modelo de embeddings. Cabe destacar la elección de este modelo de embedding, es el resultado de un estudio comparativo previo entre diversas alternativas, seleccionando así la opción que mejor balanceaba precisión de recuperación, y tiempos de ejecución entre otras cosas.\n\nUna vez fragmentados, los textos deben ser comprensibles para la máquina. Aquí radica una de las mayores fortalezas del sistema: su adaptabilidad polimórfica y agnosticismo de proveedor. Lo que va a realizar es la transformación del texto en un vector matemático de 768 dimensiones, el cual actuará como una representación matemática del significado semántico del texto, de manera que fragmentos con un contenido similar quedan situados próximos entre sí en el espacio vectorial. Gracias a ello, durante la búsqueda será posible recuperar los fragmentos más relevantes para la consulta del usuario, proporcionando al LLM el contexto adecuado para generar respuestas más precisas y fundamentadas.\n\nEn otras palabras, el modelo no almacena las palabras tal y como fueron escritas, sino que las representa mediante coordenadas en un espacio matemático donde textos con significados similares quedan cerca unos de otros. Esto permite localizar información relevante aunque la consulta utilice palabras diferentes a las del documento original.',
+        body: 'La arquitectura destaca por su adaptabilidad polimórfica y agnosticismo de proveedor. Tras la fragmentación, el motor transforma cada bloque de texto en un vector matemático de 768 dimensiones que actúa como su representación semántica.\n\nEl sistema no almacena las palabras de forma literal, sino mediante coordenadas en un espacio geométrico multidimensional donde los conceptos similares se posicionan de manera adyacente. Esta propiedad viabiliza búsquedas conceptuales precisas que localizan información relevante mediante sinónimos o términos implícitos, proveyendo al LLM del contexto idóneo para generar respuestas fundamentadas.',
+        image: '/imagenes_tfm/modulo_embeddings.png',
         h3: [
           {
             title: 'Conmutación Dinámica de Modelos',
@@ -249,7 +250,7 @@ const sections: H1Section[] = [
         icon: Database,
         tag: 'ALMACENAMIENTO',
         title: 'Almacenamiento Vectorial Local (Chroma) y Base Relacional (Supabase)',
-        body: 'La presencia y recuperación de esta información, combina un enfoque híbrido. Por un lado, usamos una base de datos relacional en Supabase, donde disponemos de los usuarios, roles, etc. Y por otro lado, el almacenamiento de vectores comentados previamente, de forma local en disco mediante Chroma, así lo que hacemos es acortar el tiempo de respuesta de nuestra IA.',
+        body: 'La arquitectura del sistema implementa un enfoque de persistencia híbrido diseñado de forma estratégica para optimizar tanto la gestión operativa como los tiempos de respuesta de la inteligencia artificial. Esta dualidad tecnológica separa las responsabilidades de datos en dos capas complementarias:\n\n• Capa Relacional (Supabase): Gestiona de manera centralizada la estructura transaccional del sistema, incluyendo el control de usuarios, la asignación de roles, las políticas de acceso y los registros de auditoría.\n\n• Capa Vectorial Embebida (Chroma): Almacena de forma local en disco los vectores semánticos correspondientes a los documentos corporativos. Al procesar las búsquedas vectoriales de manera perimetral e interna en el backend, se reduce drásticamente la latencia de las consultas semánticas y se agiliza la inyección de contexto en la IA.',
         image: '/imagenes_tfm/diagrama_embeddings.jpg',
         h3: [
           {
@@ -286,13 +287,8 @@ const sections: H1Section[] = [
         icon: Code2,
         tag: 'ENRUTAMIENTO',
         title: 'Enrutamiento de Intenciones y Herramientas Dinámicas (Tooling)',
-        body: 'Pero, ¿qué ocurre si el usuario pide un dato estructurado exacto, como el saldo o el identificador de un cliente? Sabemos que la búsqueda vectorial es increíble para semántica, pero no es buena para buscar un dato exacto en una BDD.\n\nPara no entrar mucho en detalle ya que a continuación mi compañera explicará cómo hemos implementado esto, gracias a un “Intent Router”, el modelo evaluará si la respuesta que se requiere, es proveniente de los documentos, por lo que dará una respuesta que pueda encontrar en ellos, o si tiene que buscar en las tablas.',
-        h3: [
-          {
-            title: 'Generación Final y Experiencia de Usuario (Streaming)',
-            body: 'Finalmente, una vez que el agente cuenta con el contexto adecuado y validado procedente de los fragmentos recuperados, redacta la respuesta definitiva.',
-          }
-        ],
+        body: 'Frente a consultas que exigen datos estructurados exactos, la búsqueda vectorial semántica resulta ineficiente. Para resolver esta limitación, el sistema incorpora un enrutador de intenciones (Intent Router) en la capa de orquestación.\n\nEste componente evalúa dinámicamente la naturaleza de la petición del usuario y determina el flujo de ejecución óptimo: bifurca el proceso hacia la recuperación de documentos no estructurados (RAG) o activa herramientas dinámicas (Tooling) para consultar directamente las tablas de la base de datos relacional. Esta estrategia asegura que cada tipología de pregunta sea resuelta por el motor de datos más adecuado.',
+        h3: [],
       }
     ],
   },
