@@ -1,0 +1,11 @@
+{
+  "python.analysis.extraPaths": [
+    ".",
+    "./BaseModelLLM"
+  ],
+  "python.analysis.diagnosticMode": "workspace",
+  "python.analysis.typeCheckingMode": "basic",
+  "python.analysis.ignore": [
+    "BaseModelLLM/**"
+  ]
+}
