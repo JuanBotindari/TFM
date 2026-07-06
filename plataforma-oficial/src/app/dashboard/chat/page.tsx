@@ -9,7 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 
 export default function ChatPage() {
   const { currentOrg } = useAuth();
-  const [messages, setMessages] = useState(mockChatMessages);
+  const [messages, setMessages] = useState<typeof mockChatMessages>([]);
   const [input, setInput] = useState('');
   const [model, setModel] = useState('GPT-4o Enterprise');
   const [isTyping, setIsTyping] = useState(false);
@@ -109,7 +109,8 @@ export default function ChatPage() {
               <div style={{ textAlign: 'center', marginTop: '20vh', color: 'var(--text-tertiary)' }}>
                 <Bot size={48} style={{ margin: '0 auto 16px', opacity: 0.5 }} />
                 <h3 style={{ fontSize: 18, fontWeight: 600, marginBottom: 8 }}>¿Qué tienes en mente hoy?</h3>
-                <p>Haz una pregunta sobre tus documentos o datos indexados.</p>
+                <p>Consultando la base de conocimiento de <strong style={{ color: 'var(--text-secondary)' }}>{currentOrg?.name || 'tu organización'}</strong>.</p>
+                <p style={{ marginTop: 6, fontSize: 13 }}>Haz una pregunta sobre tus documentos o datos indexados.</p>
               </div>
             )}
 
@@ -195,12 +196,17 @@ export default function ChatPage() {
           
           {/* Quick Actions */}
           <div style={{ display: 'flex', gap: 8, marginBottom: 16, overflowX: 'auto', paddingBottom: 4 }}>
-            {[
+            {(currentOrg?.id === 'org-banco' ? [
+              { icon: FileText, label: '¿Cuáles son los requisitos para un crédito hipotecario?' },
+              { icon: Search, label: '¿Cuál es la normativa BCRA vigente?' },
+              { icon: LayoutTemplate, label: '¿Cómo se procesa una transacción sospechosa?' },
+              { icon: UserIcon, label: '¿Cuál es la política de prevención de lavado de activos?' }
+            ] : [
               { icon: FileText, label: '¿Cual es la estructura general de archivos?' },
               { icon: Search, label: '¿Como se hace un plan de facilidades?' },
               { icon: LayoutTemplate, label: '¿Como se genera un CAI para resguardo?' },
               { icon: UserIcon, label: '¿Quien es FERNANDEZ DAIANA?' }
-            ].map((action, i) => (
+            ]).map((action, i) => (
               <button key={i} type="button" onClick={() => submitQuery(action.label)} className="btn-ghost" style={{ 
                 background: 'var(--bg-tertiary)', border: '1px solid var(--border-primary)', 
                 borderRadius: 100, fontSize: 12, padding: '6px 14px', whiteSpace: 'nowrap',
