@@ -88,7 +88,7 @@ const sections: H1Section[] = [
       {
         icon: Database,
         tag: 'PROPUESTA',
-        title: 'Propuesta',
+        title: 'Arquitectura del sistema',
         body: '',
         image: '/imagenes_tfm/arquitectura_solucion.png',
         h3: [],
@@ -249,13 +249,13 @@ const sections: H1Section[] = [
       {
         icon: Database,
         tag: 'ALMACENAMIENTO',
-        title: 'Almacenamiento Vectorial Local (Chroma) y Base Relacional (Supabase)',
-        body: 'La arquitectura del sistema implementa un enfoque de persistencia híbrido diseñado de forma estratégica para optimizar tanto la gestión operativa como los tiempos de respuesta de la inteligencia artificial. Esta dualidad tecnológica separa las responsabilidades de datos en dos capas complementarias:\n\n• Capa Relacional (Supabase): Gestiona de manera centralizada la estructura transaccional del sistema, incluyendo el control de usuarios, la asignación de roles, las políticas de acceso y los registros de auditoría.\n\n• Capa Vectorial Embebida (Chroma): Almacena de forma local en disco los vectores semánticos correspondientes a los documentos corporativos. Al procesar las búsquedas vectoriales de manera perimetral e interna en el backend, se reduce drásticamente la latencia de las consultas semánticas y se agiliza la inyección de contexto en la IA.',
+        title: 'Almacenamiento Vectorial Local y Base Relacional (Supabase)',
+        body: 'La arquitectura del sistema implementa un enfoque de persistencia híbrido diseñado de forma estratégica para optimizar tanto la gestión operativa como los tiempos de respuesta de la inteligencia artificial. Esta dualidad tecnológica separa las responsabilidades de datos en dos capas complementarias:\n\n• Capa Relacional (Supabase): Gestiona de manera centralizada la estructura transaccional del sistema, incluyendo el control de usuarios, la asignación de roles, las políticas de acceso y los registros de auditoría.\n\n• Capa Vectorial Embebida: Almacena de forma local en disco los vectores semánticos correspondientes a los documentos corporativos. Al procesar las búsquedas vectoriales de manera perimetral e interna en el backend, se reduce drásticamente la latencia de las consultas semánticas y se agiliza la inyección de contexto en la IA.',
         image: '/imagenes_tfm/diagrama_embeddings.png',
         h3: [
           {
             title: 'Persistencia Híbrida Vectorial y Relacional',
-            body: 'La persistencia y recuperación de la información combina un enfoque híbrido. Por un lado, utilizamos una base de datos relacional robusta en Supabase (PostgreSQL con la extensión pgvector) para la gestión de usuarios, perfiles, auditoría y seguridad. Por otro lado, el almacenamiento de los vectores (embeddings) de los documentos corporativos se realiza de forma local y embebida en disco mediante Chroma. Esta base de datos vectorial local está estructurada de forma estanca por cada tenant. Cuando el usuario hace una pregunta, la búsqueda semántica (Cosine Similarity Search) se ejecuta en Chroma, recuperando exclusivamente los chunks de su organización sin exponer el conocimiento a bases de datos públicas.',
+            body: 'La persistencia y recuperación de la información combina un enfoque híbrido. Por un lado, utilizamos una base de datos relacional robusta en Supabase (PostgreSQL con la extensión pgvector) para la gestión de usuarios, perfiles, auditoría y seguridad. Por otro lado, el almacenamiento de los vectores (embeddings) de los documentos corporativos se realiza de forma local y embebida en disco. Esta base de datos vectorial local está estructurada de forma estanca por cada tenant. Cuando el usuario hace una pregunta, la búsqueda semántica (Cosine Similarity Search) se ejecuta en Supabase, recuperando exclusivamente los chunks de su organización sin exponer el conocimiento a bases de datos públicas.',
           }
         ],
       }
@@ -423,7 +423,7 @@ const sections: H1Section[] = [
                     <b>TablasHandler:</b> si el handler falla al parsear una consulta con Pandas debido a un formato inesperado en el archivo .csv, levanta una excepción controlada que es capturada por el orquestador principal, evitando un error 500 Internal Server Error en el frontend y ofreciendo una respuesta de <i>degradación elegante</i> (graceful degradation) al usuario.
                   </li>
                   <li style={{ marginBottom: '10px' }}>
-                    <b>VectorStoreHandler:</b> este componente gestiona operaciones críticas de E/S de alta dimensionalidad con la base de datos vectorial (Supabase/Chroma) y la API del modelo de embeddings. Ante fallos de conectividad de red, picos de latencia, problemas de autenticación con el token del inquilino, o saturación del límite de peticiones (Rate Limiting), el handler intercepta la excepción técnica. En lugar de interrumpir el hilo de ejecución asíncrono en FastAPI, el sistema mitiga el error mediante una política de reintentos con retraso exponencial. Si el fallo persiste, se genera un mensaje estructurado que informa al usuario sobre la indisponibilidad temporal del repositorio documental, manteniendo intacta la sesión conversacional.
+                    <b>VectorStoreHandler:</b> este componente gestiona operaciones críticas de E/S de alta dimensionalidad con la base de datos vectorial (Supabase) y la API del modelo de embeddings. Ante fallos de conectividad de red, picos de latencia, problemas de autenticación con el token del inquilino, o saturación del límite de peticiones (Rate Limiting), el handler intercepta la excepción técnica. En lugar de interrumpir el hilo de ejecución asíncrono en FastAPI, el sistema mitiga el error mediante una política de reintentos con retraso exponencial. Si el fallo persiste, se genera un mensaje estructurado que informa al usuario sobre la indisponibilidad temporal del repositorio documental, manteniendo intacta la sesión conversacional.
                   </li>
                   <li style={{ marginBottom: '10px' }}>
                     <b>DirectoHandler / InternetHandler:</b> al interactuar con capas de charla casual o motores de búsqueda externa, las principales vulnerabilidades radican en la recepción de respuestas malformadas o timeouts prolongados por parte de los servicios de navegación. El bloque de excepciones de estos handlers implementa un temporizador estricto (timeout threshold). Si la solicitud web o la inferencia abierta excede el tiempo límite establecido, la excepción es capturada para activar un protocolo de degradación, forzando al orquestador principal a emitir una respuesta de contingencia predefinida que invita al usuario a reformular su consulta.
