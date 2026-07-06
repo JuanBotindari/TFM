@@ -93,8 +93,10 @@ async def health_endpoint():
 
 @app.post("/api/chat")
 async def chat_endpoint(request: QueryRequest):
+    print(f"\n🔵 [CHAT] org_id='{request.org_id}' | mensaje='{request.message[:60]}...'")
     try:
         cliente = obtener_cliente(request.org_id)
+        print(f"   ✅ Cliente activo: {type(cliente).__name__} | tabla vectorial: {cliente.tech.get('vector_db_name', '?')}")
     except Exception as e:
         interpreted_err = analizar_error_conexion(e)
         raise HTTPException(

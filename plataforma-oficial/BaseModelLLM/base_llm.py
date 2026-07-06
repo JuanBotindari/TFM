@@ -55,14 +55,29 @@ def analizar_error_conexion(e: Exception) -> str:
         return f"Error de conexión: {err_msg}"
 
 _ROUTER_PROMPT = """\
-Cuando recibas una pregunta del usuario, evalúa estrictamente en este orden:
-1. ¿Requiero buscar en documentos textuales (PDFs, políticas, manuales)?
-2. ¿Requiero buscar en tablas de BBDD?
-3. ¿Requiere buscar en internet?
-4. ¿Puedo responder directamente con el LLM?
-5. ¿Estoy capacitado para responder si no es ninguna de las anteriores?
+Eres el router de un sistema RAG empresarial. Tu misión es clasificar la pregunta del usuario.
+Evalúa en este orden ESTRICTO:
 
-Responde con UNA sola palabra de esta lista: DIRECTO, RAG, TABLA, INTERNET, OTRO
+1. RAG — Usa esta categoría si la pregunta involucra CUALQUIERA de estos casos:
+   - Nombres de personas (clientes, empleados, socios, contribuyentes, etc.)
+   - Nombres de empresas, entidades u organizaciones
+   - Documentos específicos (pólizas, contratos, expedientes, facturas, declaraciones)
+   - Procedimientos, normativas, políticas o manuales internos
+   - Preguntas del tipo: ¿Quién es...?, ¿Qué es...?, ¿Cómo se hace...?, ¿Cuál es...?
+   - Cualquier entidad específica que pueda estar en la base de conocimiento
+   REGLA: Si tienes DUDAS, elige RAG. Es mejor buscar y no encontrar que no buscar.
+
+2. TABLA — Solo si necesita datos numéricos precisos de una base de datos estructurada
+   (totales, saldos, cantidades, estadísticas, reportes SQL).
+
+3. INTERNET — Solo si la pregunta requiere información de actualidad externa (noticias, precios de mercado, normativa externa reciente).
+
+4. DIRECTO — Solo si es una pregunta de conocimiento general que NO tiene nada que ver con la organización
+   (conversación trivial, matemáticas simples, definiciones universales).
+
+5. OTRO — SOLO como último recurso si la pregunta es completamente inapropiada o ininteligible.
+
+Responde con UNA sola palabra de esta lista: RAG, TABLA, INTERNET, DIRECTO, OTRO
 """
 
 
@@ -366,7 +381,8 @@ class BaseModel(ABC):
             ])
             raw = resultado.content.strip()
             intencion = raw.upper()
-            for categoria in ("DIRECTO", "TABLA", "INTERNET", "OTRO", "RAG"):
+            # RAG va primero para que sea el fallback natural
+            for categoria in ("RAG", "TABLA", "INTERNET", "DIRECTO", "OTRO"):
                 if categoria in intencion:
                     return categoria, raw
             return "RAG", raw

@@ -225,7 +225,7 @@ const sections: H1Section[] = [
         icon: FileText,
         tag: 'CHUNKING',
         title: 'Parseo y Fragmentación (Chunking)',
-        body: 'Desde esta interfaz se permite la carga de archivos corporativos complejos, como diccionarios de datos en Excel. Dado que los LLMs no procesan eficientemente documentos tabulares masivos, el backend ejecuta un pipeline ETL automatizado que extrae y transforma esta información a un formato JSON estandarizado y legible.\n\nPosteriormente, para no desbordar la ventana de contexto del modelo, se aplica una técnica de fragmentación semántica (*chunking*). Esta fase divide los datos masivos en bloques mínimos e independientes, lo que optimiza la latencia de procesamiento sin comprometer la cohesión ni la integridad del contexto original.',
+        body: 'Desde esta interfaz se permite la carga de archivos corporativos complejos, como diccionarios de datos en Excel. Dado que los LLMs no procesan eficientemente documentos tabulares masivos, el backend ejecuta un pipeline ETL automatizado que extrae y transforma esta información a un formato JSON estandarizado y legible.\n\nPosteriormente, para no desbordar la ventana de contexto del modelo, se aplica una técnica de fragmentación semántica (chunking). Esta fase divide los datos masivos en bloques mínimos e independientes, lo que optimiza la latencia de procesamiento sin comprometer la cohesión ni la integridad del contexto original.',
         h3: [
           {
             title: 'Administración y gestión del documento',
