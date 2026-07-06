@@ -81,7 +81,15 @@ class SafeSupabaseVectorStore(SupabaseVectorStore):
             "match_count": k,
             "filter": filter or {}
         }
-        res = self._client.rpc(self.query_name, rpc_params).execute()
+        print(f"\n🔍 [RPC] Llamando a '{self.query_name}' | filter={filter} | k={k} | embedding_dim={len(embedding)}")
+        try:
+            res = self._client.rpc(self.query_name, rpc_params).execute()
+        except Exception as rpc_err:
+            import traceback
+            print(f"❌ [RPC ERROR] Función: {self.query_name}")
+            print(f"   Mensaje: {rpc_err}")
+            traceback.print_exc()
+            raise
         
         results = []
         data = res.data or []
