@@ -203,9 +203,8 @@ export default function ChatPage() {
               { icon: UserIcon, label: '¿Cuál es la política de prevención de lavado de activos?' }
             ] : [
               { icon: FileText, label: '¿Cual es la estructura general de archivos?' },
-              { icon: Search, label: '¿Como se hace un plan de facilidades?' },
-              { icon: LayoutTemplate, label: '¿Como se genera un CAI para resguardo?' },
-              { icon: UserIcon, label: '¿Quien es FERNANDEZ DAIANA?' }
+              { icon: Search, label: 'Revisa la tabla de "Tipo de comprobantes" y dime que hay' },
+              { icon: LayoutTemplate, label: 'Utiliza la tabla "tipo_gastos" y dame los tipos' }
             ]).map((action, i) => (
               <button key={i} type="button" onClick={() => submitQuery(action.label)} className="btn-ghost" style={{ 
                 background: 'var(--bg-tertiary)', border: '1px solid var(--border-primary)', 
