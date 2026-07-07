@@ -12,6 +12,7 @@ import { ChevronDown, ChevronRight, Shield, Lock, Users, Code2, Brain, Database,
 interface H3Item {
   title: string;
   body: React.ReactNode;
+  image?: string;
 }
 
 interface H2Section {
@@ -552,7 +553,13 @@ const sections: H1Section[] = [
                 </ul>
               </>
             )
+          },
+          {
+            title: 'Diagrama SAAS',
+            body: (''),
+            image: '/imagenes_tfm/Diagrama_SAAS.jpg',
           }
+
         ],      },
       {
         icon: Lock,
@@ -900,6 +907,11 @@ function H3Accordion({ item, refNum, parentTag }: { item: H3Item; refNum: string
               <p style={{ padding: '0 16px 14px', fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.8, textAlign: 'justify', margin: 0 }}>{item.body}</p>
             ) : (
               <div style={{ padding: '0 16px 14px', fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.8, textAlign: 'justify' }}>{item.body}</div>
+            )}
+            {item.image && (
+              <div style={{ padding: '0 16px 16px' }}>
+                <H2Image src={item.image} alt={item.title} />
+              </div>
             )}
           </motion.div>
         )}
