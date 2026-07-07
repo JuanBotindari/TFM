@@ -1,0 +1,15 @@
+{
+  "include": [
+    "plataforma-oficial"
+  ],
+  "extraPaths": [
+    "plataforma-oficial",
+    "plataforma-oficial/BaseModelLLM"
+  ],
+  "ignore": [
+    "plataforma-oficial/BaseModelLLM"
+  ],
+  "typeCheckingMode": "basic",
+  "reportMissingModuleSource": "none",
+  "reportMissingImports": "none"
+}
