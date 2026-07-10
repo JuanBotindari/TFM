@@ -8,7 +8,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "TFM Producto — Plataforma IA RAG para Empresas",
+  title: "OmniRAG — Plataforma IA RAG para Empresas",
   description:
     "Plataforma SaaS de inteligencia artificial RAG para que empresas gestionen y consulten su base de conocimiento con documentos, imágenes y datos.",
   keywords: ["IA", "RAG", "SaaS", "inteligencia artificial", "documentos", "empresas"],

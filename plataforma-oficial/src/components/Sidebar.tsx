@@ -150,7 +150,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
                 T
               </div>
               <span style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-primary)', whiteSpace: 'nowrap' }}>
-                TFM<span style={{ color: 'var(--accent)' }}>.</span>producto
+                Omni<span style={{ color: 'var(--accent)' }}>RAG</span>
               </span>
             </motion.div>
           )}

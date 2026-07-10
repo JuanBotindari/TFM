@@ -234,7 +234,7 @@ export default function AuthPage() {
             T
           </div>
           <h1 style={{ fontSize: 26, fontWeight: 800, marginBottom: 6 }}>
-            TFM<span style={{ color: 'var(--accent)' }}>.</span>producto
+            Omni<span style={{ color: 'var(--accent)' }}>RAG</span>
           </h1>
           <p style={{ fontSize: 14, color: 'var(--text-tertiary)' }}>
             {pendingVerification

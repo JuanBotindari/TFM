@@ -74,7 +74,7 @@ const testimonials = [
   {
     name: 'Laura Fernández',
     role: 'CTO, Banco Nacional',
-    quote: 'TFM-producto transformó cómo nuestros analistas acceden a regulaciones. El tiempo de respuesta bajó un 80%.',
+    quote: 'OmniRAG transformó cómo nuestros analistas acceden a regulaciones. El tiempo de respuesta bajó un 80%.',
     rating: 5,
   },
   {
