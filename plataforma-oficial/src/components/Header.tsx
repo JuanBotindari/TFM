@@ -72,7 +72,7 @@ export default function Header() {
             T
           </motion.div>
           <span style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
-            TFM<span style={{ color: 'var(--accent)' }}>.</span>producto
+            Omni<span style={{ color: 'var(--accent)' }}>RAG</span>
           </span>
         </Link>
 

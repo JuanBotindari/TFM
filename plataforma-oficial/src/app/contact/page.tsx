@@ -49,7 +49,7 @@ export default function ContactPage() {
               <motion.div initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                   {[
-                    { icon: Mail, label: 'Email', value: 'contact@tfm-producto.com' },
+                    { icon: Mail, label: 'Email', value: 'contact@omnirag.com' },
                     { icon: Phone, label: 'Teléfono', value: '+54 11 5555-0100' },
                     { icon: MapPin, label: 'Ubicación', value: 'Buenos Aires, Argentina' },
                     { icon: Clock, label: 'Horario', value: 'Lun-Vie, 9:00 - 18:00 ART' },

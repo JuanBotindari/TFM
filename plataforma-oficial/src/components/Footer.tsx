@@ -62,7 +62,7 @@ export default function Footer() {
                 T
               </div>
               <span style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)' }}>
-                TFM<span style={{ color: 'var(--accent)' }}>.</span>producto
+                Omni<span style={{ color: 'var(--accent)' }}>RAG</span>
               </span>
             </div>
             <p style={{ fontSize: 14, color: 'var(--text-tertiary)', lineHeight: 1.6, maxWidth: 280 }}>
@@ -72,7 +72,7 @@ export default function Footer() {
               {[
                 { icon: Code, href: 'https://github.com/JuanBotindari' },
                 { icon: Globe, href: '#' },
-                { icon: Mail, href: 'mailto:contact@tfm-producto.com' },
+                { icon: Mail, href: 'mailto:contact@omnirag.com' },
               ].map(({ icon: Icon, href }, i) => (
                 <a
                   key={i}
@@ -146,7 +146,7 @@ export default function Footer() {
           }}
         >
           <p style={{ fontSize: 13, color: 'var(--text-tertiary)' }}>
-            © {new Date().getFullYear()} TFM-Producto. Todos los derechos reservados.
+            © {new Date().getFullYear()} OmniRAG. Todos los derechos reservados.
           </p>
           <p style={{ fontSize: 13, color: 'var(--text-tertiary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
             Hecho con <Heart size={12} style={{ color: 'var(--danger)' }} /> por Juan Botindari

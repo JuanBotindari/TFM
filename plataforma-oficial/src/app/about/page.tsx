@@ -85,7 +85,7 @@ export default function AboutPage() {
           <div className="container">
             <motion.div {...fadeInUp} style={{ textAlign: 'center', marginBottom: 50 }}>
               <h2 style={{ fontSize: 'clamp(28px, 3vw, 40px)', fontWeight: 800, marginBottom: 12 }}>Nuestro Equipo</h2>
-              <p style={{ fontSize: 16, color: 'var(--text-secondary)' }}>Las personas detrás de TFM-producto</p>
+              <p style={{ fontSize: 16, color: 'var(--text-secondary)' }}>Las personas detrás de OmniRAG</p>
             </motion.div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 24 }}>
               {team.map((member, i) => (
@@ -119,7 +119,7 @@ export default function AboutPage() {
               <h2 style={{ fontSize: 'clamp(28px, 3vw, 40px)', fontWeight: 800, marginBottom: 24, textAlign: 'center' }}>Nuestra Historia</h2>
               <div style={{ fontSize: 16, color: 'var(--text-secondary)', lineHeight: 1.8 }}>
                 <p style={{ marginBottom: 16 }}>
-                  TFM-producto nació en 2024 como un proyecto de fin de máster con una visión clara: hacer que la inteligencia artificial sea accesible y útil para empresas reales.
+                  OmniRAG nació en 2024 como un proyecto de fin de máster con una visión clara: hacer que la inteligencia artificial sea accesible y útil para empresas reales.
                 </p>
                 <p style={{ marginBottom: 16 }}>
                   Después de trabajar en el sector bancario y contable, identificamos un problema recurrente: las empresas tienen enormes cantidades de conocimiento atrapado en documentos que nadie consulta eficientemente.
