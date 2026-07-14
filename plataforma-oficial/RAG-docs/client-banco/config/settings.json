@@ -59,26 +59,26 @@
     "relaciones_tematicas": [
       {
         "tema": "Seguridad en Cajas",
-        "descripcion": "Protocolos de seguridad física y límites operativos.",
+        "descripcion": "Protocolos de seguridad física aplicados a la gestión de efectivo y operaciones en sucursales.",
         "recursos_vinculados": [
-          { "archivo": "manual_cajas.pdf", "rol": "Procedimientos detallados de apertura y cierre." },
-          { "archivo": "limites_arqueo.xlsx", "rol": "Valores máximos permitidos por cada terminal de caja." }
+          { "archivo": "manual_cajas.pdf", "rol": "Manual detallado con los procedimientos estándar para la apertura, operación segura y cierre diario de las terminales de caja." },
+          { "archivo": "limites_arqueo.xlsx", "rol": "Matriz de valores y límites máximos permitidos por cada terminal de caja y los niveles de autorización requeridos." }
         ]
       },
       {
         "tema": "Cumplimiento Normativo (Compliance)",
-        "descripcion": "Relación entre regulaciones bancarias y auditorías realizadas.",
+        "descripcion": "Marco regulatorio que rige las operaciones financieras y documentación de su cumplimiento mediante auditorías.",
         "recursos_vinculados": [
-          { "archivo": "normativa_bcra_01.pdf", "rol": "Ley marco de regulaciones financieras." },
-          { "archivo": "informe_auditoria_2023.pdf", "rol": "Resultado de la última revisión de cumplimiento." }
+          { "archivo": "normativa_bcra_01.pdf", "rol": "Regulaciones del Banco Central sobre operaciones financieras, normativas de liquidez y requerimientos de capital." },
+          { "archivo": "informe_auditoria_2023.pdf", "rol": "Informe oficial con los hallazgos, planes de acción y evaluación de riesgos de la auditoría interna del año 2023." }
         ]
       },
       {
-        "tema": "Conocimiento de negocio",
-        "descripcion": "Relación entre regulaciones bancarias y auditorías realizadas.",
+        "tema": "Conocimiento de Negocio y Productos",
+        "descripcion": "Información comercial sobre la oferta de productos financieros, estructura de cuentas y detalles de las pólizas de seguros comercializadas.",
         "recursos_vinculados": [
-          { "archivo": "productos_sadasd.pdf", "rol": "Aca tenes los pinches productos wey" },
-          { "archivo": " Componentes de una póliza.pdf", "rol": "Ley marco de regulaciones financieras." }
+          { "archivo": "productos_sadasd.pdf", "rol": "Catálogo detallado que describe las características, requisitos de contratación, beneficios y tasas de los productos bancarios vigentes." },
+          { "archivo": " Componentes de una póliza.pdf", "rol": "Guía técnica sobre la estructura de los contratos de seguro asociados, coberturas principales, exclusiones legales y procedimientos en caso de siniestro." }
         ]
       }
     ]
